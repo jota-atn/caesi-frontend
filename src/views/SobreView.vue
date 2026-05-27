@@ -35,7 +35,7 @@ import { equipe } from '../stores/equipe.js'
         <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--roxo-escuro);margin-bottom:1.2rem;">
           Gestão atual
         </h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
           <div v-for="m in equipe" :key="m.diretoria"
             style="background:var(--branco);border:2px solid var(--creme-escuro);border-radius:2px;padding:14px 16px;">
             <div style="font-size:0.72rem;font-weight:700;color:var(--roxo-escuro);text-transform:uppercase;letter-spacing:0.06em;font-family:'Syne',sans-serif;margin-bottom:4px;">
