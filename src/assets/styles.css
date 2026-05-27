@@ -969,3 +969,59 @@ h1, h2, h3, .display { font-family: 'Syne', sans-serif; }
   .home-section { padding-left: 1.2rem; padding-right: 1.2rem; }
   .footer-inner { flex-direction: column; gap: 1.2rem; }
 }
+
+/* ── Gestão de usuários ─────────────────────────────────── */
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid var(--creme-escuro);
+  flex-wrap: wrap;
+}
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--roxo);
+  color: var(--branco);
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--preto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-meta {
+  font-size: 0.8rem;
+  color: var(--cinza);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-badges {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.badge-role-admin { background: rgba(80,64,160,0.15); color: var(--roxo-escuro); }
+.badge-role-aluno { background: rgba(60,110,200,0.12); color: #2050A0; }
+.badge-inativo    { background: rgba(217,85,85,0.12);  color: var(--vermelho); }
+
+@media (max-width: 600px) {
+  .user-row { gap: 0.7rem; }
+  .user-meta { display: none; }
+}

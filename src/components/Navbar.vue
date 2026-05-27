@@ -33,9 +33,8 @@ function handleLogout() {
 
     <div class="navbar-actions" :class="{ open: menuOpen }">
       <template v-if="admin">
-        <span style="font-size:0.78rem;color:rgba(242,230,196,0.55);font-weight:700;font-family:'Syne',sans-serif;text-transform:uppercase;letter-spacing:0.06em;">
-          Gestão
-        </span>
+        <RouterLink to="/admin/painel" class="nav-link">Mensagens</RouterLink>
+        <RouterLink to="/admin/usuarios" class="nav-link">Usuários</RouterLink>
       </template>
       <span class="navbar-user" style="pointer-events:none;opacity:0.85;">
         {{ user?.nome ?? 'Usuário' }}

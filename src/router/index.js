@@ -12,6 +12,7 @@ import MensagemEnviadaView from '../views/aluno/MensagemEnviadaView.vue'
 import AlunoDetalheView    from '../views/aluno/DetalheView.vue'
 import PainelView          from '../views/admin/PainelView.vue'
 import DetalheView         from '../views/admin/DetalheView.vue'
+import UsuariosView        from '../views/admin/UsuariosView.vue'
 
 const routes = [
   { path: '/',                    component: HomeView },
@@ -26,6 +27,7 @@ const routes = [
   { path: '/aluno/mensagem/:id',  component: AlunoDetalheView,    meta: { auth: true } },
   { path: '/admin/painel',        component: PainelView,          meta: { auth: true, admin: true } },
   { path: '/admin/mensagem/:id',  component: DetalheView,         meta: { auth: true, admin: true } },
+  { path: '/admin/usuarios',      component: UsuariosView,         meta: { auth: true, admin: true } },
 ]
 
 const router = createRouter({
