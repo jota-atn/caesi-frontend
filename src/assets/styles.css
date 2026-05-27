@@ -105,6 +105,16 @@ h1, h2, h3, .display { font-family: 'Syne', sans-serif; }
 }
 .nav-link:hover { background: rgba(255,255,255,0.12); opacity: 1; }
 
+.nav-link-sec { opacity: 0.5; font-weight: 500; }
+.nav-link-sec:hover { opacity: 0.85; }
+
+.nav-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+
 /* ── User dropdown ──────────────────────────────────────── */
 .user-menu { position: relative; }
 

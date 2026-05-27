@@ -26,6 +26,10 @@ const menuOpen = ref(false)
 
     <div class="navbar-actions" :class="{ open: menuOpen }">
       <template v-if="admin">
+        <RouterLink to="/sobre"    class="nav-link nav-link-sec">Sobre</RouterLink>
+        <RouterLink to="/estatuto" class="nav-link nav-link-sec">Estatuto</RouterLink>
+        <RouterLink to="/contato"  class="nav-link nav-link-sec">Contato</RouterLink>
+        <span class="nav-separator" />
         <RouterLink to="/admin/painel"   class="nav-link">Mensagens</RouterLink>
         <RouterLink to="/admin/usuarios" class="nav-link">Usuários</RouterLink>
         <RouterLink to="/admin/equipe"   class="nav-link">Equipe</RouterLink>
