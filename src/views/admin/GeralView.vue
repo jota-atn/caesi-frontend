@@ -26,74 +26,76 @@ const inativos       = computed(() => usuarios.value.filter(u => u.role !== 'adm
         <h2>Painel <span>Geral</span></h2>
       </div>
 
-      <div class="geral-grid">
+      <div class="paper" style="padding:0;overflow:hidden;">
 
         <!-- Mensagens -->
-        <div class="geral-card">
-          <div class="geral-card-header">
-            <span class="geral-card-title">Mensagens</span>
-            <RouterLink to="/admin/painel" class="geral-card-link">Ver painel →</RouterLink>
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Mensagens</span>
+            <span class="geral-row-badge" :class="pendentes > 0 ? 'alerta' : 'ok'">
+              {{ pendentes > 0 ? `${pendentes} pendente${pendentes > 1 ? 's' : ''}` : 'Em dia' }}
+            </span>
           </div>
-          <div class="geral-stats">
-            <div class="geral-stat">
-              <span class="geral-stat-num">{{ totalMensagens }}</span>
-              <span class="geral-stat-label">Total</span>
+          <div class="geral-row-stats">
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ totalMensagens }}</span>
+              <span class="geral-mini-label">Total</span>
             </div>
-            <div class="geral-stat">
-              <span class="geral-stat-num" style="color:var(--roxo);">{{ pendentes }}</span>
-              <span class="geral-stat-label">Pendentes</span>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num" style="color:var(--roxo);">{{ pendentes }}</span>
+              <span class="geral-mini-label">Pendentes</span>
             </div>
-            <div class="geral-stat">
-              <span class="geral-stat-num" style="color:var(--verde);">{{ atendidas }}</span>
-              <span class="geral-stat-label">Atendidas</span>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num" style="color:var(--verde);">{{ atendidas }}</span>
+              <span class="geral-mini-label">Atendidas</span>
             </div>
           </div>
-          <div v-if="pendentes > 0" class="geral-alerta">
-            {{ pendentes }} mensagem{{ pendentes > 1 ? 's' : '' }} aguardando resposta
-          </div>
-          <div v-else class="geral-ok">Nenhuma mensagem pendente</div>
+          <RouterLink to="/admin/painel" class="geral-row-link">Ver painel →</RouterLink>
         </div>
+
+        <div class="geral-divider" />
 
         <!-- Usuários -->
-        <div class="geral-card">
-          <div class="geral-card-header">
-            <span class="geral-card-title">Usuários</span>
-            <RouterLink to="/admin/usuarios" class="geral-card-link">Gerenciar →</RouterLink>
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Usuários</span>
+            <span class="geral-row-badge" :class="inativos > 0 ? 'alerta' : 'ok'">
+              {{ inativos > 0 ? `${inativos} inativo${inativos > 1 ? 's' : ''}` : 'Todos ativos' }}
+            </span>
           </div>
-          <div class="geral-stats">
-            <div class="geral-stat">
-              <span class="geral-stat-num">{{ totalUsuarios }}</span>
-              <span class="geral-stat-label">Cadastrados</span>
+          <div class="geral-row-stats">
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ totalUsuarios }}</span>
+              <span class="geral-mini-label">Cadastrados</span>
             </div>
-            <div class="geral-stat">
-              <span class="geral-stat-num" style="color:var(--verde);">{{ ativos }}</span>
-              <span class="geral-stat-label">Ativos</span>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num" style="color:var(--verde);">{{ ativos }}</span>
+              <span class="geral-mini-label">Ativos</span>
             </div>
-            <div class="geral-stat">
-              <span class="geral-stat-num" style="color:var(--cinza);">{{ inativos }}</span>
-              <span class="geral-stat-label">Inativos</span>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num" style="color:var(--cinza);">{{ inativos }}</span>
+              <span class="geral-mini-label">Inativos</span>
             </div>
           </div>
-          <div v-if="inativos > 0" class="geral-alerta">
-            {{ inativos }} conta{{ inativos > 1 ? 's' : '' }} desativada{{ inativos > 1 ? 's' : '' }}
-          </div>
-          <div v-else class="geral-ok">Todos os usuários ativos</div>
+          <RouterLink to="/admin/usuarios" class="geral-row-link">Gerenciar →</RouterLink>
         </div>
 
+        <div class="geral-divider" />
+
         <!-- Equipe -->
-        <div class="geral-card">
-          <div class="geral-card-header">
-            <span class="geral-card-title">Equipe</span>
-            <RouterLink to="/admin/equipe" class="geral-card-link">Editar →</RouterLink>
+        <div class="geral-row geral-row--equipe">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Equipe</span>
           </div>
-          <div class="geral-equipe-lista">
-            <div v-for="d in equipe" :key="d.diretoria" class="geral-equipe-item">
-              <span class="geral-equipe-dir">{{ d.diretoria }}</span>
-              <span class="geral-equipe-nome" :class="{ vazio: !d.presidente }">
-                {{ d.presidente || 'Não definido' }}
+          <div class="geral-equipe-grid">
+            <div v-for="d in equipe" :key="d.diretoria" class="geral-equipe-chip">
+              <span class="geral-chip-dir">{{ d.diretoria }}</span>
+              <span class="geral-chip-nome" :class="{ vazio: !d.presidente }">
+                {{ d.presidente || '—' }}
               </span>
             </div>
           </div>
+          <RouterLink to="/admin/equipe" class="geral-row-link">Editar →</RouterLink>
         </div>
 
       </div>
