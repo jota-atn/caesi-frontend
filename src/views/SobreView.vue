@@ -1,15 +1,7 @@
 <script setup>
 import PublicNavbar from '../components/PublicNavbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
-
-const gestao = [
-  { cargo: 'Presidente',          nome: 'FULANO' },
-  { cargo: 'Vice-presidente',     nome: 'SICRANO' },
-  { cargo: 'Secretário',          nome: 'BELTRANO' },
-  { cargo: 'Tesoureiro',          nome: 'ALCRANO' },
-  { cargo: 'Diretor de Eventos',  nome: 'SELCLANO' },
-  { cargo: 'Diretor de TI',       nome: 'GALVANO' },
-]
+import { equipe } from '../stores/equipe.js'
 </script>
 
 <template>
@@ -44,12 +36,14 @@ const gestao = [
           Gestão atual
         </h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;">
-          <div v-for="m in gestao" :key="m.cargo"
+          <div v-for="m in equipe" :key="m.diretoria"
             style="background:var(--branco);border:2px solid var(--creme-escuro);border-radius:2px;padding:14px 16px;">
             <div style="font-size:0.72rem;font-weight:700;color:var(--roxo-escuro);text-transform:uppercase;letter-spacing:0.06em;font-family:'Syne',sans-serif;margin-bottom:4px;">
-              {{ m.cargo }}
+              Diretoria {{ m.diretoria }}
             </div>
-            <div style="font-size:0.95rem;color:var(--preto);font-weight:600;">{{ m.nome }}</div>
+            <div style="font-size:0.95rem;color:var(--preto);font-weight:600;">
+              {{ m.presidente || '—' }}
+            </div>
           </div>
         </div>
       </div>
