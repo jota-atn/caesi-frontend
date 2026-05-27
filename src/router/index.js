@@ -6,6 +6,7 @@ import EstatutoView        from '../views/EstatutoView.vue'
 import ContatoView         from '../views/ContatoView.vue'
 import LoginView           from '../views/LoginView.vue'
 import CadastroView        from '../views/CadastroView.vue'
+import PerfilView          from '../views/PerfilView.vue'
 import MensagensView       from '../views/aluno/MensagensView.vue'
 import NovaMensagemView    from '../views/aluno/NovaMensagemView.vue'
 import MensagemEnviadaView from '../views/aluno/MensagemEnviadaView.vue'
@@ -21,6 +22,7 @@ const routes = [
   { path: '/contato',             component: ContatoView },
   { path: '/login',               component: LoginView },
   { path: '/cadastro',            component: CadastroView },
+  { path: '/perfil',              component: PerfilView,          meta: { auth: true } },
   { path: '/aluno/mensagens',     component: MensagensView,       meta: { auth: true } },
   { path: '/aluno/nova-mensagem', component: NovaMensagemView,    meta: { auth: true } },
   { path: '/aluno/enviada',       component: MensagemEnviadaView, meta: { auth: true } },

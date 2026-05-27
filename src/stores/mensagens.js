@@ -53,3 +53,9 @@ export function updateResposta(id, resposta) {
 export function deleteMensagem(id) {
   persist(load().filter(m => m.id !== id))
 }
+
+export function marcarRespostaVista(id) {
+  const all = load()
+  const m = all.find(m => m.id === id)
+  if (m) { m.respostaVista = true; persist(all) }
+}

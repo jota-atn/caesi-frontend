@@ -49,6 +49,15 @@ export function setUserAtivo(email, ativo) {
   if (u) { u.ativo = ativo; persist(users) }
 }
 
+export function updateUser(emailAtual, updates) {
+  const users = load()
+  const u = users.find(u => u.email === emailAtual)
+  if (!u) return { error: 'Usuário não encontrado.' }
+  Object.assign(u, updates)
+  persist(users)
+  return { user: { ...u } }
+}
+
 export function createAdmin({ nome, email, senha }) {
   const users = load()
   if (users.find(u => u.email === email)) {

@@ -1,10 +1,10 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import Badge from '../../components/Badge.vue'
 import Tag from '../../components/Tag.vue'
-import { mensagens } from '../../stores/mensagens.js'
+import { mensagens, marcarRespostaVista } from '../../stores/mensagens.js'
 import { user } from '../../stores/auth.js'
 
 const route = useRoute()
@@ -14,6 +14,12 @@ const id = Number(route.params.id)
 const mensagem = computed(() => mensagens.value.find(m => m.id === id))
 
 if (!mensagem.value) router.replace('/aluno/mensagens')
+
+onMounted(() => {
+  if (mensagem.value?.resposta && !mensagem.value.respostaVista) {
+    marcarRespostaVista(id)
+  }
+})
 </script>
 
 <template>
