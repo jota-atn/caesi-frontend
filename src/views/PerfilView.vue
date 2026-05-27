@@ -114,7 +114,7 @@ function voltar() {
       <!-- Editar nome -->
       <div class="paper" style="margin-bottom:1.5rem;">
         <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--roxo-escuro);margin-bottom:1.2rem;text-transform:uppercase;letter-spacing:0.05em;">
-          ✏️ Editar nome
+          Editar nome
         </h3>
 
         <div class="field">
@@ -134,7 +134,7 @@ function voltar() {
       <!-- Alterar senha -->
       <div class="paper">
         <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--roxo-escuro);margin-bottom:1.2rem;text-transform:uppercase;letter-spacing:0.05em;">
-          🔒 Alterar senha
+          Alterar senha
         </h3>
 
         <div class="field" style="position:relative;">

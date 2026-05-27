@@ -63,38 +63,38 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown))
           <div class="user-dropdown-avatar">{{ avatar }}</div>
           <div>
             <div class="user-dropdown-name">{{ user?.nome ?? 'Usuário' }}</div>
-            <div class="user-dropdown-role">{{ admin ? '🛡 Administrador' : '🎓 Aluno' }}</div>
+            <div class="user-dropdown-role">{{ admin ? 'Administrador' : 'Aluno' }}</div>
           </div>
         </div>
         <hr class="user-dropdown-divider">
 
         <RouterLink to="/perfil" class="user-dropdown-item">
-          <span>👤</span> Ver perfil
+          Ver perfil
         </RouterLink>
 
         <template v-if="admin">
           <RouterLink to="/admin/painel" class="user-dropdown-item">
-            <span>📋</span> Painel de mensagens
+            Painel de mensagens
             <span v-if="badgeCount > 0" class="dropdown-notif">{{ badgeCount }}</span>
           </RouterLink>
           <RouterLink to="/admin/usuarios" class="user-dropdown-item">
-            <span>👥</span> Gerenciar usuários
+            Gerenciar usuários
           </RouterLink>
         </template>
 
         <template v-else>
           <RouterLink to="/aluno/mensagens" class="user-dropdown-item">
-            <span>📬</span> Minhas mensagens
+            Minhas mensagens
             <span v-if="badgeCount > 0" class="dropdown-notif">{{ badgeCount }}</span>
           </RouterLink>
           <RouterLink to="/aluno/nova-mensagem" class="user-dropdown-item">
-            <span>✏️</span> Nova mensagem
+            Nova mensagem
           </RouterLink>
         </template>
 
         <hr class="user-dropdown-divider">
         <button class="user-dropdown-item user-dropdown-sair" @click.stop="handleLogout">
-          <span>🚪</span> Sair
+          Sair
         </button>
       </div>
     </Transition>
