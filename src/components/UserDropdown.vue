@@ -80,6 +80,9 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown))
           <RouterLink to="/admin/usuarios" class="user-dropdown-item">
             Gerenciar usuários
           </RouterLink>
+          <RouterLink to="/admin/equipe" class="user-dropdown-item">
+            Editar equipe
+          </RouterLink>
         </template>
 
         <template v-else>

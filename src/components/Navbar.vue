@@ -28,6 +28,7 @@ const menuOpen = ref(false)
       <template v-if="admin">
         <RouterLink to="/admin/painel"   class="nav-link">Mensagens</RouterLink>
         <RouterLink to="/admin/usuarios" class="nav-link">Usuários</RouterLink>
+        <RouterLink to="/admin/equipe"   class="nav-link">Equipe</RouterLink>
       </template>
 
       <UserDropdown :admin="admin" />
