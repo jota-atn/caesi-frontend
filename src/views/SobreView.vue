@@ -56,7 +56,8 @@ import { equipe } from '../stores/equipe.js'
           📍 Sala do CAESI — Bloco CP, UFCG, Campina Grande – PB
         </p>
         <p style="font-size:0.92rem;color:var(--preto);line-height:1.7;margin-bottom:0.6rem;">
-          📧 caesi@ccc.ufcg.edu.br
+          📧 <a href="mailto:caesi@ccc.ufcg.edu.br"
+            style="color:var(--roxo-escuro);font-weight:600;text-decoration:none;">caesi@ccc.ufcg.edu.br</a>
         </p>
         <p style="font-size:0.92rem;color:var(--preto);line-height:1.7;">
           📷 <a href="https://instagram.com/caesiufcg" target="_blank" rel="noopener"

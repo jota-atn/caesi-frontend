@@ -16,6 +16,7 @@ import PainelView          from '../views/admin/PainelView.vue'
 import DetalheView         from '../views/admin/DetalheView.vue'
 import UsuariosView        from '../views/admin/UsuariosView.vue'
 import EquipeView          from '../views/admin/EquipeView.vue'
+import NotFoundView        from '../views/NotFoundView.vue'
 
 const routes = [
   { path: '/',                       component: HomeView },
@@ -25,15 +26,17 @@ const routes = [
   { path: '/login',                  component: LoginView },
   { path: '/cadastro',               component: CadastroView },
   { path: '/perfil',                 component: PerfilView,          meta: { auth: true } },
-  { path: '/aluno/mensagens',        component: MensagensView,       meta: { auth: true } },
-  { path: '/aluno/nova-mensagem',    component: NovaMensagemView,    meta: { auth: true } },
-  { path: '/aluno/enviada',          component: MensagemEnviadaView, meta: { auth: true } },
-  { path: '/aluno/mensagem/:id',     component: AlunoDetalheView,    meta: { auth: true } },
+  { path: '/aluno/mensagens',        component: MensagensView,       meta: { auth: true, aluno: true } },
+  { path: '/aluno/nova-mensagem',    component: NovaMensagemView,    meta: { auth: true, aluno: true } },
+  { path: '/aluno/enviada',          component: MensagemEnviadaView, meta: { auth: true, aluno: true } },
+  { path: '/aluno/mensagem/:id',     component: AlunoDetalheView,    meta: { auth: true, aluno: true } },
+  { path: '/admin',                  redirect: '/admin/painel' },
   { path: '/admin/painel',           component: GeralView,           meta: { auth: true, admin: true } },
   { path: '/admin/mensagens',        component: PainelView,          meta: { auth: true, admin: true } },
   { path: '/admin/mensagens/:id',    component: DetalheView,         meta: { auth: true, admin: true } },
   { path: '/admin/usuarios',         component: UsuariosView,        meta: { auth: true, admin: true } },
   { path: '/admin/equipe',           component: EquipeView,          meta: { auth: true, admin: true } },
+  { path: '/:pathMatch(.*)*',        component: NotFoundView },
 ]
 
 const router = createRouter({
@@ -47,8 +50,9 @@ router.beforeEach((to) => {
 
   if (to.meta.auth && !user) return '/login'
   if (to.meta.admin && user?.role !== 'admin') return '/aluno/mensagens'
+  if (to.meta.aluno && user?.role === 'admin') return '/admin/painel'
   if ((to.path === '/login' || to.path === '/cadastro') && user) {
-    return '/'
+    return user.role === 'admin' ? '/admin/painel' : '/aluno/mensagens'
   }
 })
 
