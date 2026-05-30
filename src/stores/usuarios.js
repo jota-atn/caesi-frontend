@@ -25,6 +25,13 @@ function persist(data) {
   _list.value = [...data]
 }
 
+export function findUserByIdentificador(identificador) {
+  return _list.value.find(u =>
+    (u.email === identificador || u.matricula === identificador) &&
+    u.ativo !== false
+  ) ?? null
+}
+
 export function findUser(identificador, senha) {
   return _list.value.find(u =>
     (u.email === identificador || u.matricula === identificador) &&

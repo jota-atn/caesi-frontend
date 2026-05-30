@@ -87,9 +87,9 @@ function submit() {
 
         <hr class="divider" style="margin:1.2rem 0;">
         <div style="text-align:center;">
-          <a href="#" style="font-size:0.85rem;color:var(--roxo-escuro);font-weight:600;text-decoration:none;">
+          <RouterLink to="/esqueci-senha" style="font-size:0.85rem;color:var(--roxo-escuro);font-weight:600;text-decoration:none;">
             Esqueci minha senha
-          </a>
+          </RouterLink>
         </div>
       </div>
     </div>

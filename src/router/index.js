@@ -8,6 +8,7 @@ const routes = [
   { path: '/contato',                component: () => import('../views/ContatoView.vue') },
   { path: '/login',                  component: () => import('../views/LoginView.vue') },
   { path: '/cadastro',               component: () => import('../views/CadastroView.vue') },
+  { path: '/esqueci-senha',          component: () => import('../views/EsqueciSenhaView.vue') },
   { path: '/perfil',                 component: () => import('../views/PerfilView.vue'),                    meta: { auth: true } },
   { path: '/aluno/mensagens',        component: () => import('../views/aluno/MensagensView.vue'),           meta: { auth: true, aluno: true } },
   { path: '/aluno/nova-mensagem',    component: () => import('../views/aluno/NovaMensagemView.vue'),        meta: { auth: true, aluno: true } },
@@ -33,7 +34,7 @@ router.beforeEach((to) => {
   if (to.meta.auth && !u) return '/login'
   if (to.meta.admin && u?.role !== 'admin') return '/aluno/mensagens'
   if (to.meta.aluno && u?.role === 'admin') return '/admin/painel'
-  if ((to.path === '/login' || to.path === '/cadastro') && u) {
+  if ((to.path === '/login' || to.path === '/cadastro' || to.path === '/esqueci-senha') && u) {
     return u.role === 'admin' ? '/admin/painel' : '/aluno/mensagens'
   }
 })
