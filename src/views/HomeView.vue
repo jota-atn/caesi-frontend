@@ -167,7 +167,7 @@ const posts = [
             <p class="admin-no-msg-title">Administradores não enviam mensagens pela ouvidoria.</p>
             <p class="admin-no-msg-sub">Use o painel para gerenciar as mensagens recebidas.</p>
           </div>
-          <RouterLink to="/admin/mensagens" class="btn btn-outline btn-sm btn-outline-creme">
+          <RouterLink to="/admin/mensagens" class="btn btn-outline btn-sm">
             Ir ao painel →
           </RouterLink>
         </div>
