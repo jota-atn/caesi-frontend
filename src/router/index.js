@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { user } from '../stores/auth.js'
 
 const routes = [
   { path: '/',                       component: () => import('../views/HomeView.vue') },
@@ -27,14 +28,13 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const stored = localStorage.getItem('caesi_user')
-  const user = stored ? JSON.parse(stored) : null
+  const u = user.value
 
-  if (to.meta.auth && !user) return '/login'
-  if (to.meta.admin && user?.role !== 'admin') return '/aluno/mensagens'
-  if (to.meta.aluno && user?.role === 'admin') return '/admin/painel'
-  if ((to.path === '/login' || to.path === '/cadastro') && user) {
-    return user.role === 'admin' ? '/admin/painel' : '/aluno/mensagens'
+  if (to.meta.auth && !u) return '/login'
+  if (to.meta.admin && u?.role !== 'admin') return '/aluno/mensagens'
+  if (to.meta.aluno && u?.role === 'admin') return '/admin/painel'
+  if ((to.path === '/login' || to.path === '/cadastro') && u) {
+    return u.role === 'admin' ? '/admin/painel' : '/aluno/mensagens'
   }
 })
 
