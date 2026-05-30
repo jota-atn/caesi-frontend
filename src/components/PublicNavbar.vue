@@ -11,7 +11,7 @@ const menuOpen = ref(false)
   <nav class="navbar">
     <RouterLink to="/" class="navbar-brand">
       <div class="logo-circle">
-        <img src="/logo_caesi.png" alt="CAESI" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <img src="/logo_caesi.png" alt="CAESI" class="logo-img">
       </div>
       <span class="navbar-title">CAESI <span>Ouvidoria</span></span>
     </RouterLink>

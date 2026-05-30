@@ -11,11 +11,9 @@ defineProps({
 <template>
   <RouterLink :to="to" class="msg-card" :class="mensagem.status">
     <div class="msg-card-info">
-      <div style="margin-bottom:6px;">
+      <div class="msg-card-tag-row">
         <Tag :categoria="mensagem.categoria" />
-        <span v-if="mensagem.anonimo" style="font-size:0.73rem;color:var(--cinza);font-style:italic;margin-left:6px;">
-          anônimo
-        </span>
+        <span v-if="mensagem.anonimo" class="msg-card-anon">anônimo</span>
       </div>
       <div class="msg-card-title">{{ mensagem.assunto }}</div>
       <div class="msg-card-meta">{{ mensagem.autor }} · {{ mensagem.data }}</div>
