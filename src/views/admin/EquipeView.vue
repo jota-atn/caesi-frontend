@@ -28,7 +28,7 @@ function salvar() {
 
     <Navbar :admin="true" />
 
-    <div class="page-content" style="padding-top:2rem;">
+    <div class="page-content">
       <div class="page-heading">
         <h2>Gestão da <span>Equipe</span></h2>
       </div>

@@ -148,7 +148,7 @@ const barOptions = {
 
     <Navbar :admin="true" />
 
-    <div class="page-content" style="padding-top:2rem;">
+    <div class="page-content">
       <div class="page-heading">
         <h2>Painel de <span>Mensagens</span></h2>
         <button class="btn btn-outline btn-sm" :disabled="mensagens.length === 0" @click="exportarCSV">

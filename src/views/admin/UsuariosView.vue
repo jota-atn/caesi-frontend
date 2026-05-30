@@ -71,7 +71,7 @@ function submitNewAdmin() {
 
     <Navbar :admin="true" />
 
-    <div class="page-content" style="padding-top:2rem;">
+    <div class="page-content">
       <div class="page-heading">
         <h2>Gestão de <span>Usuários</span></h2>
         <button class="btn btn-amarelo btn-sm" @click="showNewAdmin ? cancelNewAdmin() : (showNewAdmin = true)">

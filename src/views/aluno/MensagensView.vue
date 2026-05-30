@@ -30,7 +30,7 @@ const totalAtendida = computed(() => minhasMensagens.value.filter(m => m.status 
 
     <Navbar />
 
-    <div class="page-content" style="padding-top:2rem;">
+    <div class="page-content">
       <div class="page-heading">
         <h2>Minhas <span>Mensagens</span></h2>
         <RouterLink to="/aluno/nova-mensagem" class="btn btn-amarelo btn-sm">+ Nova mensagem</RouterLink>

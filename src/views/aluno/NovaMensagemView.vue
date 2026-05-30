@@ -44,7 +44,7 @@ function submit() {
 
     <Navbar />
 
-    <div class="page-content" style="padding-top:2rem;">
+    <div class="page-content">
       <RouterLink to="/aluno/mensagens" class="back-link">← Minhas mensagens</RouterLink>
 
       <div class="page-heading">
