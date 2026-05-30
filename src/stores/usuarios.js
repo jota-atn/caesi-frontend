@@ -49,6 +49,9 @@ export function setUserAtivo(email, ativo) {
 export function updateUser(emailAtual, updates) {
   const u = _list.value.find(u => u.email === emailAtual)
   if (!u) return { error: 'Usuário não encontrado.' }
+  if (u.email === 'admin' && updates.nome !== undefined) {
+    return { error: 'O nome do administrador original não pode ser alterado.' }
+  }
   const updated = { ...u, ...updates }
   persist(_list.value.map(u => u.email === emailAtual ? updated : u))
   return { user: updated }

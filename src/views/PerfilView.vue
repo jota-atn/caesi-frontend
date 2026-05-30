@@ -20,6 +20,7 @@ const confirmarVis   = ref(false)
 const senhaMsg      = ref({ tipo: '', texto: '' })
 
 const avatar = computed(() => (user.value?.nome ?? 'U').charAt(0).toUpperCase())
+const isOriginalAdmin = computed(() => user.value?.email === 'admin')
 
 function salvarPerfil() {
   perfilMsg.value = { tipo: '', texto: '' }
@@ -111,18 +112,26 @@ function voltar() {
       <div class="paper paper-mb-lg">
         <h3 class="paper-subtitle">Editar nome</h3>
 
-        <div class="field">
-          <label for="nome">Nome completo</label>
-          <input id="nome" v-model="nome" type="text" placeholder="Seu nome">
-        </div>
+        <template v-if="isOriginalAdmin">
+          <p style="font-size:0.88rem;color:var(--cinza);line-height:1.6;">
+            O nome do administrador original não pode ser alterado.
+          </p>
+        </template>
 
-        <div v-if="perfilMsg.texto" class="feedback-msg" :class="perfilMsg.tipo">
-          {{ perfilMsg.texto }}
-        </div>
+        <template v-else>
+          <div class="field">
+            <label for="nome">Nome completo</label>
+            <input id="nome" v-model="nome" type="text" placeholder="Seu nome">
+          </div>
 
-        <button class="btn btn-primary btn-sm" @click="salvarPerfil" style="margin-top:0.5rem;">
-          Salvar nome →
-        </button>
+          <div v-if="perfilMsg.texto" class="feedback-msg" :class="perfilMsg.tipo">
+            {{ perfilMsg.texto }}
+          </div>
+
+          <button class="btn btn-primary btn-sm" @click="salvarPerfil" style="margin-top:0.5rem;">
+            Salvar nome →
+          </button>
+        </template>
       </div>
 
       <!-- Alterar senha -->
