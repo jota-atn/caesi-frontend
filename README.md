@@ -3,6 +3,16 @@
 Frontend da ouvidoria do CAESI — Centro Acadêmico de Ciência da Computação da UFCG.
 Desenvolvido para a disciplina de Engenharia de Software.
 
+## Especificação do projeto
+
+Documento completo: [Projeto Engenharia de Software](https://docs.google.com/document/d/1GczG7c4P32HvuVDDlvWGSI0YJzxiSTNTUNarAkjAnr0/edit?tab=t.0)
+
+O projeto é composto por duas frentes:
+
+**Sistema novo** — esta ouvidoria. Cobre as etapas de planejamento (tempo, custo, riscos), levantamento de requisitos funcionais e não-funcionais, prototipação, arquitetura, especificação formal (Alloy), implementação e testes.
+
+**Sistema real** — análise do [JBake](https://github.com/jbake-org/jbake), gerador de sites estáticos em Java (>10 KLOC). Cobre coleta de métricas, identificação de bad smells (SpotBugs, PMD, Checkstyle), geração de testes automatizados (EvoSuite/Randoop) e refatoração com comparação antes/depois.
+
 ## Stack
 
 - **Vue 3** com `<script setup>` (Composition API)
