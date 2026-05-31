@@ -47,6 +47,12 @@ function formatValor(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
 }
 
+function formatValorCompacto(valor) {
+  if (valor >= 1_000_000) return `R$ ${(valor / 1_000_000).toFixed(1).replace('.', ',')}M`
+  if (valor >= 10_000)    return `R$ ${(valor / 1_000).toFixed(1).replace('.', ',')}k`
+  return formatValor(valor)
+}
+
 function formatData(data) {
   if (!data) return ''
   const [ano, mes, dia] = data.split('-')
@@ -174,7 +180,7 @@ function excluirFormulario() {
         </div>
         <div class="stat-card stat-card--verde">
           <div class="stat-number stat-number--receita" v-if="receitaConfirmada !== null">
-            {{ formatValor(receitaConfirmada) }}
+            {{ formatValorCompacto(receitaConfirmada) }}
           </div>
           <div class="stat-number" v-else style="font-size:1.3rem;color:var(--cinza);">Gratuito</div>
           <div class="stat-label">Receita confirmada</div>

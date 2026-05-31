@@ -18,6 +18,12 @@ const formsAbertos    = computed(() => formularios.value.filter(f => f.status ==
 const formsEncerrados = computed(() => formularios.value.filter(f => f.status === 'encerrado').length)
 const compPendentes   = computed(() => inscricoes.value.filter(i => i.comprovante?.status === 'pendente').length)
 
+function formatValorCompacto(valor) {
+  if (valor >= 1_000_000) return `R$ ${(valor / 1_000_000).toFixed(1).replace('.', ',')}M`
+  if (valor >= 10_000)    return `R$ ${(valor / 1_000).toFixed(1).replace('.', ',')}k`
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
+}
+
 const receitaTotal = computed(() => {
   return formularios.value
     .filter(f => f.pago)
@@ -119,8 +125,8 @@ const receitaTotal = computed(() => {
               <span class="geral-mini-label">Encerrados</span>
             </div>
             <div class="geral-mini-stat">
-              <span class="geral-mini-num" style="color:var(--roxo);font-size:1.2rem;">
-                {{ receitaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}
+              <span class="geral-mini-num" style="color:var(--verde);font-size:1.1rem;line-height:1.2;">
+                {{ formatValorCompacto(receitaTotal) }}
               </span>
               <span class="geral-mini-label">Receita confirmada</span>
             </div>
