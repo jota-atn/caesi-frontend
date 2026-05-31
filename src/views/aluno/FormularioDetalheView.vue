@@ -62,9 +62,18 @@ function formatValor(valor) {
 }
 
 // ── Estado do formulário de resposta ────────────────────
+function valorInicial(campo) {
+  if (campo.tipo === 'checkbox') return false
+  const label = campo.label.toLowerCase()
+  if (label.includes('nome'))                              return user.value?.nome      ?? ''
+  if (label.includes('matrícula') || label.includes('matricula')) return user.value?.matricula ?? ''
+  if (label.includes('e-mail')    || label.includes('email'))     return user.value?.email     ?? ''
+  return ''
+}
+
 const respostas = ref(
   Object.fromEntries(
-    (formulario.value?.campos ?? []).map(c => [c.id, c.tipo === 'checkbox' ? false : ''])
+    (formulario.value?.campos ?? []).map(c => [c.id, valorInicial(c)])
   )
 )
 const quantidade     = ref(1)

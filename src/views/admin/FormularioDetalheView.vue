@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados } from '../../stores/formularios.js'
+import { usuarios } from '../../stores/usuarios.js'
 
 const route  = useRoute()
 const router = useRouter()
@@ -107,6 +108,10 @@ function exportarCSV() {
   a.download = `inscricoes-${formulario.value.titulo.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+function dadosInscrito(inscricao) {
+  return usuarios.value.find(u => u.email === inscricao.userEmail) ?? null
 }
 
 function avancarStatus(inscricaoId, statusAtual) {
@@ -360,9 +365,10 @@ function excluirFormulario() {
           class="inscricao-row"
         >
           <div class="inscricao-info">
-            <div class="inscricao-nome">{{ inscricao.respostas.nome ?? '—' }}</div>
+            <div class="inscricao-nome">{{ dadosInscrito(inscricao)?.nome ?? inscricao.respostas?.nome ?? inscricao.userEmail }}</div>
             <div class="inscricao-meta">
               {{ inscricao.userEmail }}
+              <template v-if="dadosInscrito(inscricao)?.matricula"> · {{ dadosInscrito(inscricao).matricula }}</template>
               · Inscrito em {{ formatData(inscricao.criadoEm) }}
             </div>
           </div>
