@@ -34,9 +34,9 @@ function ariaCurrent(path) {
 
     <div class="navbar-actions" id="navbar-menu" :class="{ open: menuOpen }">
       <template v-if="admin">
-        <RouterLink to="/sobre"    class="nav-link nav-link-sec" :aria-current="ariaCurrent('/sobre')">Sobre</RouterLink>
-        <RouterLink to="/estatuto" class="nav-link nav-link-sec" :aria-current="ariaCurrent('/estatuto')">Estatuto</RouterLink>
-        <RouterLink to="/contato"  class="nav-link nav-link-sec" :aria-current="ariaCurrent('/contato')">Contato</RouterLink>
+        <RouterLink to="/sobre"    class="nav-link" :aria-current="ariaCurrent('/sobre')">Sobre</RouterLink>
+        <RouterLink to="/estatuto" class="nav-link" :aria-current="ariaCurrent('/estatuto')">Estatuto</RouterLink>
+        <RouterLink to="/contato"  class="nav-link" :aria-current="ariaCurrent('/contato')">Contato</RouterLink>
         <span class="nav-separator" />
         <RouterLink to="/admin/painel"    class="nav-link" :aria-current="ariaCurrent('/admin/painel')">Painel</RouterLink>
         <RouterLink to="/admin/mensagens" class="nav-link" :aria-current="ariaCurrent('/admin/mensagens')">Mensagens</RouterLink>
@@ -46,9 +46,9 @@ function ariaCurrent(path) {
       </template>
 
       <template v-else>
-        <RouterLink to="/sobre"    class="nav-link nav-link-sec" :aria-current="ariaCurrent('/sobre')">Sobre</RouterLink>
-        <RouterLink to="/estatuto" class="nav-link nav-link-sec" :aria-current="ariaCurrent('/estatuto')">Estatuto</RouterLink>
-        <RouterLink to="/contato"  class="nav-link nav-link-sec" :aria-current="ariaCurrent('/contato')">Contato</RouterLink>
+        <RouterLink to="/sobre"    class="nav-link" :aria-current="ariaCurrent('/sobre')">Sobre</RouterLink>
+        <RouterLink to="/estatuto" class="nav-link" :aria-current="ariaCurrent('/estatuto')">Estatuto</RouterLink>
+        <RouterLink to="/contato"  class="nav-link" :aria-current="ariaCurrent('/contato')">Contato</RouterLink>
         <span class="nav-separator" />
         <RouterLink to="/aluno/mensagens"   class="nav-link" :aria-current="ariaCurrent('/aluno/mensagens')">Mensagens</RouterLink>
         <RouterLink to="/aluno/formularios" class="nav-link" :aria-current="ariaCurrent('/aluno/formularios')">Formulários</RouterLink>

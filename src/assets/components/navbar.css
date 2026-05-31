@@ -81,9 +81,6 @@
   border-bottom-color: var(--amarelo);
 }
 
-.nav-link-sec { opacity: 0.5; font-weight: 500; }
-.nav-link-sec:hover { opacity: 0.85; }
-
 .nav-separator {
   width: 1px;
   height: 20px;
