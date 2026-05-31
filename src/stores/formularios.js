@@ -70,6 +70,12 @@ export function addInscricao(formularioId, userEmail, respostas, comprovante = n
   if (formulario.prazoInscricao && new Date(formulario.prazoInscricao + 'T23:59:59') < new Date()) {
     return { error: 'O prazo de inscrição deste formulário já encerrou.' }
   }
+  if (formulario.limiteVagas != null) {
+    const inscritos = _inscricoes.value.filter(i => i.formularioId === formularioId).length
+    if (inscritos >= formulario.limiteVagas) {
+      return { error: 'As vagas para este formulário já foram preenchidas.' }
+    }
+  }
   if (_inscricoes.value.find(i => i.formularioId === formularioId && i.userEmail === userEmail)) {
     return { error: 'Você já se inscreveu neste formulário.' }
   }
