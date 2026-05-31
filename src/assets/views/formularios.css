@@ -127,6 +127,82 @@
 /* ── Receita no detalhe ─────────────────────────────────── */
 .stat-number--receita { color: var(--verde); }
 
+/* ── Campos dinâmicos no formulário de criação ──────────── */
+.campos-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.campo-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.campo-row-select,
+.campo-row-input {
+  padding: 8px 12px;
+  background: var(--branco);
+  border: 2px solid var(--creme-escuro);
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  color: var(--preto);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.campo-row-select:focus,
+.campo-row-input:focus { border-color: var(--roxo); }
+
+.campo-row-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235040A0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  flex-shrink: 0;
+  width: 140px;
+  cursor: pointer;
+}
+
+.campo-row-input { flex: 1; min-width: 120px; }
+
+.campo-row-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: var(--preto);
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+}
+.campo-row-check input[type="checkbox"] {
+  accent-color: var(--roxo-escuro);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.campo-opcoes-input {
+  width: 100%;
+  padding: 7px 12px;
+  background: rgba(255,255,255,0.7);
+  border: 1.5px dashed var(--creme-escuro);
+  border-radius: 2px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem;
+  color: var(--preto);
+  outline: none;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+.campo-opcoes-input:focus { border-color: var(--roxo); border-style: solid; }
+
 @media (max-width: 600px) {
   .form-card { flex-direction: column; gap: 10px; }
   .form-card-right { flex-direction: row; }
