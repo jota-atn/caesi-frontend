@@ -208,6 +208,48 @@
 }
 .campo-opcoes-input:focus { border-color: var(--roxo); border-style: solid; }
 
+/* ── Upload de comprovante (aluno) ──────────────────────── */
+.comprovante-area {
+  border: 2px dashed var(--creme-escuro);
+  border-radius: 2px;
+  padding: 1.4rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: rgba(255,255,255,0.5);
+  margin-top: 0.5rem;
+  user-select: none;
+}
+.comprovante-area:hover    { border-color: var(--roxo); background: rgba(128,112,192,0.05); }
+.comprovante-area.has-file { border-color: var(--verde); background: rgba(78,170,119,0.08); }
+.comprovante-area p        { font-size: 0.87rem; color: var(--cinza); margin: 0; }
+.comprovante-filename {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--verde);
+  margin-bottom: 4px;
+}
+
+/* ── Total estimado (venda) ─────────────────────────────── */
+.total-estimado {
+  background: rgba(80,64,160,0.07);
+  border: 2px dashed rgba(80,64,160,0.3);
+  border-radius: 2px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.total-estimado-label { font-size: 0.84rem; color: var(--cinza); }
+.total-estimado-valor {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--roxo-escuro);
+}
+
 @media (max-width: 600px) {
   .form-card { flex-direction: column; gap: 10px; }
   .form-card-right { flex-direction: row; }
