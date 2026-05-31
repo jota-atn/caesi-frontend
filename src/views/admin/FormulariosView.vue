@@ -56,11 +56,19 @@ function cancelNovoForm() {
 }
 
 function addCampo() {
-  novoForm.value.campos.push({ _id: Date.now(), label: '', tipo: 'texto', opcoesStr: '', obrigatorio: false })
+  novoForm.value.campos.push({ _id: Date.now(), label: '', tipo: 'texto', opcoesStr: '', obrigatorio: false, isQuantidade: false })
 }
 
 function removeCampo(index) {
   novoForm.value.campos.splice(index, 1)
+}
+
+function onTipoCampoChange(campo) {
+  if (campo.tipo !== 'numero') campo.isQuantidade = false
+}
+
+function setQuantidadeCampo(index, value) {
+  novoForm.value.campos.forEach((c, i) => { c.isQuantidade = i === index ? value : false })
 }
 
 function submitNovoForm() {
@@ -78,6 +86,7 @@ function submitNovoForm() {
       label: c.label.trim(),
       tipo: c.tipo,
       obrigatorio: c.obrigatorio,
+      ...(c.isQuantidade ? { isQuantidade: true } : {}),
       ...(c.tipo === 'select' ? { opcoes: c.opcoesStr.split(',').map(s => s.trim()).filter(Boolean) } : {}),
     }))
 
@@ -199,7 +208,7 @@ function submitNovoForm() {
 
           <div v-for="(campo, index) in novoForm.campos" :key="campo._id">
             <div class="campo-row">
-              <select v-model="campo.tipo" class="campo-row-select">
+              <select v-model="campo.tipo" class="campo-row-select" @change="onTipoCampoChange(campo)">
                 <option value="texto">Texto</option>
                 <option value="numero">Número</option>
                 <option value="select">Seleção</option>
@@ -214,6 +223,14 @@ function submitNovoForm() {
               <label class="campo-row-check">
                 <input v-model="campo.obrigatorio" type="checkbox">
                 Obrigatório
+              </label>
+              <label v-if="novoForm.pago && campo.tipo === 'numero'" class="campo-row-check" style="color:var(--roxo-escuro);font-weight:700;">
+                <input
+                  type="checkbox"
+                  :checked="campo.isQuantidade"
+                  @change="setQuantidadeCampo(index, $event.target.checked)"
+                >
+                Quantidade
               </label>
               <button type="button" class="btn btn-outline btn-sm" @click="removeCampo(index)">✕</button>
             </div>
