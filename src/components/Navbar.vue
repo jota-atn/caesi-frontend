@@ -45,6 +45,12 @@ function ariaCurrent(path) {
         <RouterLink to="/admin/formularios" class="nav-link" :aria-current="ariaCurrent('/admin/formularios')">Formulários</RouterLink>
       </template>
 
+      <template v-else>
+        <RouterLink to="/aluno/mensagens"   class="nav-link" :aria-current="ariaCurrent('/aluno/mensagens')">Mensagens</RouterLink>
+        <RouterLink to="/aluno/formularios" class="nav-link" :aria-current="ariaCurrent('/aluno/formularios')">Formulários</RouterLink>
+        <RouterLink to="/aluno/inscricoes"  class="nav-link" :aria-current="ariaCurrent('/aluno/inscricoes')">Inscrições</RouterLink>
+      </template>
+
       <NotifBell v-if="!admin" />
       <UserDropdown :admin="admin" />
     </div>
