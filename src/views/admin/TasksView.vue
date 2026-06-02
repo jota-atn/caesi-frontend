@@ -399,6 +399,9 @@ useEscapeKey(() => {
               v-for="a in adminsDisponiveis" :key="a.email"
               class="alocado-check"
               :class="{ 'alocado-check--ativo': form.alocados.includes(a.email) }"
+              tabindex="0"
+              @keydown.enter.prevent="toggleAlocado(a.email)"
+              @keydown.space.prevent="toggleAlocado(a.email)"
             >
               <input type="checkbox" :checked="form.alocados.includes(a.email)" @change="toggleAlocado(a.email)" />
               <span>{{ a.nome }}</span>
@@ -650,7 +653,7 @@ useEscapeKey(() => {
 
 /* ── Modal form ──────────────────────────────────────────── */
 .modal-box--lg { max-width: 620px; padding-bottom: 2.5rem; }
-.modal-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.modal-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .modal-row .field { margin-bottom: 0; }
 .obrig { color: var(--vermelho); }
 
@@ -673,7 +676,17 @@ useEscapeKey(() => {
   transition: border-color 0.12s;
 }
 .alocado-check--ativo { border-color: var(--roxo-escuro); background: rgba(80,64,160,0.06); }
-.alocado-check input { width: 14px; height: 14px; accent-color: var(--roxo-escuro); }
+.alocado-check input[type="checkbox"] {
+  appearance: auto;
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  accent-color: var(--roxo-escuro);
+  flex-shrink: 0;
+}
 
 /* ── Botões extras ───────────────────────────────────────── */
 .btn-verde          { background: var(--verde); color: #fff; border-color: var(--verde); }
