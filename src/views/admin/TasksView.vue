@@ -394,18 +394,17 @@ useEscapeKey(() => {
 
         <div class="field">
           <label>Admins alocados</label>
-          <div v-if="adminsDisponiveis.length" class="alocados-checkboxes">
-            <label
+          <div v-if="adminsDisponiveis.length" class="alocados-chips">
+            <button
               v-for="a in adminsDisponiveis" :key="a.email"
-              class="alocado-check"
-              :class="{ 'alocado-check--ativo': form.alocados.includes(a.email) }"
-              tabindex="0"
-              @keydown.enter.prevent="toggleAlocado(a.email)"
-              @keydown.space.prevent="toggleAlocado(a.email)"
+              type="button"
+              class="alocado-chip"
+              :class="{ 'alocado-chip--ativo': form.alocados.includes(a.email) }"
+              @click="toggleAlocado(a.email)"
             >
-              <input type="checkbox" :checked="form.alocados.includes(a.email)" @change="toggleAlocado(a.email)" />
-              <span>{{ a.nome }}</span>
-            </label>
+              <span class="alocado-chip-avatar">{{ iniciaisAdmin(a.email) }}</span>
+              <span class="alocado-chip-nome">{{ a.nome }}</span>
+            </button>
           </div>
           <p v-else class="field-hint">Nenhum administrador cadastrado além do Admin CAESI.</p>
         </div>
@@ -657,35 +656,58 @@ useEscapeKey(() => {
 .modal-row .field { margin-bottom: 0; }
 .obrig { color: var(--vermelho); }
 
-.alocados-checkboxes {
+.alocados-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
 }
-.alocado-check {
+.alocado-chip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.88rem;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
   background: var(--branco);
-  border: 1.5px solid var(--creme-escuro);
-  padding: 5px 10px;
-  border-radius: 4px;
+  border: 2px solid var(--creme-escuro);
+  border-radius: 999px;
   cursor: pointer;
-  transition: border-color 0.12s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  font-family: 'Inter', sans-serif;
 }
-.alocado-check--ativo { border-color: var(--roxo-escuro); background: rgba(80,64,160,0.06); }
-.alocado-check input[type="checkbox"] {
-  appearance: auto;
-  width: 14px;
-  height: 14px;
-  min-width: 14px;
-  padding: 0;
-  border: none;
-  box-shadow: none;
-  accent-color: var(--roxo-escuro);
+.alocado-chip:hover {
+  border-color: var(--roxo);
+}
+.alocado-chip--ativo {
+  background: var(--roxo-escuro);
+  border-color: var(--roxo-escuro);
+}
+.alocado-chip-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--creme-escuro);
+  color: var(--roxo-escuro);
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.alocado-chip--ativo .alocado-chip-avatar {
+  background: rgba(255,255,255,0.2);
+  color: var(--creme);
+}
+.alocado-chip-nome {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--preto);
+  transition: color 0.15s;
+}
+.alocado-chip--ativo .alocado-chip-nome {
+  color: var(--creme);
 }
 
 /* ── Botões extras ───────────────────────────────────────── */
