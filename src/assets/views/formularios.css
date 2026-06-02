@@ -250,6 +250,72 @@
   color: var(--roxo-escuro);
 }
 
+/* ── Solicitação de cancelamento ────────────────────────── */
+.cancelamento-badge {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-block;
+  white-space: nowrap;
+  background: rgba(210,80,40,0.12);
+  color: #8B2510;
+  border: 1px solid rgba(210,80,40,0.3);
+}
+
+/* ── Modal ──────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,12,40,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.modal-box {
+  background: var(--creme);
+  border-radius: 2px;
+  padding: 2rem;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 6px 6px 0 var(--roxo-escuro);
+  border: 2px solid var(--preto);
+}
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--preto);
+  margin-bottom: 0.5rem;
+}
+.modal-body {
+  font-size: 0.88rem;
+  color: var(--cinza);
+  line-height: 1.55;
+  margin-bottom: 1.2rem;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.modal-contato {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(80,64,160,0.07);
+  border-radius: 2px;
+  border-left: 3px solid var(--roxo);
+}
+.modal-contato-label { font-size: 0.75rem; color: var(--cinza); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+.modal-contato-nome  { font-size: 0.9rem; font-weight: 700; color: var(--preto); }
+.modal-contato-email { font-size: 0.82rem; color: var(--cinza); }
+
 @media (max-width: 600px) {
   .form-card { flex-direction: column; gap: 6px; }
   .form-card-right { display: none; }

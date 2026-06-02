@@ -170,3 +170,72 @@ export function updateStatusComprovante(inscricaoId, status) {
     })
   }
 }
+
+export function cancelarInscricaoDireta(inscricaoId) {
+  persistInscricoes(_inscricoes.value.filter(i => i.id !== inscricaoId))
+  return { success: true }
+}
+
+export function solicitarCancelamento(inscricaoId, motivo = '') {
+  const inscricao = _inscricoes.value.find(i => i.id === inscricaoId)
+  if (!inscricao) return { error: 'Inscrição não encontrada.' }
+  const f = _forms.value.find(f => f.id === inscricao.formularioId)
+  const solicitadoEm = new Date().toISOString()
+
+  persistInscricoes(_inscricoes.value.map(i =>
+    i.id === inscricaoId
+      ? { ...i, cancelamento: { solicitado: true, motivo, solicitadoEm } }
+      : i
+  ))
+
+  usuarios.value
+    .filter(u => u.role === 'admin')
+    .forEach(u => addNotificacao({
+      userEmail: u.email,
+      tipo: 'cancelamento-solicitado',
+      titulo: 'Solicitação de cancelamento',
+      subtitulo: `${inscricao.userEmail} — "${f?.titulo ?? ''}"`,
+      link: `/admin/formularios/${inscricao.formularioId}`,
+      dedupeKey: `cancelamento-solicitado-${inscricaoId}-${solicitadoEm}`,
+    }))
+
+  return { success: true }
+}
+
+export function aprovarCancelamento(inscricaoId, mensagem = '') {
+  const inscricao = _inscricoes.value.find(i => i.id === inscricaoId)
+  if (!inscricao) return { error: 'Inscrição não encontrada.' }
+  const f = _forms.value.find(f => f.id === inscricao.formularioId)
+
+  persistInscricoes(_inscricoes.value.filter(i => i.id !== inscricaoId))
+
+  addNotificacao({
+    userEmail: inscricao.userEmail,
+    tipo: 'cancelamento-aprovado',
+    titulo: 'Cancelamento aprovado',
+    subtitulo: mensagem || `Sua inscrição em "${f?.titulo ?? ''}" foi cancelada.`,
+    link: '/aluno/inscricoes',
+  })
+
+  return { success: true }
+}
+
+export function recusarCancelamento(inscricaoId, mensagem = '') {
+  const inscricao = _inscricoes.value.find(i => i.id === inscricaoId)
+  if (!inscricao) return { error: 'Inscrição não encontrada.' }
+  const f = _forms.value.find(f => f.id === inscricao.formularioId)
+
+  persistInscricoes(_inscricoes.value.map(i =>
+    i.id === inscricaoId ? { ...i, cancelamento: null } : i
+  ))
+
+  addNotificacao({
+    userEmail: inscricao.userEmail,
+    tipo: 'cancelamento-recusado',
+    titulo: 'Solicitação recusada',
+    subtitulo: mensagem || `Sua solicitação para "${f?.titulo ?? ''}" foi analisada.`,
+    link: '/aluno/inscricoes',
+  })
+
+  return { success: true }
+}

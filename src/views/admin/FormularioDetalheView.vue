@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
-import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados } from '../../stores/formularios.js'
+import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados, aprovarCancelamento, recusarCancelamento } from '../../stores/formularios.js'
 import { usuarios } from '../../stores/usuarios.js'
 
 const route  = useRoute()
@@ -19,6 +19,10 @@ const inscricoesDaForm = computed(() =>
 
 const comprovantesPendentes = computed(() =>
   inscricoesDaForm.value.filter(i => i.comprovante?.status === 'pendente').length
+)
+
+const cancelamentosPendentes = computed(() =>
+  inscricoesDaForm.value.filter(i => i.cancelamento?.solicitado).length
 )
 
 function _qtd(i) {
@@ -159,6 +163,27 @@ function salvarEdicao() {
   editando.value = false
   editSalvo.value = true
   setTimeout(() => { editSalvo.value = false }, 2500)
+}
+
+// ── Cancelamento de inscrição (admin) ────────────────────
+const modalCancelamento = ref(null) // { inscricao, acao: 'aprovar'|'recusar' }
+const msgCancelamento = ref('')
+
+function abrirModalCancelamento(inscricao, acao) {
+  msgCancelamento.value = ''
+  modalCancelamento.value = { inscricao, acao }
+}
+
+function confirmarModalCancelamento() {
+  if (!modalCancelamento.value) return
+  const { inscricao, acao } = modalCancelamento.value
+  if (acao === 'aprovar') {
+    aprovarCancelamento(inscricao.id, msgCancelamento.value)
+  } else {
+    recusarCancelamento(inscricao.id, msgCancelamento.value)
+  }
+  modalCancelamento.value = null
+  msgCancelamento.value = ''
 }
 
 // ── Encerrar / reabrir ───────────────────────────────────
@@ -347,7 +372,12 @@ function excluirFormulario() {
       <!-- Lista de inscrições -->
       <div class="paper">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <p class="label-sm">Inscrições ({{ inscricoesDaForm.length }})</p>
+          <p class="label-sm" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            Inscrições ({{ inscricoesDaForm.length }})
+            <span v-if="cancelamentosPendentes > 0" class="cancelamento-badge">
+              {{ cancelamentosPendentes }} cancelamento{{ cancelamentosPendentes !== 1 ? 's' : '' }} pendente{{ cancelamentosPendentes !== 1 ? 's' : '' }}
+            </span>
+          </p>
           <button
             class="btn btn-outline btn-sm"
             :disabled="inscricoesDaForm.length === 0"
@@ -371,6 +401,12 @@ function excluirFormulario() {
               <template v-if="dadosInscrito(inscricao)?.matricula"> · {{ dadosInscrito(inscricao).matricula }}</template>
               · Inscrito em {{ formatData(inscricao.criadoEm) }}
             </div>
+            <div v-if="inscricao.cancelamento?.solicitado" style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="cancelamento-badge">Cancelamento solicitado</span>
+              <span v-if="inscricao.cancelamento.motivo" style="font-size:0.79rem;color:var(--cinza);font-style:italic;">
+                "{{ inscricao.cancelamento.motivo }}"
+              </span>
+            </div>
           </div>
 
           <div class="inscricao-actions">
@@ -384,15 +420,73 @@ function excluirFormulario() {
                 :title="inscricao.comprovante.nome"
               >{{ inscricao.comprovante.nome }}</span>
               <button
-                v-if="labelAvancar(inscricao.comprovante.status)"
+                v-if="labelAvancar(inscricao.comprovante.status) && !inscricao.cancelamento?.solicitado"
                 class="btn btn-outline btn-sm"
                 @click="avancarStatus(inscricao.id, inscricao.comprovante.status)"
               >{{ labelAvancar(inscricao.comprovante.status) }}</button>
             </template>
             <span v-else style="font-size:0.82rem;color:var(--cinza);">Sem comprovante</span>
+            <template v-if="inscricao.cancelamento?.solicitado">
+              <button class="btn btn-outline btn-sm" @click="abrirModalCancelamento(inscricao, 'recusar')">Recusar</button>
+              <button class="btn btn-danger btn-sm" @click="abrirModalCancelamento(inscricao, 'aprovar')">Aprovar</button>
+            </template>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal: cancelamento de inscrição -->
+  <Teleport to="body">
+    <div v-if="modalCancelamento" class="modal-overlay" @click.self="modalCancelamento = null">
+      <div class="modal-box">
+        <div class="modal-title">
+          {{ modalCancelamento.acao === 'aprovar' ? 'Aprovar cancelamento' : 'Recusar solicitação' }}
+        </div>
+        <div class="modal-body">
+          <p v-if="modalCancelamento.acao === 'aprovar'">
+            Confirme o cancelamento e informe ao aluno como será feito o reembolso. A inscrição será removida.
+          </p>
+          <p v-else>
+            A solicitação será recusada e o aluno será notificado. A inscrição continua ativa.
+          </p>
+          <div class="modal-contato">
+            <div class="modal-contato-label">Contato do aluno</div>
+            <div class="modal-contato-nome">{{ dadosInscrito(modalCancelamento.inscricao)?.nome ?? modalCancelamento.inscricao.userEmail }}</div>
+            <div class="modal-contato-email">{{ modalCancelamento.inscricao.userEmail }}</div>
+          </div>
+          <div v-if="modalCancelamento.inscricao.cancelamento?.motivo" style="margin-top:10px;font-size:0.82rem;color:var(--cinza);">
+            Motivo: <em>"{{ modalCancelamento.inscricao.cancelamento.motivo }}"</em>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:1.2rem;">
+          <label style="font-size:0.84rem;font-weight:600;margin-bottom:4px;display:block;">
+            Mensagem para o aluno
+            <span v-if="modalCancelamento.acao === 'recusar'" style="font-weight:400;color:var(--cinza);"> (opcional)</span>
+            <span v-else style="color:var(--vermelho);"> *</span>
+          </label>
+          <textarea
+            v-model="msgCancelamento"
+            rows="3"
+            :placeholder="modalCancelamento.acao === 'aprovar'
+              ? 'Ex: Faremos o reembolso via PIX em até 5 dias úteis. Entre em contato pelo e-mail do CAESI informando seu PIX.'
+              : 'Ex: O pagamento já foi processado e o reembolso não é possível neste momento.'"
+            style="width:100%;min-height:76px;"
+          />
+          <p v-if="modalCancelamento.acao === 'aprovar'" style="font-size:0.77rem;color:var(--cinza);margin-top:4px;">
+            Esta mensagem chegará como notificação ao aluno. Use-a para combinar o reembolso.
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-outline btn-sm" @click="modalCancelamento = null">Cancelar</button>
+          <button
+            class="btn btn-sm"
+            :class="modalCancelamento.acao === 'aprovar' ? 'btn-danger' : 'btn-primary'"
+            :disabled="modalCancelamento.acao === 'aprovar' && !msgCancelamento.trim()"
+            @click="confirmarModalCancelamento"
+          >{{ modalCancelamento.acao === 'aprovar' ? 'Confirmar aprovação' : 'Confirmar recusa' }}</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
