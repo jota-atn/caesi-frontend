@@ -106,8 +106,15 @@
   transition: all 0.25s;
 }
 
+/* Elementos só visíveis no desktop */
+.mobile-user-header,
+.mobile-action-link,
+.nav-separator--mobile { display: none; }
+
 @media (max-width: 600px) {
   .hamburger { display: flex; }
+  .navbar { padding: 0 1rem; }
+  .navbar-title { font-size: 0.9rem; }
 
   .navbar-actions {
     display: none;
@@ -122,9 +129,86 @@
     gap: 8px;
     border-top: 2px solid rgba(255,255,255,0.1);
     box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    z-index: 200;
   }
   .navbar-actions.open { display: flex; }
-  .navbar-user { justify-content: center; }
-  .navbar { padding: 0 1rem; }
-  .navbar-title { font-size: 0.9rem; }
+
+  /* Esconde dropdown e sino no mobile */
+  .navbar-desktop-user { display: none; }
+
+  /* Separador mobile */
+  .nav-separator--mobile {
+    display: block;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    margin: 4px 0;
+  }
+
+  /* Cabeçalho do usuário no hamburger */
+  .mobile-user-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px;
+  }
+  .mobile-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--amarelo);
+    color: var(--preto);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .mobile-user-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--creme);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mobile-user-role {
+    font-size: 0.75rem;
+    color: rgba(242,230,196,0.55);
+    margin-top: 2px;
+  }
+  .mobile-notif-badge {
+    background: var(--vermelho);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+  }
+
+  /* Links de ação no hamburger */
+  .mobile-action-link {
+    display: block;
+    padding: 9px 4px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: rgba(242,230,196,0.8);
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+  }
+  .mobile-action-link:hover { color: var(--amarelo); }
+  .mobile-action-sair { color: rgba(217,85,85,0.85); }
+  .mobile-action-sair:hover { color: var(--vermelho); }
 }
