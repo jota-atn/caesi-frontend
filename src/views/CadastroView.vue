@@ -29,7 +29,7 @@ function submit() {
     })
     if (result.error) { registerError.value = result.error; return }
     login(result.user)
-    router.push('/aluno/mensagens')
+    router.push('/')
   }
 }
 </script>
