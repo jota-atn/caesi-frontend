@@ -5,6 +5,8 @@ import { mensagens } from '../../stores/mensagens.js'
 import { usuarios } from '../../stores/usuarios.js'
 import { equipe } from '../../stores/equipe.js'
 import { formularios, inscricoes } from '../../stores/formularios.js'
+import { tasks } from '../../stores/tasks.js'
+import { user } from '../../stores/auth.js'
 
 const totalMensagens = computed(() => mensagens.value.length)
 const pendentes      = computed(() => mensagens.value.filter(m => m.status === 'pendente').length)
@@ -23,6 +25,14 @@ function formatValorCompacto(valor) {
   if (valor >= 10_000)    return `R$ ${(valor / 1_000).toFixed(1).replace('.', ',')}k`
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
 }
+
+const isRootAdmin     = computed(() => user.value?.email === 'admin')
+const tasksPendentes  = computed(() => tasks.value.filter(t => t.status === 'pendente').length)
+const tasksAndamento  = computed(() => tasks.value.filter(t => t.status === 'em-andamento').length)
+const tasksConcluidas = computed(() => tasks.value.filter(t => t.status === 'concluida').length)
+const solicitacoesPendentes = computed(() =>
+  tasks.value.reduce((acc, t) => acc + t.solicitacoes.length, 0)
+)
 
 const receitaTotal = computed(() => {
   return formularios.value
@@ -132,6 +142,38 @@ const receitaTotal = computed(() => {
             </div>
           </div>
           <RouterLink to="/admin/formularios" class="geral-row-link">Ver formulários →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Tasks -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Tasks</span>
+            <span class="geral-row-badge" :class="solicitacoesPendentes > 0 && isRootAdmin ? 'alerta' : 'ok'">
+              <template v-if="isRootAdmin && solicitacoesPendentes > 0">
+                {{ solicitacoesPendentes }} solicitação{{ solicitacoesPendentes > 1 ? 'ões' : '' }}
+              </template>
+              <template v-else>
+                {{ tasksAndamento > 0 ? `${tasksAndamento} em andamento` : 'Nenhuma em andamento' }}
+              </template>
+            </span>
+          </div>
+          <div class="geral-row-stats">
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num" style="color:var(--cinza);">{{ tasksPendentes }}</span>
+              <span class="geral-mini-label">Pendentes</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num" style="color:var(--roxo);">{{ tasksAndamento }}</span>
+              <span class="geral-mini-label">Em andamento</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num" style="color:var(--verde);">{{ tasksConcluidas }}</span>
+              <span class="geral-mini-label">Concluídas</span>
+            </div>
+          </div>
+          <RouterLink to="/admin/tasks" class="geral-row-link">Ver tasks →</RouterLink>
         </div>
 
         <div class="geral-divider" />
