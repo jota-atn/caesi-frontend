@@ -1,7 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import { usuarios, setUserAtivo, createAdmin } from '../../stores/usuarios.js'
+
+const router = useRouter()
+function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
 import { user as currentUser } from '../../stores/auth.js'
 
 const filtro = ref('todos')
@@ -72,6 +76,7 @@ function submitNewAdmin() {
     <Navbar />
 
     <div class="page-content">
+      <button class="back-link" @click="voltar">← Voltar</button>
       <div class="page-heading">
         <h2>Gestão de <span>Usuários</span></h2>
         <button class="btn btn-amarelo btn-sm" @click="showNewAdmin ? cancelNewAdmin() : (showNewAdmin = true)">

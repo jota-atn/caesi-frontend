@@ -1,7 +1,11 @@
 <script setup>
+import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import { equipe } from '../stores/equipe.js'
+
+const router = useRouter()
+function voltar() { window.history.state?.back ? router.back() : router.push('/') }
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 import mailIcon from '../assets/icons/mail.svg?raw'
 import instagramIcon from '../assets/icons/instagram.svg?raw'
@@ -15,6 +19,7 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
     <Navbar />
 
     <div class="home-section" style="padding-top:3.5rem;flex:1;">
+      <button class="back-link" style="margin-bottom:1.2rem;" @click="voltar">← Voltar</button>
       <div class="section-label">Quem somos</div>
       <h1 class="section-title">Sobre o <span>CAESI</span></h1>
 

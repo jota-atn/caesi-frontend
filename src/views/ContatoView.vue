@@ -1,7 +1,11 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+
+const router = useRouter()
+function voltar() { window.history.state?.back ? router.back() : router.push('/') }
 
 const form = ref({ nome: '', email: '', assunto: '', mensagem: '' })
 const errors = ref({})
@@ -26,6 +30,7 @@ function submit() {
     <Navbar />
 
     <div class="home-section" style="padding-top:3rem;flex:1;max-width:640px;">
+      <button class="back-link" style="margin-bottom:1.2rem;" @click="voltar">← Voltar</button>
       <div class="section-label">Fale conosco</div>
       <h1 class="section-title">Entre em <span>contato</span></h1>
 

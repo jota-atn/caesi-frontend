@@ -1,7 +1,11 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import { equipe, saveEquipe } from '../../stores/equipe.js'
+
+const router = useRouter()
+function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
 
 const form = ref(equipe.value.map(d => ({ ...d })))
 const msg = ref({ tipo: '', texto: '' })
@@ -29,6 +33,7 @@ function salvar() {
     <Navbar />
 
     <div class="page-content">
+      <button class="back-link" @click="voltar">← Voltar</button>
       <div class="page-heading">
         <h2>Gestão da <span>Equipe</span></h2>
       </div>
