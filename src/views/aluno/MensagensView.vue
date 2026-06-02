@@ -6,8 +6,9 @@ import Pagination from '../../components/Pagination.vue'
 import { mensagens } from '../../stores/mensagens.js'
 import { user } from '../../stores/auth.js'
 import { usePagination } from '../../composables/usePagination.js'
+import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 
-const filtro = ref('todas')
+const filtro = usePersistedFilter('caesi-aluno-msgs-filtro', 'todas')
 
 const minhasMensagens = computed(() =>
   mensagens.value.filter(m =>

@@ -3,9 +3,10 @@ import { ref, computed, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import { formularios, inscricoes, addFormulario } from '../../stores/formularios.js'
+import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 
-const filtro = ref('todos')
-const busca  = ref('')
+const filtro = usePersistedFilter('caesi-admin-forms-filtro', 'todos')
+const busca  = usePersistedFilter('caesi-admin-forms-busca', '')
 
 const TIPO_LABEL = {
   'evento-com-certificado': 'Evento c/ Certificado',

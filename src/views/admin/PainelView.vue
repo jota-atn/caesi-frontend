@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar.vue'
 import MsgCard from '../../components/MsgCard.vue'
 import Pagination from '../../components/Pagination.vue'
 import { usePagination } from '../../composables/usePagination.js'
+import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 import { mensagens } from '../../stores/mensagens.js'
 import { Doughnut, Bar } from 'vue-chartjs'
 import {
@@ -14,8 +15,8 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title)
 
-const filtro = ref('todas')
-const busca = ref('')
+const filtro = usePersistedFilter('caesi-admin-painel-filtro', 'todas')
+const busca  = usePersistedFilter('caesi-admin-painel-busca', '')
 
 const mensagensFiltradas = computed(() => {
   return mensagens.value.filter(m => {

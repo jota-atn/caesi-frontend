@@ -3,8 +3,9 @@ import { ref, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
 import { formularios, inscricoes } from '../../stores/formularios.js'
 import { user } from '../../stores/auth.js'
+import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 
-const filtro = ref('todos')
+const filtro = usePersistedFilter('caesi-aluno-forms-filtro', 'todos')
 
 const TIPO_LABEL = {
   'evento-com-certificado': 'Evento c/ Certificado',

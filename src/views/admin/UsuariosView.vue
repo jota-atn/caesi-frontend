@@ -3,13 +3,14 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import { usuarios, setUserAtivo, createAdmin } from '../../stores/usuarios.js'
+import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 
 const router = useRouter()
 function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
 import { user as currentUser } from '../../stores/auth.js'
 
-const filtro = ref('todos')
-const busca = ref('')
+const filtro = usePersistedFilter('caesi-admin-usuarios-filtro', 'todos')
+const busca  = usePersistedFilter('caesi-admin-usuarios-busca', '')
 const showNewAdmin = ref(false)
 const senhaVisivel = ref(false)
 const newAdmin = ref({ nome: '', email: '', senha: '' })
