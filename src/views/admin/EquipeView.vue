@@ -44,7 +44,7 @@ function salvar() {
             :id="`diretoria-${i}`"
             v-model="form[i].presidente"
             type="text"
-            :placeholder="`Nome do presidente — Diretoria ${d.diretoria}`"
+            placeholder="Nome do presidente"
           >
         </div>
 
