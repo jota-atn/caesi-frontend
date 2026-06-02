@@ -227,8 +227,22 @@
   .steps-grid { grid-template-columns: 1fr; }
   .step-card  { padding: 1.4rem 1.2rem; }
 
-  .insta-grid { grid-template-columns: 1fr; }
-  .insta-thumb { aspect-ratio: 16/7; }
+  .insta-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.85rem;
+    padding-bottom: 0.75rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .insta-grid::-webkit-scrollbar { display: none; }
+  .insta-card {
+    flex: 0 0 68vw;
+    max-width: 260px;
+    scroll-snap-align: start;
+  }
+  .insta-thumb { aspect-ratio: 1; }
 
   .admin-no-msg { flex-direction: column; gap: 1rem; }
 }
