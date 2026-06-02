@@ -131,7 +131,7 @@ const posts = [
     </section>
 
     <!-- Formulário de envio -->
-    <section class="home-section" id="enviar">
+    <section class="home-section" id="enviar" style="scroll-margin-top:80px;">
       <div class="section-label">Envio direto</div>
       <h2 class="section-title">
         <template v-if="isLoggedIn">Enviar <span>mensagem</span></template>
