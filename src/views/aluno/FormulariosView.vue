@@ -6,6 +6,7 @@ import { user } from '../../stores/auth.js'
 import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 
 const filtro = usePersistedFilter('caesi-aluno-forms-filtro', 'todos')
+const busca  = usePersistedFilter('caesi-aluno-forms-busca', '')
 
 const TIPO_LABEL = {
   'evento-com-certificado': 'Evento c/ Certificado',
@@ -60,8 +61,10 @@ function formatValor(valor) {
 const formulariosFiltrados = computed(() =>
   formularios.value
     .filter(f => {
-      if (filtro.value === 'gratuitos') return !f.pago
-      if (filtro.value === 'pagos')     return f.pago
+      if (filtro.value === 'gratuitos' && f.pago)  return false
+      if (filtro.value === 'pagos'     && !f.pago) return false
+      const t = busca.value.toLowerCase().trim()
+      if (t && !f.titulo.toLowerCase().includes(t) && !(f.descricao ?? '').toLowerCase().includes(t)) return false
       return true
     })
     .sort((a, b) => (a.status === 'aberto' ? -1 : 1) - (b.status === 'aberto' ? -1 : 1))
@@ -100,6 +103,7 @@ const totalInscritos = computed(() =>
       </div>
 
       <div class="filter-bar" role="group" aria-label="Filtrar formulários">
+        <input v-model="busca" type="search" placeholder="Buscar formulário…">
         <button class="filter-btn" :class="{ active: filtro === 'todos' }"     :aria-pressed="filtro === 'todos'"     @click="filtro = 'todos'">Todos</button>
         <button class="filter-btn" :class="{ active: filtro === 'gratuitos' }" :aria-pressed="filtro === 'gratuitos'" @click="filtro = 'gratuitos'">Gratuitos</button>
         <button class="filter-btn" :class="{ active: filtro === 'pagos' }"     :aria-pressed="filtro === 'pagos'"     @click="filtro = 'pagos'">Pagos</button>
@@ -146,7 +150,7 @@ const totalInscritos = computed(() =>
       </RouterLink>
 
       <div v-if="formulariosFiltrados.length === 0" class="empty-state">
-        <p>Nenhum formulário encontrado.</p>
+        <p>{{ formularios.length === 0 ? 'Nenhum formulário disponível ainda.' : 'Nenhum resultado para este filtro.' }}</p>
       </div>
     </div>
   </div>

@@ -6,6 +6,7 @@ import { user } from '../../stores/auth.js'
 import { showToast } from '../../stores/toast.js'
 import { useEscapeKey } from '../../composables/useEscapeKey.js'
 import { usePagination } from '../../composables/usePagination.js'
+import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 import Pagination from '../../components/Pagination.vue'
 
 const TIPO_LABEL = {
@@ -62,7 +63,21 @@ function podeSolicitar(inscricao) {
   return true
 }
 
-const { page, totalPages, paginated: inscricoesPaginadas, next, prev, goTo } = usePagination(minhasInscricoes, 10)
+const filtroInscricoes = usePersistedFilter('caesi-aluno-inscricoes-filtro', 'todos')
+const buscaInscricoes  = usePersistedFilter('caesi-aluno-inscricoes-busca', '')
+
+const inscricoesFiltradas = computed(() =>
+  minhasInscricoes.value.filter(i => {
+    if (filtroInscricoes.value === 'pendente'     && i.comprovante?.status !== 'pendente') return false
+    if (filtroInscricoes.value === 'cancelamento' && !i.cancelamento?.solicitado)          return false
+    if (filtroInscricoes.value === 'certificado'  && !i.certificado)                       return false
+    const t = buscaInscricoes.value.toLowerCase().trim()
+    if (t && !(getFormulario(i.formularioId)?.titulo ?? '').toLowerCase().includes(t))     return false
+    return true
+  })
+)
+
+const { page, totalPages, paginated: inscricoesPaginadas, next, prev, goTo } = usePagination(inscricoesFiltradas, 10)
 
 const modalDireto = ref(null)
 const modalSolicitar = ref(null)
@@ -127,6 +142,14 @@ function confirmarSolicitar() {
         </div>
       </div>
 
+      <div class="filter-bar" role="group" aria-label="Filtrar inscrições">
+        <input v-model="buscaInscricoes" type="search" placeholder="Buscar formulário…">
+        <button class="filter-btn" :class="{ active: filtroInscricoes === 'todos' }"        :aria-pressed="filtroInscricoes === 'todos'"        @click="filtroInscricoes = 'todos'">Todas</button>
+        <button class="filter-btn" :class="{ active: filtroInscricoes === 'pendente' }"     :aria-pressed="filtroInscricoes === 'pendente'"     @click="filtroInscricoes = 'pendente'">Pag. pendente</button>
+        <button class="filter-btn" :class="{ active: filtroInscricoes === 'cancelamento' }" :aria-pressed="filtroInscricoes === 'cancelamento'" @click="filtroInscricoes = 'cancelamento'">Cancelamento</button>
+        <button class="filter-btn" :class="{ active: filtroInscricoes === 'certificado' }"  :aria-pressed="filtroInscricoes === 'certificado'"  @click="filtroInscricoes = 'certificado'">Com certificado</button>
+      </div>
+
       <template v-for="inscricao in inscricoesPaginadas" :key="inscricao.id">
         <RouterLink
           :to="`/aluno/formularios/${inscricao.formularioId}`"
@@ -188,6 +211,9 @@ function confirmarSolicitar() {
         <RouterLink to="/aluno/formularios" class="btn btn-amarelo btn-sm" style="margin-top:1rem;">
           Ver formulários disponíveis
         </RouterLink>
+      </div>
+      <div v-else-if="inscricoesFiltradas.length === 0" class="empty-state">
+        <p>Nenhuma inscrição encontrada para este filtro.</p>
       </div>
     </div>
   </div>

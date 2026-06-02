@@ -29,7 +29,26 @@ const cancelamentosPendentes = computed(() =>
   inscricoesDaForm.value.filter(i => i.cancelamento?.solicitado).length
 )
 
-const { page: inscPage, totalPages: inscTotalPages, paginated: inscricoesPaginadas, next: inscNext, prev: inscPrev, goTo: inscGoTo } = usePagination(inscricoesDaForm, 10)
+const filtroInsc = ref('todos')
+const buscaInsc  = ref('')
+
+const inscricoesFiltradas = computed(() =>
+  inscricoesDaForm.value.filter(i => {
+    if (filtroInsc.value === 'pendente'     && i.comprovante?.status !== 'pendente')  return false
+    if (filtroInsc.value === 'validado'     && i.comprovante?.status !== 'validado')  return false
+    if (filtroInsc.value === 'arquivado'    && i.comprovante?.status !== 'arquivado') return false
+    if (filtroInsc.value === 'cancelamento' && !i.cancelamento?.solicitado)           return false
+    const t = buscaInsc.value.toLowerCase().trim()
+    if (t) {
+      const d = dadosInscrito(i)
+      const nome = (d?.nome ?? i.respostas?.nome ?? i.userEmail).toLowerCase()
+      if (!nome.includes(t) && !i.userEmail.toLowerCase().includes(t) && !(d?.matricula ?? '').toLowerCase().includes(t)) return false
+    }
+    return true
+  })
+)
+
+const { page: inscPage, totalPages: inscTotalPages, paginated: inscricoesPaginadas, next: inscNext, prev: inscPrev, goTo: inscGoTo } = usePagination(inscricoesFiltradas, 10)
 
 function _qtd(i) {
   return formulario.value.tipo === 'venda' ? (Number(i.respostas?.__quantidade) || 1) : 1
@@ -396,8 +415,22 @@ function excluirFormulario() {
           >↓ Exportar CSV</button>
         </div>
 
+        <div class="filter-bar" style="margin-bottom:0.8rem;" role="group" aria-label="Filtrar inscrições">
+          <input v-model="buscaInsc" type="search" placeholder="Buscar por nome ou e-mail…">
+          <button class="filter-btn" :class="{ active: filtroInsc === 'todos' }"        @click="filtroInsc = 'todos'">Todos</button>
+          <template v-if="formulario.pago">
+            <button class="filter-btn" :class="{ active: filtroInsc === 'pendente' }"   @click="filtroInsc = 'pendente'">Pendente</button>
+            <button class="filter-btn" :class="{ active: filtroInsc === 'validado' }"   @click="filtroInsc = 'validado'">Validado</button>
+            <button class="filter-btn" :class="{ active: filtroInsc === 'arquivado' }"  @click="filtroInsc = 'arquivado'">Arquivado</button>
+          </template>
+          <button class="filter-btn" :class="{ active: filtroInsc === 'cancelamento' }" @click="filtroInsc = 'cancelamento'">Cancelamento</button>
+        </div>
+
         <div v-if="inscricoesDaForm.length === 0" class="empty-state" style="padding:1.5rem 0;">
           <p>Nenhuma inscrição recebida ainda.</p>
+        </div>
+        <div v-else-if="inscricoesFiltradas.length === 0" class="empty-state" style="padding:1.5rem 0;">
+          <p>Nenhum resultado para este filtro.</p>
         </div>
 
         <div
