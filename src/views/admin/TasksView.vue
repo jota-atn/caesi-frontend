@@ -37,6 +37,7 @@ const busca      = ref('')
 const filtroStatus     = ref('todas')
 const filtroPrioridade = ref('todas')
 const filtroCategoria  = ref('todas')
+const ordenacao        = ref('prioridade')
 
 const tasksFiltradas = computed(() => {
   let lista = tasks.value
@@ -52,6 +53,9 @@ const tasksFiltradas = computed(() => {
       t.descricao.toLowerCase().includes(busca.value.toLowerCase())
     )
   return lista.slice().sort((a, b) => {
+    if (ordenacao.value === 'prazo') {
+      return new Date(a.prazo) - new Date(b.prazo)
+    }
     const ord = { alta: 0, media: 1, baixa: 2 }
     return ord[a.prioridade] - ord[b.prioridade]
   })
@@ -255,6 +259,12 @@ useEscapeKey(() => {
             <option value="ouvidoria">Ouvidoria</option>
           </select>
         </div>
+        <button
+          class="btn btn-outline btn-sm sort-btn"
+          @click="ordenacao = ordenacao === 'prioridade' ? 'prazo' : 'prioridade'"
+        >
+          {{ ordenacao === 'prioridade' ? '↕ Prioridade' : '↕ Prazo' }}
+        </button>
       </div>
 
       <!-- Cards -->
@@ -478,6 +488,7 @@ useEscapeKey(() => {
   gap: 0.75rem;
   align-items: center;
 }
+.sort-btn { align-self: stretch; white-space: nowrap; }
 
 /* ── Grid de cards ───────────────────────────────────────── */
 .tasks-grid {
