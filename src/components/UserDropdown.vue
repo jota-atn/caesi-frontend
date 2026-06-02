@@ -123,6 +123,9 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown))
           <RouterLink to="/admin/equipe" class="user-dropdown-item">
             Editar equipe
           </RouterLink>
+          <RouterLink to="/admin/tasks" class="user-dropdown-item">
+            Gerenciar tasks
+          </RouterLink>
           <RouterLink to="/admin/formularios" class="user-dropdown-item">
             Formulários e eventos
           </RouterLink>

@@ -11,6 +11,7 @@ import {
   atualizarStatus, solicitarParticipacao,
   aprovarParticipacao, rejeitarParticipacao,
 } from '../../stores/tasks.js'
+import clipboardIcon from '../../assets/icons/clipboard.svg?raw'
 
 const router = useRouter()
 function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
@@ -235,19 +236,25 @@ useEscapeKey(() => {
 
       <!-- Filtros -->
       <div class="tasks-filtros paper paper-mb">
-        <input v-model="busca" class="form-input" placeholder="Buscar por título ou descrição…" style="flex:1;min-width:180px;" />
-        <select v-model="filtroPrioridade" class="form-input" style="width:auto;">
-          <option value="todas">Todas as prioridades</option>
-          <option value="alta">Alta</option>
-          <option value="media">Média</option>
-          <option value="baixa">Baixa</option>
-        </select>
-        <select v-model="filtroCategoria" class="form-input" style="width:auto;">
-          <option value="todas">Todas as categorias</option>
-          <option value="gestao">Gestão</option>
-          <option value="formularios">Formulários</option>
-          <option value="ouvidoria">Ouvidoria</option>
-        </select>
+        <div class="field" style="flex:1;min-width:180px;margin:0;">
+          <input v-model="busca" placeholder="Buscar por título ou descrição…" />
+        </div>
+        <div class="field" style="margin:0;">
+          <select v-model="filtroPrioridade">
+            <option value="todas">Todas as prioridades</option>
+            <option value="alta">Alta</option>
+            <option value="media">Média</option>
+            <option value="baixa">Baixa</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0;">
+          <select v-model="filtroCategoria">
+            <option value="todas">Todas as categorias</option>
+            <option value="gestao">Gestão</option>
+            <option value="formularios">Formulários</option>
+            <option value="ouvidoria">Ouvidoria</option>
+          </select>
+        </div>
       </div>
 
       <!-- Cards -->
@@ -296,7 +303,7 @@ useEscapeKey(() => {
             <!-- Admin CAESI -->
             <template v-if="isRootAdmin">
               <select
-                class="form-input form-input-sm status-select"
+                class="status-select"
                 :value="t.status"
                 @change="atualizarStatus(t.id, $event.target.value)"
               >
@@ -311,7 +318,7 @@ useEscapeKey(() => {
             <!-- Admin alocado (não root) -->
             <template v-else-if="estaAlocado(t)">
               <select
-                class="form-input form-input-sm status-select"
+                class="status-select"
                 :value="t.status"
                 @change="atualizarStatus(t.id, $event.target.value)"
               >
@@ -335,7 +342,7 @@ useEscapeKey(() => {
 
       <!-- Empty state -->
       <div v-else class="paper" style="text-align:center;padding:3rem 2rem;">
-        <div style="font-size:2.5rem;margin-bottom:1rem;">📋</div>
+        <span v-html="clipboardIcon" style="display:inline-flex;width:2.5rem;height:2.5rem;color:var(--cinza);margin-bottom:1rem;"></span>
         <p style="color:var(--cinza);font-size:0.95rem;">
           {{ tasks.length === 0 ? 'Nenhuma task criada ainda.' : 'Nenhuma task encontrada com os filtros aplicados.' }}
         </p>
@@ -352,48 +359,47 @@ useEscapeKey(() => {
           {{ editandoId ? 'Editar task' : 'Nova task' }}
         </h2>
 
-        <div class="form-group">
-          <label class="form-label">Título <span class="obrig">*</span></label>
-          <input v-model="form.titulo" class="form-input" placeholder="Descreva a task brevemente" maxlength="80" />
+        <div class="field">
+          <label>Título <span class="obrig">*</span></label>
+          <input v-model="form.titulo" placeholder="Descreva a task brevemente" maxlength="80" />
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Descrição</label>
-          <textarea v-model="form.descricao" class="form-input" rows="3" placeholder="Detalhes, contexto, links…" style="resize:vertical;" />
+        <div class="field">
+          <label>Descrição</label>
+          <textarea v-model="form.descricao" rows="3" placeholder="Detalhes, contexto, links…" style="resize:vertical;min-height:80px;" />
         </div>
 
         <div class="modal-row">
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Prioridade <span class="obrig">*</span></label>
-            <select v-model="form.prioridade" class="form-input">
+          <div class="field" style="flex:1;">
+            <label>Prioridade <span class="obrig">*</span></label>
+            <select v-model="form.prioridade">
               <option value="alta">Alta</option>
               <option value="media">Média</option>
               <option value="baixa">Baixa</option>
             </select>
           </div>
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Categoria <span class="obrig">*</span></label>
-            <select v-model="form.categoria" class="form-input">
+          <div class="field" style="flex:1;">
+            <label>Categoria <span class="obrig">*</span></label>
+            <select v-model="form.categoria">
               <option value="gestao">Gestão</option>
               <option value="formularios">Formulários</option>
               <option value="ouvidoria">Ouvidoria</option>
             </select>
           </div>
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Prazo <span class="obrig">*</span></label>
-            <input v-model="form.prazo" type="date" class="form-input" />
+          <div class="field" style="flex:1;">
+            <label>Prazo <span class="obrig">*</span></label>
+            <input v-model="form.prazo" type="date" />
           </div>
         </div>
 
-        <div v-if="adminsDisponiveis.length" class="form-group">
-          <label class="form-label">Admins alocados</label>
+        <div v-if="adminsDisponiveis.length" class="field">
+          <label>Admins alocados</label>
           <div class="alocados-checkboxes">
             <label v-for="a in adminsDisponiveis" :key="a.email" class="alocado-check">
               <input type="checkbox" :checked="form.alocados.includes(a.email)" @change="toggleAlocado(a.email)" />
               <span>{{ a.nome }}</span>
             </label>
           </div>
-          <div v-if="!adminsDisponiveis.length" class="field-hint">Nenhum outro admin cadastrado.</div>
         </div>
 
         <div class="modal-actions">
@@ -599,8 +605,25 @@ useEscapeKey(() => {
   padding-top: 0.5rem;
   border-top: 1px solid var(--creme-escuro);
 }
-.status-select { font-size: 0.8rem; padding: 5px 8px; flex: 1; min-width: 130px; }
-.form-input-sm { font-size: 0.82rem; padding: 5px 10px; }
+.status-select {
+  flex: 1;
+  min-width: 130px;
+  padding: 5px 32px 5px 8px;
+  font-size: 0.82rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--preto);
+  background: var(--branco);
+  border: 2px solid var(--creme-escuro);
+  border-radius: 2px;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235040A0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.status-select:focus { border-color: var(--roxo); box-shadow: 0 0 0 3px rgba(128,112,192,0.2); }
 
 /* ── Solicitações banner ─────────────────────────────────── */
 .solicitacoes-banner { border-left: 4px solid var(--amarelo); }
@@ -623,6 +646,7 @@ useEscapeKey(() => {
 /* ── Modal form ──────────────────────────────────────────── */
 .modal-box--lg { max-width: 620px; }
 .modal-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.modal-row .field { margin-bottom: 0; }
 .obrig { color: var(--vermelho); }
 
 .alocados-checkboxes {
