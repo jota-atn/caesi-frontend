@@ -250,6 +250,27 @@
   color: var(--roxo-escuro);
 }
 
+/* ── Prazo urgente ──────────────────────────────────────── */
+.prazo-urgente-badge {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-block;
+  white-space: nowrap;
+  background: rgba(220,80,20,0.14);
+  color: #B83A08;
+  border: 1px solid rgba(220,80,20,0.35);
+  animation: prazo-pulse 2s ease-in-out infinite;
+}
+@keyframes prazo-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
 /* ── Solicitação de cancelamento ────────────────────────── */
 .cancelamento-badge {
   font-family: 'Syne', sans-serif;

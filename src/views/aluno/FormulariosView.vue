@@ -47,6 +47,11 @@ function formatData(data) {
   return `${dia}/${mes}/${ano}`
 }
 
+function diasParaFechamento(prazo) {
+  if (!prazo) return null
+  return Math.ceil((new Date(prazo + 'T23:59:59') - new Date()) / 86400000)
+}
+
 function formatValor(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
 }
@@ -113,6 +118,10 @@ const totalInscritos = computed(() =>
               {{ badgeIndisponivel(f) }}
             </span>
             <span v-if="estaInscrito(f.id)" class="comp-badge comp-validado">Inscrito</span>
+            <span
+              v-if="disponivel(f) && diasParaFechamento(f.prazoInscricao) !== null && diasParaFechamento(f.prazoInscricao) <= 3"
+              class="prazo-urgente-badge"
+            >Fecha em {{ diasParaFechamento(f.prazoInscricao) === 1 ? '1 dia' : diasParaFechamento(f.prazoInscricao) + ' dias' }}</span>
           </div>
           <div class="form-card-title">{{ f.titulo }}</div>
           <div class="form-card-desc">{{ f.descricao }}</div>

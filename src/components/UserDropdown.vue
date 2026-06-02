@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { user, logout } from '../stores/auth.js'
 import { notificacoes } from '../stores/notificacoes.js'
@@ -34,12 +34,51 @@ function closeDropdown(e) {
   }
 }
 
+// ── Navegação por teclado ─────────────────────────────────
+function _items() {
+  return [...(dropdownRef.value?.querySelectorAll('.user-dropdown-item') ?? [])]
+}
+
+function handleKeydown(e) {
+  if (!dropdownOpen.value) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      dropdownOpen.value = true
+      nextTick(() => _items()[0]?.focus())
+    }
+    return
+  }
+
+  const items = _items()
+  const idx   = items.indexOf(document.activeElement)
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    items[idx < items.length - 1 ? idx + 1 : 0]?.focus()
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    items[idx > 0 ? idx - 1 : items.length - 1]?.focus()
+  } else if (e.key === 'Home') {
+    e.preventDefault()
+    items[0]?.focus()
+  } else if (e.key === 'End') {
+    e.preventDefault()
+    items[items.length - 1]?.focus()
+  } else if (e.key === 'Escape') {
+    e.stopPropagation()
+    dropdownOpen.value = false
+    dropdownRef.value?.querySelector('.user-menu-trigger')?.focus()
+  } else if (e.key === 'Tab') {
+    dropdownOpen.value = false
+  }
+}
+
 onMounted(() => document.addEventListener('click', closeDropdown))
 onUnmounted(() => document.removeEventListener('click', closeDropdown))
 </script>
 
 <template>
-  <div class="user-menu" ref="dropdownRef">
+  <div class="user-menu" ref="dropdownRef" @keydown="handleKeydown">
     <button
       class="user-menu-trigger"
       @click.stop="toggleDropdown"

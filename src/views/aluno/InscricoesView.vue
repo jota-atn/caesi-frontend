@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
 import { formularios, inscricoes, cancelarInscricaoDireta, solicitarCancelamento } from '../../stores/formularios.js'
 import { user } from '../../stores/auth.js'
+import { showToast } from '../../stores/toast.js'
+import { useEscapeKey } from '../../composables/useEscapeKey.js'
 
 const TIPO_LABEL = {
   'evento-com-certificado': 'Evento c/ Certificado',
@@ -62,6 +64,11 @@ const modalDireto = ref(null)
 const modalSolicitar = ref(null)
 const motivoSolicitar = ref('')
 
+useEscapeKey(() => {
+  if (modalDireto.value) { modalDireto.value = null; return }
+  if (modalSolicitar.value) { modalSolicitar.value = null }
+})
+
 function abrirModalDireto(inscricao) {
   modalDireto.value = inscricao
 }
@@ -70,6 +77,7 @@ function confirmarCancelamentoDireto() {
   if (!modalDireto.value) return
   cancelarInscricaoDireta(modalDireto.value.id)
   modalDireto.value = null
+  showToast('Inscrição cancelada.')
 }
 
 function abrirModalSolicitar(inscricao) {
@@ -82,6 +90,7 @@ function confirmarSolicitar() {
   solicitarCancelamento(modalSolicitar.value.id, motivoSolicitar.value)
   modalSolicitar.value = null
   motivoSolicitar.value = ''
+  showToast('Solicitação enviada. O CAESI vai te notificar da decisão.', 'info')
 }
 </script>
 

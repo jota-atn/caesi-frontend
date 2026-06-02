@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { user } from '../stores/auth.js'
 import { notificacoes, marcarLida, marcarTodasLidas } from '../stores/notificacoes.js'
@@ -66,12 +66,51 @@ function relativo(iso) {
   return `há ${d}d`
 }
 
+// ── Navegação por teclado ─────────────────────────────────
+function _items() {
+  return [...(bellRef.value?.querySelectorAll('.notif-item') ?? [])]
+}
+
+function handleKeydown(e) {
+  if (!aberto.value) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      aberto.value = true
+      nextTick(() => _items()[0]?.focus())
+    }
+    return
+  }
+
+  const items = _items()
+  const idx   = items.indexOf(document.activeElement)
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    items[idx < items.length - 1 ? idx + 1 : 0]?.focus()
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    items[idx > 0 ? idx - 1 : items.length - 1]?.focus()
+  } else if (e.key === 'Home') {
+    e.preventDefault()
+    items[0]?.focus()
+  } else if (e.key === 'End') {
+    e.preventDefault()
+    items[items.length - 1]?.focus()
+  } else if (e.key === 'Escape') {
+    e.stopPropagation()
+    aberto.value = false
+    bellRef.value?.querySelector('.notif-bell-btn')?.focus()
+  } else if (e.key === 'Tab') {
+    aberto.value = false
+  }
+}
+
 onMounted(() => document.addEventListener('click', fechar))
 onUnmounted(() => document.removeEventListener('click', fechar))
 </script>
 
 <template>
-  <div class="notif-bell-wrap" ref="bellRef">
+  <div class="notif-bell-wrap" ref="bellRef" @keydown="handleKeydown">
     <button class="notif-bell-btn" @click.stop="toggle" :class="{ active: aberto }"
       aria-label="Notificações" aria-haspopup="menu" :aria-expanded="aberto">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">

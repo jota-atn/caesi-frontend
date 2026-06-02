@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados, aprovarCancelamento, recusarCancelamento } from '../../stores/formularios.js'
 import { usuarios } from '../../stores/usuarios.js'
+import { showToast } from '../../stores/toast.js'
+import { useEscapeKey } from '../../composables/useEscapeKey.js'
 
 const route  = useRoute()
 const router = useRouter()
@@ -121,6 +123,7 @@ function dadosInscrito(inscricao) {
 function avancarStatus(inscricaoId, statusAtual) {
   const proximo = statusAtual === 'pendente' ? 'validado' : 'arquivado'
   updateStatusComprovante(inscricaoId, proximo)
+  showToast(proximo === 'validado' ? 'Comprovante validado.' : 'Comprovante arquivado.', proximo === 'validado' ? 'success' : 'info')
 }
 
 // ── Editar ───────────────────────────────────────────────
@@ -169,6 +172,8 @@ function salvarEdicao() {
 const modalCancelamento = ref(null) // { inscricao, acao: 'aprovar'|'recusar' }
 const msgCancelamento = ref('')
 
+useEscapeKey(() => { if (modalCancelamento.value) modalCancelamento.value = null })
+
 function abrirModalCancelamento(inscricao, acao) {
   msgCancelamento.value = ''
   modalCancelamento.value = { inscricao, acao }
@@ -179,8 +184,10 @@ function confirmarModalCancelamento() {
   const { inscricao, acao } = modalCancelamento.value
   if (acao === 'aprovar') {
     aprovarCancelamento(inscricao.id, msgCancelamento.value)
+    showToast('Cancelamento aprovado. Aluno notificado.')
   } else {
     recusarCancelamento(inscricao.id, msgCancelamento.value)
+    showToast('Solicitação recusada. Aluno notificado.', 'info')
   }
   modalCancelamento.value = null
   msgCancelamento.value = ''

@@ -1,6 +1,7 @@
 <script setup>
 import { watch } from 'vue'
 import BackToTop from './components/BackToTop.vue'
+import ToastContainer from './components/ToastContainer.vue'
 import { user } from './stores/auth.js'
 import { formularios, inscricoes } from './stores/formularios.js'
 import { addNotificacao } from './stores/notificacoes.js'
@@ -35,4 +36,5 @@ watch(user, (u) => {
 <template>
   <RouterView />
   <BackToTop />
+  <ToastContainer />
 </template>

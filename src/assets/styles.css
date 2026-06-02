@@ -10,6 +10,7 @@
 @import './components/msg-card.css';
 @import './components/stats.css';
 @import './components/footer.css';
+@import './components/toast.css';
 
 @import './views/home.css';
 @import './views/login.css';
