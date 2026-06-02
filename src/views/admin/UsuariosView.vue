@@ -163,28 +163,29 @@ function submitNewAdmin() {
             </div>
           </div>
 
-          <div class="user-badges">
-            <span class="badge" :class="u.role === 'admin' ? 'badge-role-admin' : 'badge-role-aluno'">
-              {{ u.role === 'admin' ? 'Admin' : 'Aluno' }}
-            </span>
-            <span class="badge" :class="u.ativo !== false ? 'badge-atendida' : 'badge-inativo'">
-              {{ u.ativo !== false ? 'Ativo' : 'Inativo' }}
-            </span>
-          </div>
-
-          <div style="flex-shrink:0;">
-            <template v-if="!isProtected(u)">
-              <button
-                class="btn btn-sm"
-                :class="u.ativo !== false ? 'btn-danger' : 'btn-outline'"
-                @click="toggleAtivo(u)"
-              >
-                {{ u.ativo !== false ? 'Desativar' : 'Reativar' }}
-              </button>
-            </template>
-            <span v-else style="font-size:0.76rem;color:var(--cinza);font-style:italic;">
-              {{ u.email === currentUser?.email ? 'você' : 'protegido' }}
-            </span>
+          <div class="user-row-bottom">
+            <div class="user-badges">
+              <span class="badge" :class="u.role === 'admin' ? 'badge-role-admin' : 'badge-role-aluno'">
+                {{ u.role === 'admin' ? 'Admin' : 'Aluno' }}
+              </span>
+              <span class="badge" :class="u.ativo !== false ? 'badge-atendida' : 'badge-inativo'">
+                {{ u.ativo !== false ? 'Ativo' : 'Inativo' }}
+              </span>
+            </div>
+            <div>
+              <template v-if="!isProtected(u)">
+                <button
+                  class="btn btn-sm"
+                  :class="u.ativo !== false ? 'btn-danger' : 'btn-outline'"
+                  @click="toggleAtivo(u)"
+                >
+                  {{ u.ativo !== false ? 'Desativar' : 'Reativar' }}
+                </button>
+              </template>
+              <span v-else style="font-size:0.76rem;color:var(--cinza);font-style:italic;">
+                {{ u.email === currentUser?.email ? 'você' : 'protegido' }}
+              </span>
+            </div>
           </div>
         </div>
 

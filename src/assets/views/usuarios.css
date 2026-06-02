@@ -38,6 +38,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.user-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
 .user-badges {
   display: flex;
   gap: 6px;
@@ -49,6 +55,17 @@
 .badge-inativo    { background: rgba(217,85,85,0.12);  color: var(--vermelho); }
 
 @media (max-width: 600px) {
-  .user-row { gap: 0.7rem; }
+  .user-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.4rem 0.7rem;
+    padding: 0.9rem 1rem;
+  }
+  .user-name { white-space: normal; }
   .user-meta { display: none; }
+  .user-row-bottom {
+    flex-basis: 100%;
+    padding-left: 48px;
+    justify-content: space-between;
+  }
 }
