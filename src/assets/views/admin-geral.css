@@ -1,3 +1,16 @@
+.painel-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.painel-chart-wrap { height: 200px; }
+
+@media (max-width: 700px) {
+  .painel-charts-grid { grid-template-columns: 1fr; }
+}
+
 .geral-row {
   display: flex;
   align-items: center;

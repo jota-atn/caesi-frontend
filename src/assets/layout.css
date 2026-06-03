@@ -12,6 +12,10 @@
   width: 100%;
 }
 
+.page-content--wide {
+  max-width: 1200px;
+}
+
 .paper {
   background: var(--creme);
   border-radius: 2px;
