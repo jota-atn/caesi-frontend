@@ -11,8 +11,6 @@ const form = ref(equipe.value.map(d => ({ ...d })))
 const descricao = ref(descricaoGestao.value)
 const info = ref({ ...gestaoInfo.value })
 
-const anoAtual = new Date().getFullYear()
-const anos = Array.from({ length: 12 }, (_, i) => anoAtual - 4 + i)
 const msg = ref({ tipo: '', texto: '' })
 const fileInputs = ref([])
 
@@ -96,10 +94,7 @@ function salvar() {
                   <option value="">Mês</option>
                   <option v-for="m in MESES" :key="m" :value="m">{{ m }}</option>
                 </select>
-                <select v-model="info.anoInicio" class="select-ano">
-                  <option value="">Ano</option>
-                  <option v-for="a in anos" :key="a" :value="String(a)">{{ a }}</option>
-                </select>
+                <input v-model="info.anoInicio" type="number" class="input-ano" placeholder="Ano" min="1990" max="2099">
               </div>
             </div>
             <span class="periodo-sep">–</span>
@@ -110,10 +105,7 @@ function salvar() {
                   <option value="">Mês</option>
                   <option v-for="m in MESES" :key="m" :value="m">{{ m }}</option>
                 </select>
-                <select v-model="info.anoFim" class="select-ano">
-                  <option value="">Ano</option>
-                  <option v-for="a in anos" :key="a" :value="String(a)">{{ a }}</option>
-                </select>
+                <input v-model="info.anoFim" type="number" class="input-ano" placeholder="Ano" min="1990" max="2099">
               </div>
             </div>
           </div>
@@ -307,12 +299,20 @@ function salvar() {
   appearance: auto;
 }
 .select-mes { width: 72px; }
-.select-ano { width: 80px; }
-.select-mes:focus,
-.select-ano:focus {
-  outline: none;
-  border-color: var(--roxo);
+.select-mes:focus { outline: none; border-color: var(--roxo); }
+
+.input-ano {
+  width: 72px;
+  border: 1.5px solid var(--creme-escuro);
+  border-radius: 2px;
+  background: var(--branco);
+  color: var(--preto);
+  font-size: 0.88rem;
+  padding: 7px 8px;
 }
+.input-ano:focus { outline: none; border-color: var(--roxo); }
+.input-ano::-webkit-inner-spin-button,
+.input-ano::-webkit-outer-spin-button { opacity: 0; }
 
 .periodo-sep {
   font-size: 1.1rem;
