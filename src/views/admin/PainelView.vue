@@ -165,7 +165,7 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
 
       <!-- Gráficos de atividade -->
       <div v-if="temDados" class="painel-charts-grid">
-        <div class="paper paper-sm">
+        <div v-if="mensagens.length > 0" class="paper paper-sm">
           <p class="label-sm">Mensagens por mês</p>
           <p v-if="tendenciaMensagens" class="painel-tendencia">
             {{ tendenciaMensagens.sobe ? '↑' : '↓' }} {{ tendenciaMensagens.pct }}% vs. mês ant.
@@ -174,7 +174,7 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
             <Bar :data="barMensagens" :options="barOptions" />
           </div>
         </div>
-        <div class="paper paper-sm">
+        <div v-if="inscricoes.length > 0" class="paper paper-sm">
           <p class="label-sm">Inscrições por mês</p>
           <p v-if="tendenciaInscricoes" class="painel-tendencia">
             {{ tendenciaInscricoes.sobe ? '↑' : '↓' }} {{ tendenciaInscricoes.pct }}% vs. mês ant.
