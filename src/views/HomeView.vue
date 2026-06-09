@@ -3,9 +3,9 @@ import { ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import { addMensagem } from '../stores/mensagens.js'
-import { isLoggedIn, isAdmin, user } from '../stores/auth.js'
+import { isAdmin } from '../stores/auth.js'
 
-const form = ref({ assunto: '', categoria: '', mensagem: '', anonimo: false })
+const form = ref({ assunto: '', categoria: '', mensagem: '', email: '' })
 const errors = ref({})
 const charCount = ref(0)
 const enviado = ref(false)
@@ -22,15 +22,13 @@ function submit() {
   if (form.value.mensagem.trim().length < 20) e.mensagem = true
   errors.value = e
   if (Object.keys(e).length === 0) {
-    const anonimo = isLoggedIn.value ? form.value.anonimo : true
     const nova = addMensagem({
-      assunto: form.value.assunto,
+      assunto:   form.value.assunto,
       categoria: form.value.categoria,
-      corpo: form.value.mensagem,
-      anonimo,
-      autor: (isLoggedIn.value && !anonimo) ? user.value.nome : 'Anônimo',
-      email: isLoggedIn.value ? user.value.email : null,
-      matricula: isLoggedIn.value ? user.value.matricula : null,
+      corpo:     form.value.mensagem,
+      anonimo:   true,
+      autor:     'Anônimo',
+      email:     form.value.email.trim() || null,
     })
     protocolo.value = nova.protocolo
     enviado.value = true
@@ -38,7 +36,7 @@ function submit() {
 }
 
 function resetForm() {
-  form.value = { assunto: '', categoria: '', mensagem: '', anonimo: false }
+  form.value = { assunto: '', categoria: '', mensagem: '', email: '' }
   charCount.value = 0
   enviado.value = false
 }
@@ -69,23 +67,23 @@ const posts = [
       <h1 class="hero-title">CAESI <span>Ouvidoria</span></h1>
       <p class="hero-sub">
         Fale com o Centro Acadêmico de Ciência da Computação da UFCG.<br>
-        Sua voz importa — envie sugestões, reclamações e elogios com ou sem login.
+        Envie sugestões, reclamações e elogios de forma anônima.
       </p>
       <div class="hero-actions">
         <a href="#enviar" class="btn btn-amarelo">Enviar mensagem →</a>
         <RouterLink
-          v-if="!isLoggedIn"
-          to="/login"
+          v-if="isAdmin"
+          to="/admin/painel"
           class="btn btn-outline btn-outline-creme"
         >
-          Entrar na conta
+          Painel admin
         </RouterLink>
         <RouterLink
           v-else
-          :to="isAdmin ? '/admin/painel' : '/aluno/mensagens'"
+          to="/ouvidoria/consulta"
           class="btn btn-outline btn-outline-creme"
         >
-          {{ isAdmin ? 'Painel admin' : 'Minhas mensagens' }}
+          Consultar protocolo
         </RouterLink>
       </div>
     </section>
@@ -125,7 +123,7 @@ const posts = [
             </svg>
           </span>
           <div class="step-title">Acompanhe o status</div>
-          <p class="step-desc">Faça login a qualquer momento para ver se sua mensagem foi atendida ou está em andamento.</p>
+          <p class="step-desc">Use o número de protocolo para consultar o status e ver a resposta do CAESI a qualquer momento.</p>
         </div>
       </div>
     </section>
@@ -133,36 +131,29 @@ const posts = [
     <!-- Formulário de envio -->
     <section class="home-section" id="enviar" style="scroll-margin-top:80px;">
       <div class="section-label">Envio direto</div>
-      <h2 class="section-title">
-        <template v-if="isLoggedIn">Enviar <span>mensagem</span></template>
-        <template v-else>Enviar <span>anonimamente</span></template>
-      </h2>
+      <h2 class="section-title">Enviar <span>mensagem</span></h2>
 
       <div class="paper">
 
         <div v-if="enviado" class="anon-success">
           <div class="check-circle">✓</div>
-          <h3 style="font-family:'Archivo Black',sans-serif;font-weight:800;font-size:1.3rem;color:var(--roxo-escuro);margin-bottom:0.5rem;">
+          <h3 style="font-family:'Archivo Black',sans-serif;font-size:1.3rem;color:var(--roxo-escuro);margin-bottom:0.5rem;">
             Mensagem enviada!
           </h3>
           <p style="font-size:0.9rem;color:var(--cinza);margin-bottom:1.2rem;line-height:1.6;">
-            Recebemos sua mensagem. Guarde o protocolo para referência.
-            <template v-if="isLoggedIn">
-              Ela já aparece em
-              <RouterLink :to="isAdmin ? '/admin/painel' : '/aluno/mensagens'"
-                style="color:var(--roxo-escuro);font-weight:600;">
-                {{ isAdmin ? 'seu painel' : 'suas mensagens' }}</RouterLink>.
-            </template>
+            Guarde o número de protocolo abaixo para acompanhar sua mensagem e ver a resposta do CAESI.
           </p>
           <div class="protocolo-box">
             <div class="protocolo-label">Protocolo</div>
             <div class="protocolo-value">{{ protocolo }}</div>
           </div>
-          <br>
-          <button class="btn btn-outline btn-sm" @click="resetForm">Enviar outra mensagem</button>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
+            <RouterLink to="/ouvidoria/consulta" class="btn btn-primary btn-sm">Consultar status →</RouterLink>
+            <button class="btn btn-outline btn-sm" @click="resetForm">Enviar outra mensagem</button>
+          </div>
         </div>
 
-        <div v-if="isAdmin" class="admin-no-msg">
+        <div v-else-if="isAdmin" class="admin-no-msg">
           <div>
             <p class="admin-no-msg-title">Administradores não enviam mensagens pela ouvidoria.</p>
             <p class="admin-no-msg-sub">Use o painel para gerenciar as mensagens recebidas.</p>
@@ -173,17 +164,10 @@ const posts = [
         </div>
 
         <template v-else>
-
-          <div v-if="!isLoggedIn" class="alert-info">
-            Quer enviar identificado e acompanhar o status depois?
-            <RouterLink to="/login" style="color:var(--roxo-escuro);font-weight:700;">Faça login</RouterLink>
-            antes de enviar. Ou continue abaixo para envio anônimo.
+          <div class="alert-info">
+            Sua mensagem é enviada de forma <strong style="color:var(--roxo-escuro);">anônima</strong>.
+            Após o envio você receberá um número de protocolo para acompanhar o status e a resposta.
           </div>
-
-          <p v-else style="font-size:0.88rem;color:var(--cinza);margin-bottom:1.5rem;line-height:1.6;">
-            Olá, <strong style="color:var(--roxo-escuro);">{{ user.nome }}</strong>. Envie identificado ou marque
-            "anônimo" — o CAESI não verá seu nome, mas sua mensagem ficará vinculada à sua conta para você acompanhar.
-          </p>
 
           <form @submit.prevent="submit" novalidate>
             <div class="field">
@@ -227,23 +211,16 @@ const posts = [
               <div class="char-counter" :class="{ warn: charCount > 1800 }">{{ charCount }} / 2000</div>
             </div>
 
-            <label v-if="isLoggedIn" class="check-anon">
-              <input type="checkbox" v-model="form.anonimo">
-              <div class="check-anon-label">
-                <strong>Enviar anonimamente</strong><br>
-                <span style="font-size:0.8rem;opacity:0.75;">O CAESI não verá seu nome — mas você ainda verá a mensagem no seu painel</span>
-              </div>
-            </label>
-
-            <div v-if="form.anonimo || !isLoggedIn" class="alert-info">
-              Esta mensagem será enviada de forma <strong style="color:var(--roxo-escuro);">anônima</strong> para o CAESI.
-              <template v-if="isLoggedIn"> Ela ainda aparecerá no seu painel para acompanhamento.</template>
+            <div class="field">
+              <label>
+                E-mail
+                <span class="field-hint">(opcional — para receber uma cópia)</span>
+              </label>
+              <input v-model="form.email" type="email" placeholder="seu@email.com">
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-amarelo">
-                {{ (isLoggedIn && !form.anonimo) ? 'Enviar mensagem →' : 'Enviar anonimamente →' }}
-              </button>
+              <button type="submit" class="btn btn-amarelo">Enviar anonimamente →</button>
             </div>
           </form>
         </template>

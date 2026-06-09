@@ -6,7 +6,6 @@ const routes = [
   { path: '/sobre',                  component: () => import('../views/SobreView.vue') },
   { path: '/estatuto',               component: () => import('../views/EstatutoView.vue') },
   { path: '/contato',                component: () => import('../views/ContatoView.vue') },
-  { path: '/ouvidoria',              component: () => import('../views/OuvidoriaView.vue') },
   { path: '/ouvidoria/consulta',     component: () => import('../views/OuvidoriaConsultaView.vue') },
   { path: '/formularios',            component: () => import('../views/aluno/FormulariosView.vue') },
   { path: '/formularios/:id',        component: () => import('../views/aluno/FormularioDetalheView.vue') },
