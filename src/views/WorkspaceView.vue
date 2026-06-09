@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { tasks, membros, atualizarStatus, salvarAnotacao } from '../stores/tasks.js'
+import { tasks, membros, atualizarStatus, salvarAnotacao, autoAlocar } from '../stores/tasks.js'
 import { showToast } from '../stores/toast.js'
 
 const route  = useRoute()
@@ -26,6 +26,21 @@ const contagem = computed(() => ({
   'em-andamento': minhasTasks.value.filter(t => t.status === 'em-andamento').length,
   concluida:      concluidas.value,
 }))
+
+// ── Tasks disponíveis para seleção ───────────────────────
+const tasksDisponiveis = computed(() => {
+  if (!membro.value) return []
+  return tasks.value.filter(t =>
+    t.selecionavel &&
+    t.status !== 'concluida' &&
+    !t.alocados.includes(membro.value.id)
+  )
+})
+
+function pegarTask(taskId) {
+  autoAlocar(taskId, membro.value.id)
+  showToast('Task adicionada ao seu workspace!', 'success')
+}
 
 // ── Anotações ─────────────────────────────────────────────
 const notasEdit = ref({}) // taskId → texto em edição
@@ -245,6 +260,30 @@ function diasRestantes(prazo) {
                 <button class="ws-btn-cancel" @click="cancelarNota(t.id)">Cancelar</button>
               </div>
             </template>
+          </div>
+        </div>
+      </div>
+      <!-- Tasks disponíveis para seleção -->
+      <div v-if="tasksDisponiveis.length" class="ws-disponiveis">
+        <div class="ws-disp-header">
+          <h2 class="ws-disp-title">Tasks disponíveis</h2>
+          <p class="ws-disp-sub">O administrador abriu essas tasks para seleção — clique em "Pegar task" para adicioná-la ao seu workspace.</p>
+        </div>
+        <div class="ws-disp-grid">
+          <div v-for="t in tasksDisponiveis" :key="t.id" class="ws-disp-card">
+            <div class="ws-card-top">
+              <span class="ws-badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
+              <span class="ws-badge-cat"  :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
+            </div>
+            <h3 class="ws-card-titulo">{{ t.titulo }}</h3>
+            <p v-if="t.descricao" class="ws-card-desc">{{ t.descricao }}</p>
+            <div class="ws-card-prazo" :class="prazoAlerta(t.prazo) ?? ''">
+              <span class="ws-prazo-icon">📅</span>
+              <span>Prazo: {{ prazoFormatado(t.prazo) }}</span>
+            </div>
+            <button class="ws-btn-pegar" @click="pegarTask(t.id)">
+              + Pegar task
+            </button>
           </div>
         </div>
       </div>
@@ -669,6 +708,55 @@ function diasRestantes(prazo) {
   transition: border-color 0.15s;
 }
 .ws-btn-cancel:hover { border-color: var(--cinza); }
+
+/* ── Tasks disponíveis ───────────────────────────────────── */
+.ws-disponiveis {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.ws-disp-header { margin-bottom: 1.2rem; }
+.ws-disp-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 1.1rem;
+  color: var(--creme);
+  margin-bottom: 0.3rem;
+}
+.ws-disp-sub { font-size: 0.82rem; color: rgba(242,230,196,0.5); }
+
+.ws-disp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.ws-disp-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-left: 3px solid var(--amarelo);
+  border-radius: 2px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: background 0.15s;
+}
+.ws-disp-card:hover { background: rgba(255,255,255,0.1); }
+
+.ws-btn-pegar {
+  margin-top: auto;
+  padding: 7px 14px;
+  background: var(--amarelo);
+  color: var(--preto);
+  border: none;
+  border-radius: 2px;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+}
+.ws-btn-pegar:hover { opacity: 0.85; }
 
 /* ── Footer ──────────────────────────────────────────────── */
 .ws-footer {

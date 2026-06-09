@@ -50,15 +50,16 @@ export function getMembroByToken(token) {
 
 export function criarTask(dados) {
   const task = {
-    id:        Date.now().toString(),
-    titulo:    dados.titulo,
-    descricao: dados.descricao || '',
-    prioridade: dados.prioridade,
-    prazo:     dados.prazo,
-    categoria: dados.categoria,
-    status:    'pendente',
-    alocados:  dados.alocados || [],
-    criadoEm: new Date().toISOString(),
+    id:          Date.now().toString(),
+    titulo:      dados.titulo,
+    descricao:   dados.descricao || '',
+    prioridade:  dados.prioridade,
+    prazo:       dados.prazo,
+    categoria:   dados.categoria,
+    status:      'pendente',
+    alocados:    dados.alocados || [],
+    selecionavel: dados.selecionavel || false,
+    criadoEm:   new Date().toISOString(),
   }
   persistTasks([..._tasks.value, task])
   return task
@@ -76,6 +77,13 @@ export function excluirTask(id) {
 
 export function atualizarStatus(id, status) {
   persistTasks(_tasks.value.map(t => t.id === id ? { ...t, status } : t))
+}
+
+export function autoAlocar(taskId, membroId) {
+  persistTasks(_tasks.value.map(t => {
+    if (t.id !== taskId || !t.selecionavel || t.alocados.includes(membroId)) return t
+    return { ...t, alocados: [...t.alocados, membroId] }
+  }))
 }
 
 export function salvarAnotacao(taskId, membroId, texto) {

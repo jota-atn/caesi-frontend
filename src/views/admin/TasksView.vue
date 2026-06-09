@@ -108,7 +108,7 @@ const editandoId = ref(null)
 
 const form = ref({
   titulo: '', descricao: '', prioridade: 'media',
-  prazo: '', categoria: 'gestao', alocados: [],
+  prazo: '', categoria: 'gestao', alocados: [], selecionavel: false,
 })
 
 const editandoTask = computed(() =>
@@ -125,19 +125,20 @@ const anotacoesDoTask = computed(() => {
 
 function abrirCriar() {
   editandoId.value = null
-  form.value = { titulo: '', descricao: '', prioridade: 'media', prazo: '', categoria: 'gestao', alocados: [] }
+  form.value = { titulo: '', descricao: '', prioridade: 'media', prazo: '', categoria: 'gestao', alocados: [], selecionavel: false }
   modalForm.value = true
 }
 
 function abrirEditar(task) {
   editandoId.value = task.id
   form.value = {
-    titulo:    task.titulo,
-    descricao: task.descricao,
-    prioridade: task.prioridade,
-    prazo:     task.prazo,
-    categoria: task.categoria,
-    alocados:  [...task.alocados],
+    titulo:       task.titulo,
+    descricao:    task.descricao,
+    prioridade:   task.prioridade,
+    prazo:        task.prazo,
+    categoria:    task.categoria,
+    alocados:     [...task.alocados],
+    selecionavel: task.selecionavel || false,
   }
   modalForm.value = true
 }
@@ -304,6 +305,7 @@ useEscapeKey(() => {
               <div class="kc-top">
                 <span class="kc-badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
                 <span class="kc-badge-cat"  :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
+                <span v-if="t.selecionavel" class="kc-badge-sel">🔓 Aberta</span>
               </div>
               <h4 class="kc-titulo">{{ t.titulo }}</h4>
               <p v-if="t.descricao" class="kc-desc">{{ t.descricao }}</p>
@@ -342,6 +344,7 @@ useEscapeKey(() => {
               <div class="kc-top">
                 <span class="kc-badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
                 <span class="kc-badge-cat"  :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
+                <span v-if="t.selecionavel" class="kc-badge-sel">🔓 Aberta</span>
               </div>
               <h4 class="kc-titulo">{{ t.titulo }}</h4>
               <p v-if="t.descricao" class="kc-desc">{{ t.descricao }}</p>
@@ -381,6 +384,7 @@ useEscapeKey(() => {
               <div class="kc-top">
                 <span class="kc-badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
                 <span class="kc-badge-cat"  :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
+                <span v-if="t.selecionavel" class="kc-badge-sel">🔓 Aberta</span>
               </div>
               <h4 class="kc-titulo">{{ t.titulo }}</h4>
               <p v-if="t.descricao" class="kc-desc">{{ t.descricao }}</p>
@@ -469,6 +473,21 @@ useEscapeKey(() => {
             </button>
           </div>
           <p v-else class="field-hint">Nenhum membro adicionado.</p>
+        </div>
+
+        <div class="field">
+          <label class="toggle-label">
+            <span class="toggle-track" :class="{ 'toggle-track--on': form.selecionavel }">
+              <span class="toggle-thumb"></span>
+            </span>
+            <input type="checkbox" v-model="form.selecionavel" style="display:none;" />
+            <span>
+              Aberta para seleção
+              <span class="field-hint" style="display:block;margin-top:2px;">
+                Membros podem se auto-alocar nessa task pelo workspace
+              </span>
+            </span>
+          </label>
         </div>
 
         <!-- Anotações dos membros (somente ao editar) -->
@@ -665,6 +684,19 @@ useEscapeKey(() => {
 /* ── Card content ────────────────────────────────────────── */
 .kc-top { display: flex; gap: 0.35rem; flex-wrap: wrap; }
 
+.kc-badge-sel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-family: 'Archivo Black', sans-serif;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: rgba(245,197,66,0.2);
+  color: #8a6a00;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-left: auto;
+}
+
 .kc-badge-prio, .kc-badge-cat {
   font-size: 0.62rem;
   font-weight: 700;
@@ -827,6 +859,41 @@ useEscapeKey(() => {
 .anotacao-nome { font-size: 0.78rem; font-weight: 700; color: var(--roxo-escuro); }
 .anotacao-data { font-size: 0.7rem; color: var(--cinza); }
 .anotacao-texto { font-size: 0.82rem; color: var(--preto); line-height: 1.5; white-space: pre-wrap; }
+
+/* ── Toggle ──────────────────────────────────────────────── */
+.toggle-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--preto);
+  user-select: none;
+}
+.toggle-track {
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--creme-escuro);
+  border: 2px solid var(--creme-escuro);
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  margin-top: 2px;
+}
+.toggle-track--on { background: var(--roxo-escuro); border-color: var(--roxo-escuro); }
+.toggle-thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--branco);
+  transition: transform 0.2s;
+}
+.toggle-track--on .toggle-thumb { transform: translateX(16px); }
 
 /* ── Botões ──────────────────────────────────────────────── */
 .btn-vermelho        { background: var(--vermelho); color: #fff; border: 2px solid var(--vermelho); }
