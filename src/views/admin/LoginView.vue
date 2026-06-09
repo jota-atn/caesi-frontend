@@ -50,6 +50,8 @@ function entrar() {
       <button type="submit" class="btn btn-primary btn-full" :disabled="loading">
         {{ loading ? 'Verificando...' : 'Entrar' }}
       </button>
+
+      <RouterLink to="/" class="admin-login-voltar">← Voltar ao site</RouterLink>
     </form>
   </div>
 </template>
@@ -114,4 +116,14 @@ function entrar() {
   letter-spacing: 0.15em;
 }
 .admin-login-input:focus { border-color: var(--roxo); }
+
+.admin-login-voltar {
+  display: block;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--cinza);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.admin-login-voltar:hover { color: var(--roxo-escuro); }
 </style>
