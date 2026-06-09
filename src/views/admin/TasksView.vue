@@ -211,8 +211,7 @@ useEscapeKey(() => {
     <div class="deco-star" style="top:120px;right:2%;font-size:1.3rem;opacity:0.3;">✦</div>
     <Navbar />
 
-    <!-- Cabeçalho + membros ficam centralizados -->
-    <div class="page-content page-content--wide">
+    <div class="kanban-wrapper">
 
       <div class="page-heading">
         <div>
@@ -290,10 +289,8 @@ useEscapeKey(() => {
           </select>
         </div>
       </div>
-    </div>
 
-    <!-- ── Kanban board (full width) ──────────────────────── -->
-    <div class="kanban-wrapper">
+      <!-- ── Kanban board ───────────────────────────────────── -->
       <div class="kanban-board">
 
         <!-- Coluna: Pendente -->
