@@ -1,18 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAdmin, logout } from '../stores/auth.js'
-import { tasks } from '../stores/tasks.js'
-import { computed } from 'vue'
 
 const menuOpen = ref(false)
 const route    = useRoute()
 const router   = useRouter()
-
-const tasksBadge = computed(() => {
-  if (!isAdmin.value) return 0
-  return tasks.value.reduce((acc, t) => acc + t.solicitacoes.length, 0)
-})
 
 function handleLogout() {
   menuOpen.value = false
@@ -49,10 +42,7 @@ function ariaCurrent(path) {
         <RouterLink to="/admin/mensagens"   class="nav-link" :aria-current="ariaCurrent('/admin/mensagens')"   @click="menuOpen = false">Mensagens</RouterLink>
         <RouterLink to="/admin/equipe"      class="nav-link" :aria-current="ariaCurrent('/admin/equipe')"      @click="menuOpen = false">Equipe</RouterLink>
         <RouterLink to="/admin/formularios" class="nav-link" :aria-current="ariaCurrent('/admin/formularios')" @click="menuOpen = false">Formulários</RouterLink>
-        <RouterLink to="/admin/tasks" class="nav-link nav-link--badge" :aria-current="ariaCurrent('/admin/tasks')" @click="menuOpen = false">
-          Tasks
-          <span v-if="tasksBadge > 0" class="nav-badge">{{ tasksBadge > 9 ? '9+' : tasksBadge }}</span>
-        </RouterLink>
+        <RouterLink to="/admin/tasks" class="nav-link" :aria-current="ariaCurrent('/admin/tasks')" @click="menuOpen = false">Tasks</RouterLink>
         <span class="nav-separator" />
         <button class="nav-link nav-link-btn" @click="handleLogout">Sair</button>
       </template>

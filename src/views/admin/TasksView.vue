@@ -5,29 +5,57 @@ import Navbar from '../../components/Navbar.vue'
 import { showToast } from '../../stores/toast.js'
 import { useEscapeKey } from '../../composables/useEscapeKey.js'
 import {
-  tasks, criarTask, editarTask, excluirTask,
-  atualizarStatus, solicitarParticipacao,
-  aprovarParticipacao, rejeitarParticipacao,
+  tasks, criarTask, editarTask, excluirTask, atualizarStatus,
+  membros, addMembro, removeMembro,
 } from '../../stores/tasks.js'
 import clipboardIcon from '../../assets/icons/clipboard.svg?raw'
 
 const router = useRouter()
 function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
 
-// ── Permissões ────────────────────────────────────────────
-const isRootAdmin = true
+// ── Membros ───────────────────────────────────────────────
+const adicionandoMembro = ref(false)
+const novoMembroNome    = ref('')
+const confirmarRmMembro = ref(null)
 
-const adminsDisponiveis = computed(() => [])
+function nomeMembro(id) {
+  return membros.value.find(m => m.id === id)?.nome ?? '?'
+}
 
-function nomeAdmin(email) { return email }
-
-function iniciaisAdmin(email) {
-  const nome = nomeAdmin(email)
+function iniciaisNome(nome) {
   return nome.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)
 }
 
+function adicionarMembro() {
+  if (!novoMembroNome.value.trim()) return
+  addMembro(novoMembroNome.value)
+  novoMembroNome.value = ''
+  adicionandoMembro.value = false
+  showToast('Membro adicionado.', 'success')
+}
+
+function confirmarRemover(m) {
+  confirmarRmMembro.value = m
+}
+
+function removerConfirmado() {
+  removeMembro(confirmarRmMembro.value.id)
+  showToast(`${confirmarRmMembro.value.nome} removido.`, 'info')
+  confirmarRmMembro.value = null
+}
+
+async function copiarLink(token) {
+  const url = `${window.location.origin}/workspace/${token}`
+  try {
+    await navigator.clipboard.writeText(url)
+    showToast('Link copiado!', 'success')
+  } catch {
+    showToast(url, 'info')
+  }
+}
+
 // ── Filtros ───────────────────────────────────────────────
-const busca      = ref('')
+const busca            = ref('')
 const filtroStatus     = ref('todas')
 const filtroPrioridade = ref('todas')
 const filtroCategoria  = ref('todas')
@@ -47,30 +75,20 @@ const tasksFiltradas = computed(() => {
       t.descricao.toLowerCase().includes(busca.value.toLowerCase())
     )
   return lista.slice().sort((a, b) => {
-    if (ordenacao.value === 'prazo') {
-      return new Date(a.prazo) - new Date(b.prazo)
-    }
+    if (ordenacao.value === 'prazo') return new Date(a.prazo) - new Date(b.prazo)
     const ord = { alta: 0, media: 1, baixa: 2 }
     return ord[a.prioridade] - ord[b.prioridade]
   })
 })
 
 const contagem = computed(() => ({
-  pendente:      tasks.value.filter(t => t.status === 'pendente').length,
+  pendente:       tasks.value.filter(t => t.status === 'pendente').length,
   'em-andamento': tasks.value.filter(t => t.status === 'em-andamento').length,
-  concluida:     tasks.value.filter(t => t.status === 'concluida').length,
+  concluida:      tasks.value.filter(t => t.status === 'concluida').length,
 }))
 
-// Solicitações pendentes para o Admin CAESI
-const solicitacoesPendentes = computed(() => {
-  if (!isRootAdmin.value) return []
-  return tasks.value.flatMap(t =>
-    t.solicitacoes.map(email => ({ task: t, email, nome: nomeAdmin(email) }))
-  )
-})
-
 // ── Modal: criar / editar ─────────────────────────────────
-const modalForm = ref(false)
+const modalForm  = ref(false)
 const editandoId = ref(null)
 
 const form = ref({
@@ -87,19 +105,19 @@ function abrirCriar() {
 function abrirEditar(task) {
   editandoId.value = task.id
   form.value = {
-    titulo:     task.titulo,
-    descricao:  task.descricao,
+    titulo:    task.titulo,
+    descricao: task.descricao,
     prioridade: task.prioridade,
-    prazo:      task.prazo,
-    categoria:  task.categoria,
-    alocados:   [...task.alocados],
+    prazo:     task.prazo,
+    categoria: task.categoria,
+    alocados:  [...task.alocados],
   }
   modalForm.value = true
 }
 
-function toggleAlocado(email) {
-  const idx = form.value.alocados.indexOf(email)
-  if (idx === -1) form.value.alocados.push(email)
+function toggleAlocado(id) {
+  const idx = form.value.alocados.indexOf(id)
+  if (idx === -1) form.value.alocados.push(id)
   else form.value.alocados.splice(idx, 1)
 }
 
@@ -126,22 +144,6 @@ function excluirConfirmado() {
   modalExcluir.value = null
 }
 
-// ── Ações de participação ─────────────────────────────────
-function solicitar(task) {
-  solicitarParticipacao(task.id, user.value.email, user.value.nome)
-  showToast('Solicitação enviada ao Admin CAESI.', 'info')
-}
-
-function aprovar(taskId, email) {
-  aprovarParticipacao(taskId, email)
-  showToast(`${nomeAdmin(email)} adicionado à task.`, 'success')
-}
-
-function rejeitar(taskId, email) {
-  rejeitarParticipacao(taskId, email)
-  showToast('Solicitação recusada.', 'info')
-}
-
 // ── Helpers visuais ───────────────────────────────────────
 const labelPrioridade = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }
 const labelCategoria  = { gestao: 'Gestão', formularios: 'Formulários', ouvidoria: 'Ouvidoria' }
@@ -153,29 +155,19 @@ function prazoFormatado(prazo) {
 }
 
 function prazoAlerta(prazo) {
-  if (!prazo) return false
+  if (!prazo) return null
   const hoje = new Date(); hoje.setHours(0,0,0,0)
-  const d = new Date(prazo + 'T00:00:00')
+  const d    = new Date(prazo + 'T00:00:00')
   const diff = (d - hoje) / 86400000
   return diff < 0 ? 'vencida' : diff <= 3 ? 'proxima' : null
 }
 
-function jaSolicitou(task) {
-  return task.solicitacoes.includes(user.value?.email)
-}
-
-function estaAlocado(task) {
-  return task.alocados.includes(user.value?.email)
-}
-
-function podeAlterarStatus(task) {
-  return isRootAdmin.value || estaAlocado(task)
-}
-
 // ── ESC fecha modais ──────────────────────────────────────
 useEscapeKey(() => {
-  if (modalExcluir.value) { modalExcluir.value = null; return }
-  if (modalForm.value)    { modalForm.value = false }
+  if (confirmarRmMembro.value) { confirmarRmMembro.value = null; return }
+  if (modalExcluir.value)      { modalExcluir.value = null; return }
+  if (modalForm.value)         { modalForm.value = false; return }
+  if (adicionandoMembro.value) { adicionandoMembro.value = false; novoMembroNome.value = '' }
 })
 </script>
 
@@ -190,26 +182,54 @@ useEscapeKey(() => {
           <button class="back-link" style="margin-bottom:0.5rem;" @click="voltar">← Voltar</button>
           <h2>Mural de <span>Tasks</span></h2>
         </div>
-        <button v-if="isRootAdmin" class="btn btn-amarelo" @click="abrirCriar">+ Nova task</button>
+        <button class="btn btn-amarelo" @click="abrirCriar">+ Nova task</button>
       </div>
 
-      <!-- Solicitações pendentes (Admin CAESI) -->
-      <div v-if="isRootAdmin && solicitacoesPendentes.length" class="paper paper-mb solicitacoes-banner">
-        <div class="label-sm" style="margin-bottom:0.8rem;">
-          Solicitações de participação ({{ solicitacoesPendentes.length }})
+      <!-- ── Membros do workspace ────────────────────────────── -->
+      <div class="membros-section paper paper-mb">
+        <div class="membros-header">
+          <span class="label-sm">Membros do workspace ({{ membros.length }})</span>
+          <button
+            v-if="!adicionandoMembro"
+            class="btn btn-sm btn-outline"
+            @click="adicionandoMembro = true"
+          >+ Adicionar</button>
         </div>
-        <div class="solicitacoes-lista">
-          <div v-for="s in solicitacoesPendentes" :key="s.email + s.task.id" class="solicitacao-item">
-            <div class="solicitacao-info">
-              <span class="solicitacao-nome">{{ s.nome }}</span>
-              <span class="solicitacao-task">{{ s.task.titulo }}</span>
-            </div>
-            <div class="solicitacao-acoes">
-              <button class="btn btn-sm btn-verde" @click="aprovar(s.task.id, s.email)">Aprovar</button>
-              <button class="btn btn-sm btn-outline" @click="rejeitar(s.task.id, s.email)">Recusar</button>
+
+        <div v-if="adicionandoMembro" class="membro-add-form">
+          <input
+            v-model="novoMembroNome"
+            class="membro-add-input"
+            placeholder="Nome do membro"
+            maxlength="60"
+            autofocus
+            @keydown.enter="adicionarMembro"
+            @keydown.esc="adicionandoMembro = false; novoMembroNome = ''"
+          />
+          <button
+            class="btn btn-sm btn-amarelo"
+            :disabled="!novoMembroNome.trim()"
+            @click="adicionarMembro"
+          >Adicionar</button>
+          <button
+            class="btn btn-sm btn-outline"
+            @click="adicionandoMembro = false; novoMembroNome = ''"
+          >Cancelar</button>
+        </div>
+
+        <div v-if="membros.length" class="membros-lista">
+          <div v-for="m in membros" :key="m.id" class="membro-item">
+            <span class="membro-avatar">{{ iniciaisNome(m.nome) }}</span>
+            <span class="membro-nome">{{ m.nome }}</span>
+            <div class="membro-acoes">
+              <button class="btn btn-sm btn-outline" @click="copiarLink(m.token)">Copiar link</button>
+              <button class="btn btn-sm btn-vermelho-outline" @click="confirmarRemover(m)">Remover</button>
             </div>
           </div>
         </div>
+        <p v-else-if="!adicionandoMembro" class="membro-empty">
+          Nenhum membro adicionado ainda.
+        </p>
       </div>
 
       <!-- Stats -->
@@ -265,19 +285,16 @@ useEscapeKey(() => {
       <div v-if="tasksFiltradas.length" class="tasks-grid">
         <div v-for="t in tasksFiltradas" :key="t.id" class="task-card" :class="'status-' + t.status">
 
-          <!-- Topo: prioridade + categoria + prazo -->
           <div class="task-card-top">
             <span class="badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
             <span class="badge-cat" :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
           </div>
 
-          <!-- Título + descrição -->
           <div class="task-card-body">
             <h3 class="task-titulo">{{ t.titulo }}</h3>
             <p v-if="t.descricao" class="task-descricao">{{ t.descricao }}</p>
           </div>
 
-          <!-- Prazo + status -->
           <div class="task-card-meta">
             <span class="task-prazo" :class="prazoAlerta(t.prazo) ?? ''">
               {{ prazoAlerta(t.prazo) === 'vencida' ? '⚠ Vencida' : prazoAlerta(t.prazo) === 'proxima' ? '⚡ ' : '' }}
@@ -286,60 +303,30 @@ useEscapeKey(() => {
             <span class="badge-status" :class="t.status">{{ labelStatus[t.status] }}</span>
           </div>
 
-          <!-- Alocados -->
           <div v-if="t.alocados.length" class="task-alocados">
             <span class="task-alocados-label">Alocados:</span>
             <div class="task-avatares">
-              <span v-for="email in t.alocados" :key="email" class="task-avatar" :title="nomeAdmin(email)">
-                {{ iniciaisAdmin(email) }}
-              </span>
+              <span
+                v-for="id in t.alocados" :key="id"
+                class="task-avatar"
+                :title="nomeMembro(id)"
+              >{{ iniciaisNome(nomeMembro(id)) }}</span>
             </div>
           </div>
-          <div v-else class="task-sem-alocados">Nenhum admin alocado</div>
+          <div v-else class="task-sem-alocados">Nenhum membro alocado</div>
 
-          <!-- Solicitações pendentes nessa task (Admin CAESI) -->
-          <div v-if="isRootAdmin && t.solicitacoes.length" class="task-solicitacoes-inline">
-            <span class="task-solicitacoes-badge">{{ t.solicitacoes.length }} solicitação{{ t.solicitacoes.length > 1 ? 'ões' : '' }} pendente{{ t.solicitacoes.length > 1 ? 's' : '' }}</span>
-          </div>
-
-          <!-- Ações -->
           <div class="task-card-acoes">
-            <!-- Admin CAESI -->
-            <template v-if="isRootAdmin">
-              <select
-                class="status-select"
-                :value="t.status"
-                @change="atualizarStatus(t.id, $event.target.value)"
-              >
-                <option value="pendente">Pendente</option>
-                <option value="em-andamento">Em andamento</option>
-                <option value="concluida">Concluída</option>
-              </select>
-              <button class="btn btn-sm btn-outline" @click="abrirEditar(t)">Editar</button>
-              <button class="btn btn-sm btn-vermelho-outline" @click="confirmarExcluir(t)">Excluir</button>
-            </template>
-
-            <!-- Admin alocado (não root) -->
-            <template v-else-if="estaAlocado(t)">
-              <select
-                class="status-select"
-                :value="t.status"
-                @change="atualizarStatus(t.id, $event.target.value)"
-              >
-                <option value="pendente">Pendente</option>
-                <option value="em-andamento">Em andamento</option>
-                <option value="concluida">Concluída</option>
-              </select>
-              <span class="badge-alocado">Você está nessa task</span>
-            </template>
-
-            <!-- Admin não alocado -->
-            <template v-else>
-              <button v-if="!jaSolicitou(t)" class="btn btn-sm btn-outline" @click="solicitar(t)">
-                Solicitar participação
-              </button>
-              <span v-else class="badge-solicitado">Solicitação enviada</span>
-            </template>
+            <select
+              class="status-select"
+              :value="t.status"
+              @change="atualizarStatus(t.id, $event.target.value)"
+            >
+              <option value="pendente">Pendente</option>
+              <option value="em-andamento">Em andamento</option>
+              <option value="concluida">Concluída</option>
+            </select>
+            <button class="btn btn-sm btn-outline" @click="abrirEditar(t)">Editar</button>
+            <button class="btn btn-sm btn-vermelho-outline" @click="confirmarExcluir(t)">Excluir</button>
           </div>
         </div>
       </div>
@@ -350,7 +337,7 @@ useEscapeKey(() => {
         <p style="color:var(--cinza);font-size:0.95rem;">
           {{ tasks.length === 0 ? 'Nenhuma task criada ainda.' : 'Nenhuma task encontrada com os filtros aplicados.' }}
         </p>
-        <button v-if="isRootAdmin && tasks.length === 0" class="btn btn-amarelo btn-sm" style="margin-top:1.2rem;" @click="abrirCriar">
+        <button v-if="tasks.length === 0" class="btn btn-amarelo btn-sm" style="margin-top:1.2rem;" @click="abrirCriar">
           Criar primeira task
         </button>
       </div>
@@ -397,20 +384,20 @@ useEscapeKey(() => {
         </div>
 
         <div class="field">
-          <label>Admins alocados</label>
-          <div v-if="adminsDisponiveis.length" class="alocados-chips">
+          <label>Membros alocados</label>
+          <div v-if="membros.length" class="alocados-chips">
             <button
-              v-for="a in adminsDisponiveis" :key="a.email"
+              v-for="m in membros" :key="m.id"
               type="button"
               class="alocado-chip"
-              :class="{ 'alocado-chip--ativo': form.alocados.includes(a.email) }"
-              @click="toggleAlocado(a.email)"
+              :class="{ 'alocado-chip--ativo': form.alocados.includes(m.id) }"
+              @click="toggleAlocado(m.id)"
             >
-              <span class="alocado-chip-avatar">{{ iniciaisAdmin(a.email) }}</span>
-              <span class="alocado-chip-nome">{{ a.nome }}</span>
+              <span class="alocado-chip-avatar">{{ iniciaisNome(m.nome) }}</span>
+              <span class="alocado-chip-nome">{{ m.nome }}</span>
             </button>
           </div>
-          <p v-else class="field-hint">Nenhum administrador cadastrado além do Admin CAESI.</p>
+          <p v-else class="field-hint">Nenhum membro adicionado ainda. Adicione membros na seção acima.</p>
         </div>
 
         <div class="modal-actions">
@@ -422,7 +409,7 @@ useEscapeKey(() => {
       </div>
     </div>
 
-    <!-- ── Modal: Confirmar exclusão ─────────────────────────── -->
+    <!-- ── Modal: Confirmar exclusão de task ─────────────────── -->
     <div v-if="modalExcluir" class="modal-overlay" @click.self="modalExcluir = null">
       <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-excluir-titulo" v-focus-trap>
         <h2 class="modal-title" id="modal-excluir-titulo">Excluir task</h2>
@@ -436,10 +423,99 @@ useEscapeKey(() => {
         </div>
       </div>
     </div>
+
+    <!-- ── Modal: Confirmar remoção de membro ────────────────── -->
+    <div v-if="confirmarRmMembro" class="modal-overlay" @click.self="confirmarRmMembro = null">
+      <div class="modal-box" role="dialog" aria-modal="true" v-focus-trap>
+        <h2 class="modal-title">Remover membro</h2>
+        <p class="modal-body">
+          Deseja remover <strong>{{ confirmarRmMembro.nome }}</strong>?
+          O link de acesso será invalidado e as tasks alocadas a ele serão desalocadas.
+        </p>
+        <div class="modal-actions">
+          <button class="btn btn-outline" @click="confirmarRmMembro = null">Cancelar</button>
+          <button class="btn btn-vermelho" @click="removerConfirmado">Remover</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+/* ── Membros ─────────────────────────────────────────────── */
+.membros-section { display: flex; flex-direction: column; gap: 1rem; }
+
+.membros-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.membro-add-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.membro-add-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 7px 10px;
+  border: 2px solid var(--creme-escuro);
+  border-radius: 2px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.9rem;
+  background: var(--branco);
+  color: var(--preto);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.membro-add-input:focus { border-color: var(--roxo); }
+
+.membros-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.membro-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--branco);
+  border: 1px solid var(--creme-escuro);
+  border-radius: 2px;
+  flex-wrap: wrap;
+}
+
+.membro-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--roxo-escuro);
+  color: var(--creme);
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: 'Archivo Black', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.membro-nome {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--preto);
+}
+
+.membro-acoes { display: flex; gap: 0.4rem; margin-left: auto; }
+
+.membro-empty { font-size: 0.85rem; color: var(--cinza); font-style: italic; margin: 0; }
+
 /* ── Stats chips ─────────────────────────────────────────── */
 .tasks-stats {
   display: flex;
@@ -506,20 +582,14 @@ useEscapeKey(() => {
 }
 .task-card:hover { box-shadow: 4px 4px 0 var(--roxo-escuro); }
 .task-card.status-concluida { opacity: 0.75; }
-
-/* Left border por status */
 .task-card.status-pendente     { border-left-color: var(--cinza); }
 .task-card.status-em-andamento { border-left-color: var(--roxo); }
 .task-card.status-concluida    { border-left-color: var(--verde); }
 
 /* ── Badges ──────────────────────────────────────────────── */
-.task-card-top {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
+.task-card-top { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
-.badge-prio, .badge-cat, .badge-status, .badge-alocado, .badge-solicitado {
+.badge-prio, .badge-cat, .badge-status {
   font-size: 0.68rem;
   font-weight: 700;
   padding: 2px 8px;
@@ -533,7 +603,7 @@ useEscapeKey(() => {
 .badge-prio.media  { background: rgba(245,197,66,0.2);   color: #8a6a00; }
 .badge-prio.baixa  { background: rgba(78,170,119,0.15);  color: #1a6640; }
 
-.badge-cat.gestao      { background: rgba(80,64,160,0.12); color: var(--roxo-escuro); }
+.badge-cat.gestao      { background: rgba(80,64,160,0.12);   color: var(--roxo-escuro); }
 .badge-cat.formularios { background: rgba(128,112,192,0.12); color: var(--roxo-escuro); }
 .badge-cat.ouvidoria   { background: rgba(200,176,120,0.25); color: #6b5200; }
 
@@ -541,14 +611,10 @@ useEscapeKey(() => {
 .badge-status.em-andamento  { background: rgba(128,112,192,0.15); color: var(--roxo-escuro); }
 .badge-status.concluida     { background: rgba(78,170,119,0.15);  color: #1a6640; }
 
-.badge-alocado   { font-size: 0.75rem; color: var(--verde); font-weight: 600; align-self: center; }
-.badge-solicitado { background: rgba(128,112,192,0.12); color: var(--cinza); }
-
 /* ── Conteúdo do card ────────────────────────────────────── */
 .task-card-body { flex: 1; }
 .task-titulo {
   font-family: 'Archivo Black', sans-serif;
-  font-weight: 700;
   font-size: 0.95rem;
   color: var(--preto);
   margin-bottom: 0.35rem;
@@ -570,11 +636,7 @@ useEscapeKey(() => {
   flex-wrap: wrap;
   gap: 0.4rem;
 }
-.task-prazo {
-  font-size: 0.78rem;
-  color: var(--cinza);
-  font-weight: 500;
-}
+.task-prazo { font-size: 0.78rem; color: var(--cinza); font-weight: 500; }
 .task-prazo.vencida { color: var(--vermelho); font-weight: 700; }
 .task-prazo.proxima { color: #8a6a00; font-weight: 700; }
 
@@ -596,17 +658,6 @@ useEscapeKey(() => {
   justify-content: center;
 }
 .task-sem-alocados { font-size: 0.78rem; color: var(--cinza); font-style: italic; }
-
-/* ── Solicitações inline ─────────────────────────────────── */
-.task-solicitacoes-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  background: rgba(245,197,66,0.25);
-  color: #8a6a00;
-  padding: 2px 8px;
-  border-radius: 2px;
-  font-family: 'Archivo Black', sans-serif;
-}
 
 /* ── Ações do card ───────────────────────────────────────── */
 .task-card-acoes {
@@ -637,36 +688,13 @@ useEscapeKey(() => {
 }
 .status-select:focus { border-color: var(--roxo); box-shadow: 0 0 0 3px rgba(128,112,192,0.2); }
 
-/* ── Solicitações banner ─────────────────────────────────── */
-.solicitacoes-banner { border-left: 4px solid var(--amarelo); }
-.solicitacoes-lista { display: flex; flex-direction: column; gap: 0.5rem; }
-.solicitacao-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--creme-escuro);
-}
-.solicitacao-item:last-child { border-bottom: none; }
-.solicitacao-info { display: flex; flex-direction: column; gap: 2px; }
-.solicitacao-nome { font-size: 0.88rem; font-weight: 700; color: var(--preto); }
-.solicitacao-task { font-size: 0.8rem; color: var(--cinza); }
-.solicitacao-acoes { display: flex; gap: 0.4rem; }
-
 /* ── Modal form ──────────────────────────────────────────── */
 .modal-box--lg { max-width: 620px; padding-bottom: 2.5rem; }
 .modal-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .modal-row .field { margin-bottom: 0; }
 .obrig { color: var(--vermelho); }
 
-.alocados-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
+.alocados-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
 .alocado-chip {
   display: flex;
   align-items: center;
@@ -676,16 +704,11 @@ useEscapeKey(() => {
   border: 2px solid var(--creme-escuro);
   border-radius: 999px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
   font-family: 'Archivo', sans-serif;
 }
-.alocado-chip:hover {
-  border-color: var(--roxo);
-}
-.alocado-chip--ativo {
-  background: var(--roxo-escuro);
-  border-color: var(--roxo-escuro);
-}
+.alocado-chip:hover { border-color: var(--roxo); }
+.alocado-chip--ativo { background: var(--roxo-escuro); border-color: var(--roxo-escuro); }
 .alocado-chip-avatar {
   width: 24px;
   height: 24px;
@@ -701,27 +724,15 @@ useEscapeKey(() => {
   flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
 }
-.alocado-chip--ativo .alocado-chip-avatar {
-  background: rgba(255,255,255,0.2);
-  color: var(--creme);
-}
-.alocado-chip-nome {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--preto);
-  transition: color 0.15s;
-}
-.alocado-chip--ativo .alocado-chip-nome {
-  color: var(--creme);
-}
+.alocado-chip--ativo .alocado-chip-avatar { background: rgba(255,255,255,0.2); color: var(--creme); }
+.alocado-chip-nome { font-size: 0.85rem; font-weight: 600; color: var(--preto); transition: color 0.15s; }
+.alocado-chip--ativo .alocado-chip-nome { color: var(--creme); }
 
 /* ── Botões extras ───────────────────────────────────────── */
-.btn-verde          { background: var(--verde); color: #fff; border-color: var(--verde); }
-.btn-verde:hover    { opacity: 0.88; }
-.btn-vermelho       { background: var(--vermelho); color: #fff; border: 2px solid var(--vermelho); }
-.btn-vermelho:hover { opacity: 0.88; }
-.btn-vermelho-outline        { background: none; color: var(--vermelho); border: 2px solid var(--vermelho); }
-.btn-vermelho-outline:hover  { background: rgba(217,85,85,0.08); }
+.btn-vermelho        { background: var(--vermelho); color: #fff; border: 2px solid var(--vermelho); }
+.btn-vermelho:hover  { opacity: 0.88; }
+.btn-vermelho-outline       { background: none; color: var(--vermelho); border: 2px solid var(--vermelho); }
+.btn-vermelho-outline:hover { background: rgba(217,85,85,0.08); }
 
 /* ── Mobile ──────────────────────────────────────────────── */
 @media (max-width: 600px) {
@@ -730,5 +741,7 @@ useEscapeKey(() => {
   .tasks-stats { gap: 0.4rem; }
   .tasks-stat-chip { min-width: 60px; padding: 8px 10px; }
   .tasks-stat-num { font-size: 1.2rem; }
+  .membro-item { gap: 0.5rem; }
+  .membro-acoes { width: 100%; }
 }
 </style>
