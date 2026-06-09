@@ -169,20 +169,19 @@ function confirmarExcluir() {
         </template>
       </div>
 
-      <!-- Resposta ao aluno -->
+      <!-- Resposta pública -->
       <div class="paper paper-mb">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem;flex-wrap:wrap;gap:8px;">
           <div>
-            <p class="label-sm">Resposta ao aluno</p>
+            <p class="label-sm">Resposta pública</p>
             <p style="font-size:0.76rem;color:var(--cinza);margin-top:2px;">
-              Visível para o aluno no painel dele
-              <template v-if="mensagem.anonimo"> · <em>anônimo — só vê se enviou enquanto logado</em></template>
+              Visível ao remetente ao consultar o protocolo
             </p>
           </div>
         </div>
         <textarea
           v-model="resposta"
-          placeholder="Escreva uma resposta para o aluno…"
+          placeholder="Escreva uma resposta para o remetente…"
           rows="4"
           class="internal-note textarea"
           style="width:100%;padding:10px 12px;background:var(--branco);border:2px solid var(--creme-escuro);border-radius:2px;font-family:'Archivo',sans-serif;font-size:0.9rem;color:var(--preto);resize:vertical;outline:none;transition:border-color 0.2s;"
@@ -210,7 +209,7 @@ function confirmarExcluir() {
 
         <div v-if="!atendida">
           <p style="font-size:0.87rem;color:var(--cinza);margin-bottom:1.2rem;line-height:1.5;">
-            Após tratar esta mensagem, marque-a como atendida. O aluno verá a atualização do status.
+            Após tratar esta mensagem, marque-a como atendida. O remetente verá a atualização ao consultar o protocolo.
           </p>
           <div class="btn-row">
             <button class="btn btn-amarelo" @click="marcarAtendida">✓ Marcar como atendida</button>

@@ -2,8 +2,6 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
-import { user } from '../../stores/auth.js'
-import { usuarios } from '../../stores/usuarios.js'
 import { showToast } from '../../stores/toast.js'
 import { useEscapeKey } from '../../composables/useEscapeKey.js'
 import {
@@ -17,15 +15,11 @@ const router = useRouter()
 function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
 
 // ── Permissões ────────────────────────────────────────────
-const isRootAdmin = computed(() => user.value?.email === 'admin')
+const isRootAdmin = true
 
-const adminsDisponiveis = computed(() =>
-  usuarios.value.filter(u => u.role === 'admin' && u.email !== 'admin' && u.ativo !== false)
-)
+const adminsDisponiveis = computed(() => [])
 
-function nomeAdmin(email) {
-  return usuarios.value.find(u => u.email === email)?.nome ?? email
-}
+function nomeAdmin(email) { return email }
 
 function iniciaisAdmin(email) {
   const nome = nomeAdmin(email)

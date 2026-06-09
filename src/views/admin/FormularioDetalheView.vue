@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados, aprovarCancelamento, recusarCancelamento } from '../../stores/formularios.js'
-import { usuarios } from '../../stores/usuarios.js'
 import { showToast } from '../../stores/toast.js'
 import { useEscapeKey } from '../../composables/useEscapeKey.js'
 import { usePagination } from '../../composables/usePagination.js'
@@ -140,7 +139,7 @@ function exportarCSV() {
 }
 
 function dadosInscrito(inscricao) {
-  return usuarios.value.find(u => u.email === inscricao.userEmail) ?? null
+  return inscricao.userEmail ? { nome: inscricao.userEmail } : null
 }
 
 function avancarStatus(inscricaoId, statusAtual) {

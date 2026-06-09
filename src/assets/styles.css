@@ -4,8 +4,6 @@
 @import './forms.css';
 
 @import './components/navbar.css';
-@import './components/user-dropdown.css';
-@import './components/notif-bell.css';
 @import './components/badges.css';
 @import './components/msg-card.css';
 @import './components/stats.css';
@@ -14,11 +12,7 @@
 @import './components/pagination.css';
 
 @import './views/home.css';
-@import './views/login.css';
-@import './views/success.css';
-@import './views/perfil.css';
 @import './views/admin-geral.css';
-@import './views/usuarios.css';
 @import './views/painel.css';
 @import './views/not-found.css';
 @import './views/formularios.css';

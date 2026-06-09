@@ -1,5 +1,4 @@
 import { ref, computed } from 'vue'
-import { addNotificacao } from './notificacoes.js'
 
 const KEY = 'caesi_mensagens'
 
@@ -25,34 +24,11 @@ export function addMensagem(msg) {
     preview: msg.corpo.slice(0, 110) + (msg.corpo.length > 110 ? '…' : ''),
   }
   persist([..._list.value, nova])
-
-  if (!nova.anonimo && nova.email) {
-    addNotificacao({
-      userEmail: nova.email,
-      tipo: 'mensagem-enviada',
-      titulo: 'Mensagem enviada com sucesso',
-      subtitulo: nova.assunto,
-      link: `/aluno/mensagem/${nova.id}`,
-      dedupeKey: `mensagem-enviada-${nova.id}`,
-    })
-  }
-
   return nova
 }
 
 export function updateStatus(id, status) {
-  const m = _list.value.find(m => m.id === id)
-  if (!m) return
-  persist(_list.value.map(msg => msg.id === id ? { ...msg, status } : msg))
-  if (status === 'atendida' && m.email) {
-    addNotificacao({
-      userEmail: m.email,
-      tipo: 'atendida',
-      mensagemId: m.id,
-      mensagemProtocolo: m.protocolo,
-      mensagemAssunto: m.assunto,
-    })
-  }
+  persist(_list.value.map(m => m.id === id ? { ...m, status } : m))
 }
 
 export function updateNota(id, nota) {
@@ -60,18 +36,7 @@ export function updateNota(id, nota) {
 }
 
 export function updateResposta(id, resposta) {
-  const m = _list.value.find(m => m.id === id)
-  if (!m) return
-  persist(_list.value.map(msg => msg.id === id ? { ...msg, resposta } : msg))
-  if (resposta.trim() && m.email) {
-    addNotificacao({
-      userEmail: m.email,
-      tipo: 'resposta',
-      mensagemId: m.id,
-      mensagemProtocolo: m.protocolo,
-      mensagemAssunto: m.assunto,
-    })
-  }
+  persist(_list.value.map(m => m.id === id ? { ...m, resposta } : m))
 }
 
 export function deleteMensagem(id) {
