@@ -8,6 +8,13 @@ import {
   tasks, criarTask, editarTask, excluirTask, atualizarStatus,
   membros, addMembro, removeMembro,
 } from '../../stores/tasks.js'
+import pencilIcon   from '../../assets/icons/pencil.svg?raw'
+import xIcon        from '../../assets/icons/x.svg?raw'
+import messageIcon  from '../../assets/icons/message.svg?raw'
+import unlockIcon   from '../../assets/icons/unlock.svg?raw'
+import warningIcon  from '../../assets/icons/warning.svg?raw'
+import zapIcon      from '../../assets/icons/zap.svg?raw'
+import calendarIcon from '../../assets/icons/calendar.svg?raw'
 
 const router = useRouter()
 function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
@@ -305,13 +312,13 @@ useEscapeKey(() => {
               <div class="kc-top">
                 <span class="kc-badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
                 <span class="kc-badge-cat"  :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
-                <span v-if="t.selecionavel" class="kc-badge-sel">🔓 Aberta</span>
+                <span v-if="t.selecionavel" class="kc-badge-sel"><span class="kc-sel-icon" v-html="unlockIcon"></span>Aberta</span>
               </div>
               <h4 class="kc-titulo">{{ t.titulo }}</h4>
               <p v-if="t.descricao" class="kc-desc">{{ t.descricao }}</p>
               <div class="kc-meta">
                 <span class="kc-prazo" :class="prazoAlerta(t.prazo) ?? ''">
-                  {{ prazoAlerta(t.prazo) === 'vencida' ? '⚠ ' : prazoAlerta(t.prazo) === 'proxima' ? '⚡ ' : '📅 ' }}
+                  <span class="kc-prazo-icon" v-html="prazoAlerta(t.prazo) === 'vencida' ? warningIcon : prazoAlerta(t.prazo) === 'proxima' ? zapIcon : calendarIcon"></span>
                   {{ prazoFormatado(t.prazo) }}
                 </span>
                 <div v-if="t.alocados.length" class="kc-avatares">
@@ -322,10 +329,10 @@ useEscapeKey(() => {
               </div>
               <div class="kc-actions">
                 <button class="kc-btn-mover kc-btn-iniciar" @click="moverStatus(t)">{{ NEXT_LABEL[t.status] }}</button>
-                <button class="kc-btn-icon" title="Editar" @click="abrirEditar(t)">✏</button>
-                <button class="kc-btn-icon kc-btn-del" title="Excluir" @click="confirmarExcluir(t)">✕</button>
+                <button class="kc-btn-icon" title="Editar" @click="abrirEditar(t)"><span v-html="pencilIcon"></span></button>
+                <button class="kc-btn-icon kc-btn-del" title="Excluir" @click="confirmarExcluir(t)"><span v-html="xIcon"></span></button>
                 <span v-if="totalAnotacoes(t)" class="kc-notas-badge" @click="abrirEditar(t)">
-                  💬 {{ totalAnotacoes(t) }}
+                  <span class="kc-notas-icon" v-html="messageIcon"></span>{{ totalAnotacoes(t) }}
                 </span>
               </div>
             </div>
@@ -344,13 +351,13 @@ useEscapeKey(() => {
               <div class="kc-top">
                 <span class="kc-badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
                 <span class="kc-badge-cat"  :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
-                <span v-if="t.selecionavel" class="kc-badge-sel">🔓 Aberta</span>
+                <span v-if="t.selecionavel" class="kc-badge-sel"><span class="kc-sel-icon" v-html="unlockIcon"></span>Aberta</span>
               </div>
               <h4 class="kc-titulo">{{ t.titulo }}</h4>
               <p v-if="t.descricao" class="kc-desc">{{ t.descricao }}</p>
               <div class="kc-meta">
                 <span class="kc-prazo" :class="prazoAlerta(t.prazo) ?? ''">
-                  {{ prazoAlerta(t.prazo) === 'vencida' ? '⚠ ' : prazoAlerta(t.prazo) === 'proxima' ? '⚡ ' : '📅 ' }}
+                  <span class="kc-prazo-icon" v-html="prazoAlerta(t.prazo) === 'vencida' ? warningIcon : prazoAlerta(t.prazo) === 'proxima' ? zapIcon : calendarIcon"></span>
                   {{ prazoFormatado(t.prazo) }}
                 </span>
                 <div v-if="t.alocados.length" class="kc-avatares">
@@ -362,10 +369,10 @@ useEscapeKey(() => {
               <div class="kc-actions">
                 <button class="kc-btn-mover kc-btn-concluir" @click="moverStatus(t)">{{ NEXT_LABEL[t.status] }}</button>
                 <button class="kc-btn-icon" @click="atualizarStatus(t.id, 'pendente')" title="Voltar para Pendente">↩</button>
-                <button class="kc-btn-icon" title="Editar" @click="abrirEditar(t)">✏</button>
-                <button class="kc-btn-icon kc-btn-del" title="Excluir" @click="confirmarExcluir(t)">✕</button>
+                <button class="kc-btn-icon" title="Editar" @click="abrirEditar(t)"><span v-html="pencilIcon"></span></button>
+                <button class="kc-btn-icon kc-btn-del" title="Excluir" @click="confirmarExcluir(t)"><span v-html="xIcon"></span></button>
                 <span v-if="totalAnotacoes(t)" class="kc-notas-badge" @click="abrirEditar(t)">
-                  💬 {{ totalAnotacoes(t) }}
+                  <span class="kc-notas-icon" v-html="messageIcon"></span>{{ totalAnotacoes(t) }}
                 </span>
               </div>
             </div>
@@ -384,13 +391,13 @@ useEscapeKey(() => {
               <div class="kc-top">
                 <span class="kc-badge-prio" :class="t.prioridade">{{ labelPrioridade[t.prioridade] }}</span>
                 <span class="kc-badge-cat"  :class="t.categoria">{{ labelCategoria[t.categoria] }}</span>
-                <span v-if="t.selecionavel" class="kc-badge-sel">🔓 Aberta</span>
+                <span v-if="t.selecionavel" class="kc-badge-sel"><span class="kc-sel-icon" v-html="unlockIcon"></span>Aberta</span>
               </div>
               <h4 class="kc-titulo">{{ t.titulo }}</h4>
               <p v-if="t.descricao" class="kc-desc">{{ t.descricao }}</p>
               <div class="kc-meta">
                 <span class="kc-prazo" :class="prazoAlerta(t.prazo) ?? ''">
-                  📅 {{ prazoFormatado(t.prazo) }}
+                  <span class="kc-prazo-icon" v-html="calendarIcon"></span>{{ prazoFormatado(t.prazo) }}
                 </span>
                 <div v-if="t.alocados.length" class="kc-avatares">
                   <span v-for="id in t.alocados" :key="id" class="kc-avatar" :title="nomeMembro(id)">
@@ -400,10 +407,10 @@ useEscapeKey(() => {
               </div>
               <div class="kc-actions">
                 <button class="kc-btn-mover kc-btn-reabrir" @click="moverStatus(t)">↩ Reabrir</button>
-                <button class="kc-btn-icon" title="Editar" @click="abrirEditar(t)">✏</button>
-                <button class="kc-btn-icon kc-btn-del" title="Excluir" @click="confirmarExcluir(t)">✕</button>
+                <button class="kc-btn-icon" title="Editar" @click="abrirEditar(t)"><span v-html="pencilIcon"></span></button>
+                <button class="kc-btn-icon kc-btn-del" title="Excluir" @click="confirmarExcluir(t)"><span v-html="xIcon"></span></button>
                 <span v-if="totalAnotacoes(t)" class="kc-notas-badge" @click="abrirEditar(t)">
-                  💬 {{ totalAnotacoes(t) }}
+                  <span class="kc-notas-icon" v-html="messageIcon"></span>{{ totalAnotacoes(t) }}
                 </span>
               </div>
             </div>
@@ -787,6 +794,14 @@ useEscapeKey(() => {
   transition: border-color 0.15s, color 0.15s, background 0.15s;
   flex-shrink: 0;
 }
+.kc-btn-icon span { display: flex; align-items: center; justify-content: center; }
+.kc-btn-icon svg  { width: 12px; height: 12px; }
+.kc-prazo-icon { display: inline-flex; align-items: center; vertical-align: middle; margin-right: 2px; }
+.kc-prazo-icon svg { width: 11px; height: 11px; }
+.kc-sel-icon { display: inline-flex; align-items: center; vertical-align: -1px; margin-right: 3px; }
+.kc-sel-icon svg { width: 10px; height: 10px; }
+.kc-notas-icon { display: inline-flex; align-items: center; vertical-align: -1px; margin-right: 3px; }
+.kc-notas-icon svg { width: 10px; height: 10px; }
 .kc-btn-icon:hover { border-color: var(--roxo); color: var(--roxo-escuro); background: rgba(80,64,160,0.06); }
 .kc-btn-del:hover  { border-color: var(--vermelho); color: var(--vermelho); background: rgba(217,85,85,0.06); }
 

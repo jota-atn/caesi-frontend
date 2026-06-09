@@ -3,6 +3,12 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { tasks, membros, atualizarStatus, salvarAnotacao, autoAlocar } from '../stores/tasks.js'
 import { showToast } from '../stores/toast.js'
+import lockIcon      from '../assets/icons/lock.svg?raw'
+import clipboardIcon from '../assets/icons/clipboard.svg?raw'
+import pencilIcon    from '../assets/icons/pencil.svg?raw'
+import warningIcon   from '../assets/icons/warning.svg?raw'
+import zapIcon       from '../assets/icons/zap.svg?raw'
+import calendarIcon  from '../assets/icons/calendar.svg?raw'
 
 const route  = useRoute()
 const membro = computed(() => membros.value.find(m => m.token === route.params.token) || null)
@@ -102,7 +108,7 @@ function diasRestantes(prazo) {
       <div class="ws-inv-logo">
         <img src="/logo_caesi.png" alt="CAESI" />
       </div>
-      <div class="ws-inv-icon">🔒</div>
+      <div class="ws-inv-icon" v-html="lockIcon"></div>
       <h2 class="ws-inv-title">Link inválido ou expirado</h2>
       <p class="ws-inv-desc">Este link não é mais válido. Solicite um novo ao administrador do CAESI.</p>
       <RouterLink to="/" class="btn btn-outline" style="margin-top:1.5rem;">← Voltar ao site</RouterLink>
@@ -144,7 +150,7 @@ function diasRestantes(prazo) {
           </h1>
           <p class="ws-hero-sub">
             <template v-if="minhasTasks.length === 0">Nenhuma task alocada ainda.</template>
-            <template v-else-if="concluidas === minhasTasks.length">Todas as tasks concluídas! 🎉</template>
+            <template v-else-if="concluidas === minhasTasks.length">Todas as tasks concluídas!</template>
             <template v-else>{{ concluidas }} de {{ minhasTasks.length }} tasks concluídas · {{ progresso }}%</template>
           </p>
         </div>
@@ -174,7 +180,7 @@ function diasRestantes(prazo) {
 
       <!-- Empty -->
       <div v-if="minhasTasks.length === 0" class="ws-empty">
-        <div class="ws-empty-icon">📋</div>
+        <div class="ws-empty-icon" v-html="clipboardIcon"></div>
         <p class="ws-empty-title">Sem tasks alocadas</p>
         <p class="ws-empty-desc">O administrador irá alocar tasks para você em breve.</p>
       </div>
@@ -202,9 +208,7 @@ function diasRestantes(prazo) {
 
           <!-- Prazo -->
           <div class="ws-card-prazo" :class="prazoAlerta(t.prazo) ?? ''">
-            <span class="ws-prazo-icon">
-              {{ prazoAlerta(t.prazo) === 'vencida' ? '⚠' : prazoAlerta(t.prazo) === 'proxima' ? '⚡' : '📅' }}
-            </span>
+            <span class="ws-prazo-icon" v-html="prazoAlerta(t.prazo) === 'vencida' ? warningIcon : prazoAlerta(t.prazo) === 'proxima' ? zapIcon : calendarIcon"></span>
             <span>
               {{ prazoAlerta(t.prazo) === 'vencida' ? 'Vencida em ' : '' }}
               {{ prazoFormatado(t.prazo) }}
@@ -230,7 +234,7 @@ function diasRestantes(prazo) {
           <!-- Anotação -->
           <div class="ws-nota">
             <div class="ws-nota-header">
-              <span class="ws-nota-label">📝 Sua nota</span>
+              <span class="ws-nota-label"><span class="ws-nota-label-icon" v-html="pencilIcon"></span>Sua nota</span>
               <button
                 v-if="!estaEditandoNota(t.id)"
                 class="ws-nota-edit-btn"
@@ -278,7 +282,7 @@ function diasRestantes(prazo) {
             <h3 class="ws-card-titulo">{{ t.titulo }}</h3>
             <p v-if="t.descricao" class="ws-card-desc">{{ t.descricao }}</p>
             <div class="ws-card-prazo" :class="prazoAlerta(t.prazo) ?? ''">
-              <span class="ws-prazo-icon">📅</span>
+              <span class="ws-prazo-icon" v-html="calendarIcon"></span>
               <span>Prazo: {{ prazoFormatado(t.prazo) }}</span>
             </div>
             <button class="ws-btn-pegar" @click="pegarTask(t.id)">
@@ -319,7 +323,8 @@ function diasRestantes(prazo) {
   gap: 0.75rem;
 }
 .ws-inv-logo img { width: 52px; height: 52px; object-fit: contain; }
-.ws-inv-icon { font-size: 2.5rem; margin: 0.5rem 0; }
+.ws-inv-icon { display: flex; align-items: center; justify-content: center; margin: 0.5rem 0; color: var(--roxo-escuro); }
+.ws-inv-icon svg { width: 40px; height: 40px; }
 .ws-inv-title { font-family: 'Archivo Black', sans-serif; font-size: 1.3rem; color: var(--roxo-escuro); margin: 0; }
 .ws-inv-desc  { font-size: 0.9rem; color: var(--cinza); margin: 0; line-height: 1.5; }
 
@@ -492,7 +497,8 @@ function diasRestantes(prazo) {
   text-align: center;
   padding: 5rem 2rem;
 }
-.ws-empty-icon  { font-size: 3rem; margin-bottom: 1rem; }
+.ws-empty-icon { display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+.ws-empty-icon svg { width: 48px; height: 48px; color: rgba(242,230,196,0.3); }
 .ws-empty-title { font-family: 'Archivo Black', sans-serif; font-size: 1.1rem; color: var(--creme); margin-bottom: 0.5rem; }
 .ws-empty-desc  { font-size: 0.88rem; color: rgba(242,230,196,0.5); }
 
@@ -583,7 +589,8 @@ function diasRestantes(prazo) {
 }
 .ws-card-prazo.vencida { color: var(--vermelho); font-weight: 700; border-color: var(--vermelho); background: rgba(217,85,85,0.06); }
 .ws-card-prazo.proxima { color: #8a6a00; font-weight: 700; border-color: var(--amarelo); background: rgba(245,197,66,0.08); }
-.ws-prazo-icon { font-size: 0.9rem; }
+.ws-prazo-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
+.ws-prazo-icon svg { width: 13px; height: 13px; }
 
 /* ── Actions ─────────────────────────────────────────────── */
 .ws-card-actions {
@@ -623,6 +630,9 @@ function diasRestantes(prazo) {
   justify-content: space-between;
 }
 .ws-nota-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 0.7rem;
   font-weight: 700;
   font-family: 'Archivo Black', sans-serif;
@@ -630,6 +640,8 @@ function diasRestantes(prazo) {
   letter-spacing: 0.06em;
   color: var(--roxo-escuro);
 }
+.ws-nota-label-icon { display: inline-flex; align-items: center; }
+.ws-nota-label-icon svg { width: 11px; height: 11px; }
 .ws-nota-edit-btn {
   background: none;
   border: 1px solid var(--creme-escuro);
