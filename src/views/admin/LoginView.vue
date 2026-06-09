@@ -25,6 +25,7 @@ function entrar() {
 
 <template>
   <div class="admin-login-page">
+    <RouterLink to="/" class="admin-login-voltar">← Voltar ao site</RouterLink>
     <form class="admin-login-box" @submit.prevent="entrar">
       <div class="admin-login-logo">
         <img src="/logo_caesi.png" alt="CAESI" />
@@ -51,13 +52,13 @@ function entrar() {
         {{ loading ? 'Verificando...' : 'Entrar' }}
       </button>
 
-      <RouterLink to="/" class="admin-login-voltar">← Voltar ao site</RouterLink>
     </form>
   </div>
 </template>
 
 <style scoped>
 .admin-login-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -118,12 +119,15 @@ function entrar() {
 .admin-login-input:focus { border-color: var(--roxo); }
 
 .admin-login-voltar {
-  display: block;
-  text-align: center;
-  font-size: 0.84rem;
-  color: var(--cinza);
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.88rem;
+  color: var(--creme);
   text-decoration: none;
-  transition: color 0.15s;
+  opacity: 0.8;
+  transition: opacity 0.15s;
 }
-.admin-login-voltar:hover { color: var(--roxo-escuro); }
+.admin-login-voltar:hover { opacity: 1; }
 </style>
