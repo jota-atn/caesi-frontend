@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { upsertEventoFormulario, removeEventoByFormulario } from './calendario.js'
 
 const KEY_FORMS = 'caesi_formularios_v2'
 const KEY_INSCRICOES = 'caesi_inscricoes_v2'
@@ -31,16 +32,22 @@ export function addFormulario(dados) {
     criadoEm: new Date().toISOString().split('T')[0],
   }
   persistForms([..._forms.value, novo])
+  upsertEventoFormulario(novo.id, { nome: novo.titulo, data: novo.dataEvento, descricao: novo.descricao })
   return novo
 }
 
 export function updateFormulario(id, updates) {
   persistForms(_forms.value.map(f => f.id === id ? { ...f, ...updates } : f))
+  const atualizado = _forms.value.find(f => f.id === id)
+  if (atualizado) {
+    upsertEventoFormulario(id, { nome: atualizado.titulo, data: atualizado.dataEvento, descricao: atualizado.descricao })
+  }
 }
 
 export function deleteFormulario(id) {
   persistForms(_forms.value.filter(f => f.id !== id))
   persistInscricoes(_inscricoes.value.filter(i => i.formularioId !== id))
+  removeEventoByFormulario(id)
 }
 
 export function getInscricoesByFormulario(formularioId) {

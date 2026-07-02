@@ -156,13 +156,14 @@ function avancarStatus(inscricaoId, statusAtual) {
 const editando    = ref(false)
 const editSalvo   = ref(false)
 const editErrors  = ref({})
-const editForm    = ref({ titulo: '', descricao: '', prazoInscricao: '', valor: '', limiteVagas: '' })
+const editForm    = ref({ titulo: '', descricao: '', prazoInscricao: '', dataEvento: '', valor: '', limiteVagas: '' })
 
 function abrirEdicao() {
   editForm.value = {
     titulo:          formulario.value.titulo,
     descricao:       formulario.value.descricao ?? '',
     prazoInscricao:  formulario.value.prazoInscricao ?? '',
+    dataEvento:      formulario.value.dataEvento ?? '',
     valor:           formulario.value.valor ?? '',
     limiteVagas:     formulario.value.limiteVagas ?? '',
   }
@@ -186,6 +187,7 @@ function salvarEdicao() {
     titulo:         editForm.value.titulo.trim(),
     descricao:      editForm.value.descricao.trim(),
     prazoInscricao: editForm.value.prazoInscricao || null,
+    dataEvento:     editForm.value.dataEvento || null,
     ...(formulario.value.pago ? { valor: Number(editForm.value.valor) } : {}),
     limiteVagas: editForm.value.limiteVagas ? Number(editForm.value.limiteVagas) : null,
   })
@@ -267,6 +269,9 @@ function excluirFormulario() {
           <div v-if="formulario.prazoInscricao" class="msg-meta-item">
             <span class="msg-meta-label">Prazo:</span> {{ formatData(formulario.prazoInscricao) }}
           </div>
+          <div v-if="formulario.dataEvento" class="msg-meta-item">
+            <span class="msg-meta-label">Data do evento:</span> {{ formatData(formulario.dataEvento) }}
+          </div>
           <div class="msg-meta-item">
             <span class="msg-meta-label">Pagamento:</span>
             {{ formulario.pago ? `Pago — ${formatValor(formulario.valor)}` : 'Gratuito' }}
@@ -321,6 +326,10 @@ function excluirFormulario() {
               <label>Prazo de inscrição</label>
               <input v-model="editForm.prazoInscricao" type="date">
             </div>
+          </div>
+          <div class="field">
+            <label>Data do evento <span class="field-hint">(opcional — adiciona ao calendário público)</span></label>
+            <input v-model="editForm.dataEvento" type="date">
           </div>
           <div class="field">
             <label>Descrição</label>

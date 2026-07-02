@@ -50,7 +50,7 @@ const novoFormSuccess = ref(false)
 const novoFormErrors  = ref({})
 const novoForm = ref({
   titulo: '', tipo: '', descricao: '',
-  pago: false, valor: '', prazoInscricao: '',
+  pago: false, valor: '', prazoInscricao: '', dataEvento: '',
   limiteVagas: '', requerMatricula: false,
   campos: [],
 })
@@ -59,7 +59,7 @@ function cancelNovoForm() {
   showNovoForm.value = false
   novoFormSuccess.value = false
   novoFormErrors.value = {}
-  novoForm.value = { titulo: '', tipo: '', descricao: '', pago: false, valor: '', prazoInscricao: '', limiteVagas: '', requerMatricula: false, campos: [] }
+  novoForm.value = { titulo: '', tipo: '', descricao: '', pago: false, valor: '', prazoInscricao: '', dataEvento: '', limiteVagas: '', requerMatricula: false, campos: [] }
 }
 
 watch(() => novoForm.value.tipo, (tipo) => {
@@ -113,6 +113,7 @@ function submitNovoForm() {
     pago: novoForm.value.pago,
     valor: novoForm.value.pago ? Number(novoForm.value.valor) : null,
     prazoInscricao:  novoForm.value.prazoInscricao || null,
+    dataEvento:      novoForm.value.dataEvento || null,
     limiteVagas:     novoForm.value.limiteVagas ? Number(novoForm.value.limiteVagas) : null,
     requerMatricula: novoForm.value.requerMatricula,
     campos,
@@ -219,6 +220,11 @@ function submitNovoForm() {
               <label>Limite de submissões <span class="field-hint">(opcional)</span></label>
               <input v-model="novoForm.limiteVagas" type="number" min="1" step="1" placeholder="Ilimitado">
             </div>
+          </div>
+
+          <div class="field">
+            <label>Data do evento <span class="field-hint">(opcional — adiciona ao calendário público)</span></label>
+            <input v-model="novoForm.dataEvento" type="date">
           </div>
 
           <label class="check-anon" style="margin-top:1rem;margin-bottom:0;">
