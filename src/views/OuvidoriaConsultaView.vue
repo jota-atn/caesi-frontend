@@ -10,14 +10,14 @@ const input    = ref('')
 const resultado = ref(null)
 const naoEncontrado = ref(false)
 
-const categorias = {
-  matricula: 'Matrícula e Sistema Acadêmico',
-  infra:     'Infraestrutura e Espaço Físico',
-  docente:   'Corpo Docente',
-  estagio:   'Estágios e Oportunidades',
-  eventos:   'Eventos e Atividades',
-  sugestao:  'Sugestão de Melhoria',
-  outro:     'Outro',
+const tipoLabel = {
+  disciplina:     'Disciplina',
+  professores:    'Professores',
+  colegas:        'Colegas de curso',
+  infraestrutura: 'Infraestrutura',
+  ofertas:        'Ofertas e horários',
+  grupos:         'Grupos estudantis',
+  outros:         'Outros',
 }
 
 const statusLabel = {
@@ -105,12 +105,12 @@ onMounted(() => {
             <span class="msg-meta-label">Data</span><br>{{ resultado.data }}
           </div>
           <div class="msg-meta-item">
-            <span class="msg-meta-label">Categoria</span><br>{{ categorias[resultado.categoria] ?? resultado.categoria }}
+            <span class="msg-meta-label">Tipo de relato</span><br>{{ tipoLabel[resultado.tipo] ?? resultado.tipo }}
+          </div>
+          <div v-if="resultado.periodo" class="msg-meta-item">
+            <span class="msg-meta-label">Período</span><br>{{ resultado.periodo }}
           </div>
         </div>
-
-        <p class="label-sm" style="margin-bottom:8px;">Assunto</p>
-        <p class="msg-title" style="font-size:1.1rem;">{{ resultado.assunto }}</p>
 
         <p class="label-sm" style="margin-bottom:8px;">Mensagem enviada</p>
         <div class="msg-body">{{ resultado.corpo }}</div>

@@ -6,6 +6,16 @@ import Badge from '../../components/Badge.vue'
 import Tag from '../../components/Tag.vue'
 import { mensagens, updateStatus, updateNota, updateResposta, deleteMensagem } from '../../stores/mensagens.js'
 
+const TIPO_LABEL = {
+  disciplina:     'Disciplina',
+  professores:    'Professores',
+  colegas:        'Colegas de curso',
+  infraestrutura: 'Infraestrutura',
+  ofertas:        'Ofertas e horários',
+  grupos:         'Grupos estudantis',
+  outros:         'Outros',
+}
+
 const route = useRoute()
 const router = useRouter()
 
@@ -35,7 +45,7 @@ function mostrarNotifEmail(texto) {
 function marcarAtendida() {
   status.value = 'atendida'
   updateStatus(id, 'atendida')
-  if (!mensagem.value?.anonimo && mensagem.value?.email) {
+  if (mensagem.value?.email) {
     mostrarNotifEmail(`E-mail de notificação enviado para ${mensagem.value.email}`)
   }
 }
@@ -55,7 +65,7 @@ function salvarResposta() {
   updateResposta(id, resposta.value)
   respostaSalva.value = true
   setTimeout(() => { respostaSalva.value = false }, 2000)
-  if (resposta.value.trim() && !mensagem.value?.anonimo && mensagem.value?.email) {
+  if (resposta.value.trim() && mensagem.value?.email) {
     mostrarNotifEmail(`E-mail de notificação enviado para ${mensagem.value.email}`)
   }
 }
@@ -88,18 +98,18 @@ function confirmarExcluir() {
 
       <div class="paper paper-mb">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <Tag :categoria="mensagem.categoria" />
+          <Tag :tipo="mensagem.tipo" />
           <Badge :status="status" />
         </div>
 
-        <h1 class="msg-title">{{ mensagem.assunto }}</h1>
+        <h1 class="msg-title">{{ TIPO_LABEL[mensagem.tipo] ?? mensagem.tipo }}</h1>
 
         <div class="msg-meta">
           <div class="msg-meta-item">
-            <span class="msg-meta-label">Autor:</span> {{ mensagem.anonimo ? 'Anônimo' : mensagem.autor }}
+            <span class="msg-meta-label">Remetente:</span> {{ mensagem.nome ?? 'Anônimo' }}
           </div>
-          <div v-if="!mensagem.anonimo && mensagem.matricula" class="msg-meta-item">
-            <span class="msg-meta-label">Matrícula:</span> {{ mensagem.matricula }}
+          <div v-if="mensagem.periodo" class="msg-meta-item">
+            <span class="msg-meta-label">Período:</span> {{ mensagem.periodo }}
           </div>
           <div class="msg-meta-item">
             <span class="msg-meta-label">Data:</span> {{ mensagem.data }}
@@ -135,11 +145,12 @@ function confirmarExcluir() {
       </div>
 
       <!-- Contato direto por e-mail -->
-      <div v-if="!mensagem.anonimo && mensagem.autor" class="paper paper-mb">
+      <div v-if="mensagem.email" class="paper paper-mb">
         <p class="label-sm" style="margin-bottom:4px;">Contato direto</p>
         <p style="font-size:0.76rem;color:var(--cinza);margin-bottom:1rem;">
-          Enviar e-mail para <strong style="color:var(--preto);">{{ mensagem.autor }}</strong>
-          <template v-if="mensagem.email"> — {{ mensagem.email }}</template>
+          Enviar e-mail para
+          <strong style="color:var(--preto);">{{ mensagem.nome ?? 'remetente' }}</strong>
+          — {{ mensagem.email }}
         </p>
 
         <div v-if="emailEnviado" class="alert-atendida">

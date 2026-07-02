@@ -3,12 +3,14 @@ import { ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import { addMensagem } from '../stores/mensagens.js'
+import { isAdmin } from '../stores/auth.js'
 
-const form = ref({ assunto: '', categoria: '', mensagem: '', email: '' })
+const form = ref({ tipo: '', periodo: '', mensagem: '', nome: '', email: '' })
 const errors = ref({})
 const charCount = ref(0)
 const enviado = ref(false)
 const protocolo = ref('')
+const emailEnviado = ref(false)
 
 function onInput(e) {
   charCount.value = e.target.value.length
@@ -16,28 +18,29 @@ function onInput(e) {
 
 function submit() {
   const e = {}
-  if (!form.value.assunto.trim()) e.assunto = true
-  if (!form.value.categoria)      e.categoria = true
+  if (!form.value.tipo)                       e.tipo = true
+  if (!form.value.periodo.trim())             e.periodo = true
   if (form.value.mensagem.trim().length < 20) e.mensagem = true
   errors.value = e
   if (Object.keys(e).length === 0) {
     const nova = addMensagem({
-      assunto:   form.value.assunto,
-      categoria: form.value.categoria,
-      corpo:     form.value.mensagem,
-      anonimo:   true,
-      autor:     'Anônimo',
-      email:     form.value.email.trim() || null,
+      tipo:    form.value.tipo,
+      periodo: form.value.periodo.trim(),
+      corpo:   form.value.mensagem,
+      nome:    form.value.nome.trim() || null,
+      email:   form.value.email.trim() || null,
     })
     protocolo.value = nova.protocolo
+    emailEnviado.value = !!form.value.email.trim()
     enviado.value = true
   }
 }
 
 function resetForm() {
-  form.value = { assunto: '', categoria: '', mensagem: '', email: '' }
+  form.value = { tipo: '', periodo: '', mensagem: '', nome: '', email: '' }
   charCount.value = 0
   enviado.value = false
+  emailEnviado.value = false
 }
 
 const posts = [
@@ -126,10 +129,11 @@ const posts = [
         <div v-if="enviado" class="anon-success">
           <div class="check-circle">✓</div>
           <h3 style="font-family:'Archivo Black',sans-serif;font-size:1.3rem;color:var(--roxo-escuro);margin-bottom:0.5rem;">
-            Mensagem enviada!
+            Ticket enviado!
           </h3>
           <p style="font-size:0.9rem;color:var(--cinza);margin-bottom:1.2rem;line-height:1.6;">
-            Guarde o número de protocolo abaixo para acompanhar sua mensagem e ver a resposta do CAESI.
+            Guarde o protocolo abaixo para acompanhar o andamento e ver a resposta do CAESI.
+            <template v-if="emailEnviado"> O protocolo também será enviado para o seu e-mail.</template>
           </p>
           <div class="protocolo-box">
             <div class="protocolo-label">Protocolo</div>
@@ -137,14 +141,14 @@ const posts = [
           </div>
           <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
             <RouterLink :to="`/ouvidoria/consulta?protocolo=${encodeURIComponent(protocolo)}`" class="btn btn-primary btn-sm">Consultar status →</RouterLink>
-            <button class="btn btn-outline btn-sm" @click="resetForm">Enviar outra mensagem</button>
+            <button class="btn btn-outline btn-sm" @click="resetForm">Enviar outro ticket</button>
           </div>
         </div>
 
         <div v-else-if="isAdmin" class="admin-no-msg">
           <div>
-            <p class="admin-no-msg-title">Administradores não enviam mensagens pela ouvidoria.</p>
-            <p class="admin-no-msg-sub">Use o painel para gerenciar as mensagens recebidas.</p>
+            <p class="admin-no-msg-title">Administradores não enviam tickets pela ouvidoria.</p>
+            <p class="admin-no-msg-sub">Use o painel para gerenciar os tickets recebidos.</p>
           </div>
           <RouterLink to="/admin/mensagens" class="btn btn-outline btn-sm">
             Ir ao painel →
@@ -153,31 +157,34 @@ const posts = [
 
         <template v-else>
           <div class="alert-info">
-            Sua mensagem é enviada de forma <strong style="color:var(--roxo-escuro);">anônima</strong>.
-            Após o envio você receberá um número de protocolo para acompanhar o status e a resposta.
+            A identificação é <strong style="color:var(--roxo-escuro);">opcional</strong>.
+            Após o envio você receberá um número de protocolo para acompanhar o status e a resposta do CAESI.
           </div>
 
           <form @submit.prevent="submit" novalidate>
             <div class="field">
-              <label>Assunto *</label>
-              <input v-model="form.assunto" type="text" placeholder="Descreva brevemente o tema" maxlength="100"
-                :class="{ invalid: errors.assunto }">
-              <span class="error-msg" role="alert">Preencha o assunto.</span>
+              <label>Tipo de relato *</label>
+              <select v-model="form.tipo" :class="{ invalid: errors.tipo }">
+                <option value="" disabled>Selecione o tipo de relato</option>
+                <option value="disciplina">Disciplina</option>
+                <option value="professores">Professores</option>
+                <option value="colegas">Colegas de curso</option>
+                <option value="infraestrutura">Infraestrutura</option>
+                <option value="ofertas">Ofertas e horários</option>
+                <option value="grupos">Grupos estudantis</option>
+                <option value="outros">Outros</option>
+              </select>
+              <span class="error-msg" role="alert">Selecione o tipo de relato.</span>
             </div>
 
             <div class="field">
-              <label>Categoria *</label>
-              <select v-model="form.categoria" :class="{ invalid: errors.categoria }">
-                <option value="" disabled>Selecione uma categoria</option>
-                <option value="matricula">Matrícula e Sistema Acadêmico</option>
-                <option value="infra">Infraestrutura e Espaço Físico</option>
-                <option value="docente">Corpo Docente</option>
-                <option value="estagio">Estágios e Oportunidades</option>
-                <option value="eventos">Eventos e Atividades</option>
-                <option value="sugestao">Sugestão de Melhoria</option>
-                <option value="outro">Outro</option>
-              </select>
-              <span class="error-msg" role="alert">Selecione uma categoria.</span>
+              <label>
+                Período em que ocorreu *
+                <span class="field-hint">(ex.: 2025.2)</span>
+              </label>
+              <input v-model="form.periodo" type="text" placeholder="Ex.: 2025.2" maxlength="20"
+                :class="{ invalid: errors.periodo }">
+              <span class="error-msg" role="alert">Informe o período em que o problema ocorreu.</span>
             </div>
 
             <div class="field">
@@ -199,16 +206,25 @@ const posts = [
               <div class="char-counter" :class="{ warn: charCount > 1800 }">{{ charCount }} / 2000</div>
             </div>
 
-            <div class="field">
-              <label>
-                E-mail
-                <span class="field-hint">(opcional — para receber uma cópia)</span>
-              </label>
-              <input v-model="form.email" type="email" placeholder="seu@email.com">
+            <div class="field-section">
+              <p class="label-sm">Identificação <span class="field-hint" style="font-size:0.8rem;text-transform:none;letter-spacing:0;">(opcional)</span></p>
+              <p style="font-size:0.82rem;color:var(--cinza);margin-bottom:1rem;line-height:1.6;">
+                Se identificado, o protocolo será enviado ao seu e-mail e você será notificado sobre atualizações.
+              </p>
+              <div class="ident-row">
+                <div class="field">
+                  <label>Nome</label>
+                  <input v-model="form.nome" type="text" placeholder="Seu nome completo" maxlength="100">
+                </div>
+                <div class="field">
+                  <label>E-mail</label>
+                  <input v-model="form.email" type="email" placeholder="seu@email.com">
+                </div>
+              </div>
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-amarelo">Enviar anonimamente →</button>
+              <button type="submit" class="btn btn-amarelo">Enviar ticket →</button>
             </div>
           </form>
         </template>

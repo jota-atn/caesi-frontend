@@ -18,14 +18,24 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const filtro = usePersistedFilter('caesi-admin-painel-filtro', 'todas')
 const busca  = usePersistedFilter('caesi-admin-painel-busca', '')
 
+const TIPO_LABEL = {
+  disciplina:     'Disciplina',
+  professores:    'Professores',
+  colegas:        'Colegas de curso',
+  infraestrutura: 'Infraestrutura',
+  ofertas:        'Ofertas e horários',
+  grupos:         'Grupos estudantis',
+  outros:         'Outros',
+}
+
 const mensagensFiltradas = computed(() => {
   return mensagens.value.filter(m => {
     const matchFiltro = filtro.value === 'todas' || m.status === filtro.value
     const termo = busca.value.toLowerCase()
     const matchBusca = !termo ||
-      m.assunto.toLowerCase().includes(termo) ||
-      m.autor.toLowerCase().includes(termo) ||
-      m.categoria.toLowerCase().includes(termo)
+      (m.preview ?? '').toLowerCase().includes(termo) ||
+      (m.nome ?? '').toLowerCase().includes(termo) ||
+      (TIPO_LABEL[m.tipo] ?? '').toLowerCase().includes(termo)
     return matchFiltro && matchBusca
   })
 })
@@ -36,15 +46,15 @@ const totalAtendida = computed(() => mensagens.value.filter(m => m.status === 'a
 const { page, totalPages, paginated: mensagensPaginadas, next, prev, goTo } = usePagination(mensagensFiltradas, 15)
 
 function exportarCSV() {
-  const cols = ['Protocolo', 'Data', 'Categoria', 'Assunto', 'Autor', 'Matrícula', 'Status', 'Anotação interna', 'Resposta']
+  const cols = ['Protocolo', 'Data', 'Tipo de relato', 'Período', 'Nome', 'E-mail', 'Status', 'Anotação interna', 'Resposta']
   const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
   const linhas = mensagens.value.map(m => [
     m.protocolo,
     m.data,
-    m.categoria,
-    m.assunto,
-    m.anonimo ? 'Anônimo' : m.autor,
-    m.anonimo ? '' : (m.matricula ?? ''),
+    TIPO_LABEL[m.tipo] ?? m.tipo ?? '',
+    m.periodo ?? '',
+    m.nome ?? 'Anônimo',
+    m.email ?? '',
     m.status,
     m.nota ?? '',
     m.resposta ?? '',
@@ -60,37 +70,27 @@ function exportarCSV() {
   URL.revokeObjectURL(url)
 }
 
-const CATEGORIA_LABEL = {
-  matricula: 'Matrícula',
-  infra:     'Infraestrutura',
-  docente:   'Corpo Docente',
-  estagio:   'Estágios',
-  eventos:   'Eventos',
-  sugestao:  'Sugestão',
-  outro:     'Outro',
-}
-
-const CATEGORIA_COR = {
-  matricula: '#6B4FBB',
-  infra:     '#4E9ED8',
-  docente:   '#E8874A',
-  estagio:   '#4EAA77',
-  eventos:   '#D95595',
-  sugestao:  '#F0C040',
-  outro:     '#A0A0A0',
+const TIPO_COR = {
+  disciplina:     '#2050A0',
+  professores:    '#1A5A50',
+  colegas:        '#1A6040',
+  infraestrutura: '#904010',
+  ofertas:        '#4B3591',
+  grupos:         '#701860',
+  outros:         '#404060',
 }
 
 const donutData = computed(() => {
   const contagem = {}
   for (const m of mensagens.value) {
-    contagem[m.categoria] = (contagem[m.categoria] ?? 0) + 1
+    contagem[m.tipo] = (contagem[m.tipo] ?? 0) + 1
   }
-  const cats = Object.keys(contagem)
+  const tipos = Object.keys(contagem)
   return {
-    labels: cats.map(c => CATEGORIA_LABEL[c] ?? c),
+    labels: tipos.map(t => TIPO_LABEL[t] ?? t),
     datasets: [{
-      data: cats.map(c => contagem[c]),
-      backgroundColor: cats.map(c => CATEGORIA_COR[c] ?? '#A0A0A0'),
+      data: tipos.map(t => contagem[t]),
+      backgroundColor: tipos.map(t => TIPO_COR[t] ?? '#A0A0A0'),
       borderWidth: 2,
       borderColor: '#FEFAF4',
     }],
@@ -192,7 +192,7 @@ const barOptions = {
       </div>
 
       <div class="filter-bar">
-        <input v-model="busca" type="search" placeholder="Buscar por assunto, autor ou categoria…">
+        <input v-model="busca" type="search" placeholder="Buscar por tipo, nome ou mensagem…">
         <button class="filter-btn" :class="{ active: filtro === 'todas' }"    :aria-pressed="filtro === 'todas'"    @click="filtro = 'todas'">Todas</button>
         <button class="filter-btn" :class="{ active: filtro === 'pendente' }" :aria-pressed="filtro === 'pendente'" @click="filtro = 'pendente'">Pendentes</button>
         <button class="filter-btn" :class="{ active: filtro === 'atendida' }" :aria-pressed="filtro === 'atendida'" @click="filtro = 'atendida'">Atendidas</button>

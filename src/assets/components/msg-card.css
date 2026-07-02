@@ -48,8 +48,8 @@
 }
 .msg-card-arrow { color: var(--roxo-escuro); font-size: 1.1rem; }
 
-.msg-card-tag-row { margin-bottom: 6px; }
-.msg-card-anon { font-size: 0.73rem; color: var(--cinza); font-style: italic; margin-left: 6px; }
+.msg-card-tag-row { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.msg-card-periodo { font-size: 0.73rem; color: var(--cinza); font-style: italic; }
 
 @media (max-width: 600px) {
   .msg-card-preview { display: none; }

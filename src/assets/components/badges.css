@@ -34,10 +34,10 @@
   display: inline-block;
   white-space: nowrap;
 }
-.tag-matricula   { background: rgba(60,110,200,0.14); color: #2050A0; border: 1px solid rgba(60,110,200,0.3); }
-.tag-infra       { background: rgba(210,120,40,0.14); color: #904010; border: 1px solid rgba(210,120,40,0.3); }
-.tag-docente     { background: rgba(40,160,140,0.14); color: #1A5A50; border: 1px solid rgba(40,160,140,0.3); }
-.tag-estagio     { background: rgba(78,170,119,0.14); color: #1A6040; border: 1px solid rgba(78,170,119,0.3); }
-.tag-eventos     { background: rgba(180,80,160,0.14); color: #701860; border: 1px solid rgba(180,80,160,0.3); }
-.tag-sugestao    { background: rgba(80,64,160,0.14); color: var(--roxo-escuro); border: 1px solid rgba(80,64,160,0.3); }
-.tag-outro       { background: rgba(100,100,120,0.14); color: #404060; border: 1px solid rgba(100,100,120,0.3); }
+.tag-disciplina     { background: rgba(60,110,200,0.14); color: #2050A0; border: 1px solid rgba(60,110,200,0.3); }
+.tag-professores    { background: rgba(40,160,140,0.14); color: #1A5A50; border: 1px solid rgba(40,160,140,0.3); }
+.tag-colegas        { background: rgba(78,170,119,0.14); color: #1A6040; border: 1px solid rgba(78,170,119,0.3); }
+.tag-infraestrutura { background: rgba(210,120,40,0.14); color: #904010; border: 1px solid rgba(210,120,40,0.3); }
+.tag-ofertas        { background: rgba(80,64,160,0.14); color: var(--roxo-escuro); border: 1px solid rgba(80,64,160,0.3); }
+.tag-grupos         { background: rgba(180,80,160,0.14); color: #701860; border: 1px solid rgba(180,80,160,0.3); }
+.tag-outros         { background: rgba(100,100,120,0.14); color: #404060; border: 1px solid rgba(100,100,120,0.3); }

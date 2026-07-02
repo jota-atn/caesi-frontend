@@ -1,31 +1,31 @@
 <script setup>
 defineProps({
-  categoria: { type: String, required: true },
+  tipo: { type: String, required: true },
 })
 
 const classMap = {
-  matricula: 'tag-matricula',
-  infra:     'tag-infra',
-  docente:   'tag-docente',
-  estagio:   'tag-estagio',
-  eventos:   'tag-eventos',
-  sugestao:  'tag-sugestao',
-  outro:     'tag-outro',
+  disciplina:     'tag-disciplina',
+  professores:    'tag-professores',
+  colegas:        'tag-colegas',
+  infraestrutura: 'tag-infraestrutura',
+  ofertas:        'tag-ofertas',
+  grupos:         'tag-grupos',
+  outros:         'tag-outros',
 }
 
 const labelMap = {
-  matricula: 'Matrícula',
-  infra:     'Infraestrutura',
-  docente:   'Corpo Docente',
-  estagio:   'Estágios',
-  eventos:   'Eventos',
-  sugestao:  'Sugestão',
-  outro:     'Outro',
+  disciplina:     'Disciplina',
+  professores:    'Professores',
+  colegas:        'Colegas de curso',
+  infraestrutura: 'Infraestrutura',
+  ofertas:        'Ofertas e horários',
+  grupos:         'Grupos estudantis',
+  outros:         'Outros',
 }
 </script>
 
 <template>
-  <span class="tag" :class="classMap[categoria] ?? 'tag-outro'">
-    {{ labelMap[categoria] ?? categoria }}
+  <span class="tag" :class="classMap[tipo] ?? 'tag-outros'">
+    {{ labelMap[tipo] ?? tipo }}
   </span>
 </template>
