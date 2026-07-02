@@ -1,8 +1,12 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
-import { admins, descricaoGestao, gestaoInfo, periodoFormatado } from '../stores/equipe.js'
+import { admins, descricaoGestao, gestaoInfo, periodoFormatado, historicoGestoes, historicoVisivel } from '../stores/equipe.js'
+
+const expandido = ref(null)
+function toggleGestao(id) { expandido.value = expandido.value === id ? null : id }
 
 const router = useRouter()
 function voltar() { window.history.state?.back ? router.back() : router.push('/') }
@@ -70,6 +74,31 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
         <div v-if="descricaoGestao" class="gestao-desc">
           <div class="label-sm" style="margin-bottom:0.6rem;">Sobre a gestão</div>
           <p class="gestao-texto">{{ descricaoGestao }}</p>
+        </div>
+      </div>
+
+      <div v-if="historicoVisivel && historicoGestoes.length" class="paper paper-mb-lg">
+        <h2 class="paper-title" style="margin-bottom:1.2rem;">Gestões anteriores</h2>
+        <div class="hist-lista">
+          <div v-for="g in historicoGestoes" :key="g.id" class="hist-item">
+            <button class="hist-header" @click="toggleGestao(g.id)">
+              <div class="hist-header-info">
+                <span class="hist-chapa">{{ g.nomeChapa }}</span>
+                <span v-if="g.periodo" class="hist-periodo">{{ g.periodo }}</span>
+              </div>
+              <span class="hist-chevron" :class="{ aberto: expandido === g.id }">▾</span>
+            </button>
+            <div v-if="expandido === g.id" class="hist-body">
+              <p v-if="g.descricao" class="hist-desc">{{ g.descricao }}</p>
+              <div v-if="g.membros?.length" class="hist-membros">
+                <div v-for="m in g.membros" :key="m.nome + m.diretoria" class="hist-membro">
+                  <div v-if="m.diretoria" class="label-sm" style="margin-bottom:2px;">{{ m.diretoria }}</div>
+                  <div style="font-size:0.88rem;font-weight:600;color:var(--preto);">{{ m.nome }}</div>
+                  <div v-if="m.periodo" style="font-size:0.76rem;color:var(--cinza);">{{ m.periodo }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -253,5 +282,69 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
   line-height: 1.8;
   white-space: pre-line;
   margin: 0;
+}
+
+/* Gestões anteriores */
+.hist-lista { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.hist-item {
+  border: 1.5px solid var(--creme-escuro);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.hist-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 12px 16px;
+  background: var(--branco);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.hist-header:hover { background: rgba(80,64,160,0.04); }
+
+.hist-header-info { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.hist-chapa { font-size: 0.92rem; font-weight: 700; color: var(--roxo-escuro); }
+.hist-periodo { font-size: 0.78rem; color: var(--cinza); }
+
+.hist-chevron {
+  font-size: 1.1rem;
+  color: var(--cinza);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  line-height: 1;
+}
+.hist-chevron.aberto { transform: rotate(180deg); }
+
+.hist-body {
+  padding: 1rem 1.2rem 1.2rem;
+  border-top: 1.5px solid var(--creme-escuro);
+  background: var(--creme);
+}
+
+.hist-desc {
+  font-size: 0.88rem;
+  color: var(--preto);
+  line-height: 1.75;
+  margin: 0 0 1rem;
+  white-space: pre-line;
+}
+
+.hist-membros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+
+.hist-membro {
+  background: var(--branco);
+  border: 1.5px solid var(--creme-escuro);
+  border-radius: 2px;
+  padding: 8px 12px;
 }
 </style>

@@ -5,6 +5,8 @@ import Navbar from '../../components/Navbar.vue'
 import {
   admins, addAdmin, removeAdmin, updateAdmin,
   descricaoGestao, saveDescricao, gestaoInfo, saveInfo, MESES,
+  historicoGestoes, historicoVisivel, setHistoricoVisivel,
+  arquivarGestaoAtual, removerGestaoHistorico,
 } from '../../stores/equipe.js'
 import { showToast } from '../../stores/toast.js'
 import pencilIcon from '../../assets/icons/pencil.svg?raw'
@@ -104,6 +106,15 @@ function cadastrarAdmin() {
   showToast(`Senha gerada e enviada para ${formAdd.value.email}`, 'success')
   resetFormAdd()
   mostraFormAdd.value = false
+}
+
+// --- Gestões anteriores ---
+const confirmandoArquivar = ref(false)
+
+function arquivar() {
+  arquivarGestaoAtual()
+  confirmandoArquivar.value = false
+  showToast('Gestão arquivada no histórico.', 'success')
 }
 
 // --- Utilitário compartilhado ---
@@ -370,6 +381,51 @@ function comprimirImagem(file) {
         </template>
       </div>
 
+      <!-- ── Gestões anteriores ──────────────────── -->
+      <div class="paper" style="margin-top:1.2rem;">
+        <div class="hist-cabecalho">
+          <div>
+            <h2 class="paper-title" style="margin-bottom:2px;">Gestões anteriores</h2>
+            <p style="font-size:0.82rem;color:var(--cinza);margin:0;">
+              Snapshot público da gestão salvo no Sobre.
+            </p>
+          </div>
+          <div class="hist-cabecalho-acoes">
+            <label class="hist-toggle-label">
+              <input type="checkbox" :checked="historicoVisivel" @change="setHistoricoVisivel($event.target.checked)">
+              Visível no Sobre
+            </label>
+            <button v-if="!confirmandoArquivar" class="btn btn-outline btn-sm" @click="confirmandoArquivar = true">
+              Arquivar gestão atual →
+            </button>
+          </div>
+        </div>
+
+        <div v-if="confirmandoArquivar" class="hist-confirm">
+          <p style="font-size:0.88rem;margin:0 0 0.8rem;">
+            Salva um snapshot da gestão <strong>{{ gestaoInfo.nomeChapa || 'atual' }}</strong> no histórico público. Confirma?
+          </p>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary btn-sm" @click="arquivar">Confirmar →</button>
+            <button class="btn btn-outline btn-sm" @click="confirmandoArquivar = false">Cancelar</button>
+          </div>
+        </div>
+
+        <div v-if="historicoGestoes.length" class="hist-lista-admin">
+          <div v-for="g in historicoGestoes" :key="g.id" class="hist-item-admin">
+            <div class="hist-item-info">
+              <span class="hist-chapa">{{ g.nomeChapa || 'Sem nome' }}</span>
+              <span v-if="g.periodo" class="hist-periodo">{{ g.periodo }}</span>
+              <span class="hist-membros-count">{{ g.membros?.length ?? 0 }} admin{{ (g.membros?.length ?? 0) !== 1 ? 's' : '' }}</span>
+            </div>
+            <button class="icon-btn icon-btn--danger" @click="removerGestaoHistorico(g.id)" title="Remover do histórico" v-html="xIcon"></button>
+          </div>
+        </div>
+        <p v-else-if="!confirmandoArquivar" style="font-size:0.85rem;color:var(--cinza);margin-top:1rem;">
+          Nenhuma gestão arquivada ainda.
+        </p>
+      </div>
+
     </div>
   </div>
 </template>
@@ -568,4 +624,59 @@ function comprimirImagem(file) {
 @media (max-width: 680px) {
   .admin-form-grid { grid-template-columns: 1fr; }
 }
+
+/* Gestões anteriores */
+.hist-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.hist-cabecalho-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.hist-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--cinza);
+  cursor: pointer;
+  user-select: none;
+}
+.hist-toggle-label input { accent-color: var(--roxo); cursor: pointer; }
+
+.hist-confirm {
+  background: var(--creme);
+  border: 1.5px solid var(--creme-escuro);
+  border-radius: 2px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.hist-lista-admin { display: flex; flex-direction: column; gap: 6px; margin-top: 0.8rem; }
+
+.hist-item-admin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 10px 14px;
+  background: var(--branco);
+  border: 1.5px solid var(--creme-escuro);
+  border-radius: 2px;
+}
+
+.hist-item-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hist-chapa { font-size: 0.9rem; font-weight: 700; color: var(--roxo-escuro); }
+.hist-periodo { font-size: 0.76rem; color: var(--cinza); }
+.hist-membros-count { font-size: 0.74rem; color: var(--cinza); }
 </style>
