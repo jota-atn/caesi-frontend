@@ -43,6 +43,7 @@ function ariaCurrent(path) {
         <RouterLink to="/admin/equipe"      class="nav-link" :aria-current="ariaCurrent('/admin/equipe')"      @click="menuOpen = false">Equipe</RouterLink>
         <RouterLink to="/admin/formularios" class="nav-link" :aria-current="ariaCurrent('/admin/formularios')" @click="menuOpen = false">Formulários</RouterLink>
         <RouterLink to="/admin/tasks"       class="nav-link" :aria-current="ariaCurrent('/admin/tasks')"       @click="menuOpen = false">Tasks</RouterLink>
+        <RouterLink to="/admin/mural"      class="nav-link" :aria-current="ariaCurrent('/admin/mural')"      @click="menuOpen = false">Mural</RouterLink>
         <span class="nav-separator" />
         <RouterLink to="/sobre"    class="nav-link nav-link--pub" :aria-current="ariaCurrent('/sobre')"    @click="menuOpen = false">Sobre</RouterLink>
         <RouterLink to="/estatuto" class="nav-link nav-link--pub" :aria-current="ariaCurrent('/estatuto')" @click="menuOpen = false">Estatuto</RouterLink>
@@ -56,6 +57,7 @@ function ariaCurrent(path) {
         <RouterLink to="/sobre"       class="nav-link" :aria-current="ariaCurrent('/sobre')"       @click="menuOpen = false">Sobre</RouterLink>
         <RouterLink to="/estatuto"    class="nav-link" :aria-current="ariaCurrent('/estatuto')"    @click="menuOpen = false">Estatuto</RouterLink>
         <RouterLink to="/contato"     class="nav-link" :aria-current="ariaCurrent('/contato')"     @click="menuOpen = false">Contato</RouterLink>
+        <RouterLink to="/mural"       class="nav-link" :aria-current="ariaCurrent('/mural')"       @click="menuOpen = false">Mural</RouterLink>
         <RouterLink to="/formularios" class="nav-link" :aria-current="ariaCurrent('/formularios')" @click="menuOpen = false">Formulários</RouterLink>
       </template>
 
