@@ -37,7 +37,9 @@ onMounted(() => {
   sections.forEach(s => observer.observe(s))
 })
 
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+})
 </script>
 
 <template>
@@ -66,22 +68,6 @@ onBeforeUnmount(() => observer?.disconnect())
           <div class="label-sm">Sigla</div>
           <div class="est-meta-val" style="font-weight:700;">CAESI</div>
           <div style="font-size:0.78rem;color:var(--cinza);margin-top:2px;">Centro Acadêmico dos Estudantes de Informática</div>
-        </div>
-      </div>
-
-      <!-- Sumário -->
-      <div class="paper paper-mb-lg">
-        <h2 class="paper-title" style="margin-bottom:1rem;">Sumário</h2>
-        <div class="est-toc">
-          <button
-            v-for="t in titulos" :key="t.id"
-            class="est-toc-item"
-            :class="{ 'est-toc-ativo': activeId === t.id }"
-            @click="ir(t.id)"
-          >
-            <span class="est-toc-num" :class="{ 'est-toc-num-ativo': activeId === t.id }">{{ t.num }}</span>
-            <span class="est-toc-texto">{{ t.texto }}</span>
-          </button>
         </div>
       </div>
 
@@ -595,6 +581,22 @@ onBeforeUnmount(() => observer?.disconnect())
 
     </div>
 
+    <!-- Sumário flutuante -->
+    <nav class="toc-sidebar" aria-label="Sumário">
+      <div class="toc-sidebar-title">Sumário</div>
+      <div class="toc-sidebar-body">
+        <button
+          v-for="t in titulos" :key="t.id"
+          class="toc-sidebar-item"
+          :class="{ 'toc-sidebar-ativo': activeId === t.id }"
+          @click="ir(t.id)"
+        >
+          <span class="toc-sidebar-num" :class="{ 'toc-sidebar-num-ativo': activeId === t.id }">{{ t.num }}</span>
+          <span class="toc-sidebar-texto">{{ t.texto }}</span>
+        </button>
+      </div>
+    </nav>
+
     <SiteFooter />
   </div>
 </template>
@@ -611,54 +613,6 @@ onBeforeUnmount(() => observer?.disconnect())
   font-size: 0.95rem;
   color: var(--preto);
   margin-top: 4px;
-}
-
-/* ── TOC ─────────────────────────────────────────────────── */
-.est-toc {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
-  gap: 0.5rem;
-}
-.est-toc-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  background: var(--branco);
-  border: 1.5px solid var(--creme-escuro);
-  cursor: pointer;
-  text-align: left;
-  padding: 9px 12px;
-  border-radius: 4px;
-  transition: border-color 0.15s, background 0.15s;
-}
-.est-toc-item:hover {
-  border-color: var(--roxo);
-  background: rgba(80, 64, 160, 0.04);
-}
-.est-toc-ativo {
-  border-color: var(--roxo-escuro) !important;
-  background: rgba(80, 64, 160, 0.09) !important;
-}
-.est-toc-num {
-  display: inline-block;
-  background: var(--roxo-escuro);
-  color: var(--creme);
-  padding: 2px 7px;
-  border-radius: 2px;
-  font-family: 'Archivo Black', sans-serif;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.est-toc-num-ativo {
-  background: var(--roxo);
-}
-.est-toc-texto {
-  font-size: 0.85rem;
-  color: var(--preto);
-  line-height: 1.35;
 }
 
 /* ── Título ──────────────────────────────────────────────── */
@@ -804,6 +758,92 @@ onBeforeUnmount(() => observer?.disconnect())
 @media (max-width: 600px) {
   .est-titulo-header { margin: -1.2rem -1.2rem 1.4rem; padding: 1rem 1.2rem; }
   .est-titulo-deco { font-size: 2.8rem; }
-  .est-toc { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── TOC Sidebar flutuante ───────────────────────────────── */
+.toc-sidebar {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .toc-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    position: fixed;
+    left: max(1.25rem, calc(50vw - 480px - 210px));
+    top: 5.5rem;
+    width: 188px;
+    background: var(--creme);
+    border-radius: 2px;
+    padding: 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    z-index: 90;
+    overflow: hidden;
+  }
+}
+
+.toc-sidebar-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--roxo-escuro);
+  padding: 0.7rem 0.9rem 0.6rem;
+  background: var(--amarelo);
+}
+
+.toc-sidebar-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0.6rem 0.6rem;
+}
+
+.toc-sidebar-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--branco);
+  border: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 0 2px 2px 0;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+}
+.toc-sidebar-item:hover {
+  border-left-color: var(--roxo);
+  background: rgba(80, 64, 160, 0.04);
+}
+.toc-sidebar-ativo {
+  border-left-color: var(--roxo-escuro) !important;
+  background: rgba(80, 64, 160, 0.09) !important;
+}
+
+.toc-sidebar-num {
+  display: inline-block;
+  background: var(--roxo-escuro);
+  color: var(--creme);
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.toc-sidebar-num-ativo {
+  background: var(--roxo);
+}
+.toc-sidebar-texto {
+  font-size: 0.79rem;
+  color: var(--preto);
+  line-height: 1.3;
+}
+
 </style>
