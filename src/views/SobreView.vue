@@ -92,6 +92,10 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
               <p v-if="g.descricao" class="hist-desc">{{ g.descricao }}</p>
               <div v-if="g.membros?.length" class="hist-membros">
                 <div v-for="m in g.membros" :key="m.nome + m.diretoria" class="hist-membro">
+                  <div class="hist-membro-avatar">
+                    <img v-if="m.foto" :src="m.foto" :alt="m.nome" class="hist-membro-foto">
+                    <span v-else class="hist-membro-inicial">{{ m.nome?.[0]?.toUpperCase() || '?' }}</span>
+                  </div>
                   <div v-if="m.diretoria" class="label-sm" style="margin-bottom:2px;">{{ m.diretoria }}</div>
                   <div style="font-size:0.88rem;font-weight:600;color:var(--preto);">{{ m.nome }}</div>
                   <div v-if="m.periodo" style="font-size:0.76rem;color:var(--cinza);">{{ m.periodo }}</div>
@@ -345,6 +349,38 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
   background: var(--branco);
   border: 1.5px solid var(--creme-escuro);
   border-radius: 2px;
-  padding: 8px 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.hist-membro-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--roxo-escuro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+
+.hist-membro-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hist-membro-inicial {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 1.1rem;
+  color: var(--creme);
+  line-height: 1;
 }
 </style>
