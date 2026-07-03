@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import Pagination from '../components/Pagination.vue'
@@ -13,6 +13,12 @@ const filtro = usePersistedFilter('portal-filtro', 'todos')
 const tiposUnicos = computed(() => {
   const set = new Set(artefatos.value.map(a => a.tipo).filter(Boolean))
   return [...set].sort()
+})
+
+// Se o tipo filtrado deixar de existir (artefato apagado/editado), volta pra "todos"
+// em vez de deixar o filtro preso sem UI capaz de resetá-lo.
+watch(tiposUnicos, (tipos) => {
+  if (filtro.value !== 'todos' && !tipos.includes(filtro.value)) filtro.value = 'todos'
 })
 
 const lista = computed(() => {

@@ -13,11 +13,19 @@ function formatValor(valor) {
 const mostrarForm = ref(false)
 const fileAddRef  = ref(null)
 const formAdd = reactive({ tipo: '', descricao: '', valor: '', anexoNome: '' })
-const erros   = reactive({ descricao: '' })
+const erros   = reactive({ descricao: '', valor: '' })
+
+function parseValor(str) {
+  if (str === '' || str == null) return { valor: null, error: null }
+  const num = Number(String(str).replace(',', '.'))
+  if (Number.isNaN(num) || num < 0) return { valor: null, error: 'Valor inválido.' }
+  return { valor: num, error: null }
+}
 
 function validar(form) {
   erros.descricao = form.descricao.trim().length < 5 ? 'Descrição obrigatória (mín. 5 caracteres).' : ''
-  return !erros.descricao
+  erros.valor = parseValor(form.valor).error ?? ''
+  return !erros.descricao && !erros.valor
 }
 
 function onArquivoAdd(e) {
@@ -29,7 +37,7 @@ function publicar() {
   addArtefato({
     tipo: formAdd.tipo.trim(),
     descricao: formAdd.descricao.trim(),
-    valor: formAdd.valor !== '' ? Number(formAdd.valor) : null,
+    valor: parseValor(formAdd.valor).valor,
     anexo: formAdd.anexoNome ? { nome: formAdd.anexoNome } : null,
   })
   Object.assign(formAdd, { tipo: '', descricao: '', valor: '', anexoNome: '' })
@@ -40,6 +48,7 @@ function publicar() {
 function cancelarAdd() {
   Object.assign(formAdd, { tipo: '', descricao: '', valor: '', anexoNome: '' })
   erros.descricao = ''
+  erros.valor = ''
   mostrarForm.value = false
 }
 
@@ -55,6 +64,7 @@ function triggerFileEdit() {
 
 function abrirEdit(a) {
   editandoId.value = a.id
+  confirmarDeleteId.value = null
   Object.assign(formEdit, {
     tipo: a.tipo ?? '',
     descricao: a.descricao,
@@ -68,11 +78,16 @@ function onArquivoEdit(e) {
 }
 
 function salvarEdit(id) {
-  if (!formEdit.descricao.trim()) { showToast('Descrição não pode ficar vazia.', 'error'); return }
+  if (formEdit.descricao.trim().length < 5) {
+    showToast('Descrição obrigatória (mín. 5 caracteres).', 'error')
+    return
+  }
+  const { valor, error } = parseValor(formEdit.valor)
+  if (error) { showToast(error, 'error'); return }
   updateArtefato(id, {
     tipo: formEdit.tipo.trim(),
     descricao: formEdit.descricao.trim(),
-    valor: formEdit.valor !== '' ? Number(formEdit.valor) : null,
+    valor,
     anexo: formEdit.anexoNome ? { nome: formEdit.anexoNome } : null,
   })
   editandoId.value = null
@@ -129,13 +144,14 @@ const lista = computed(() => {
 
         <div class="field">
           <label class="label">Descrição / Objeto *</label>
-          <textarea v-model="formAdd.descricao" class="input textarea" rows="5" placeholder="Descreva o artefato…"></textarea>
-          <span v-if="erros.descricao" class="field-error">{{ erros.descricao }}</span>
+          <textarea v-model="formAdd.descricao" class="input textarea" rows="5" placeholder="Descreva o artefato…" :class="{ invalid: erros.descricao }"></textarea>
+          <span class="error-msg">{{ erros.descricao }}</span>
         </div>
 
         <div class="field">
           <label class="label">Valor (R$) <span class="field-hint">(opcional)</span></label>
-          <input v-model="formAdd.valor" type="number" min="0" step="0.01" class="input" placeholder="0,00" style="max-width:180px;">
+          <input v-model="formAdd.valor" type="text" inputmode="decimal" class="input" placeholder="0,00" style="max-width:180px;" :class="{ invalid: erros.valor }">
+          <span class="error-msg">{{ erros.valor }}</span>
         </div>
 
         <div class="field">
@@ -213,7 +229,7 @@ const lista = computed(() => {
 
           <div class="field">
             <label class="label">Valor (R$)</label>
-            <input v-model="formEdit.valor" type="number" min="0" step="0.01" class="input" placeholder="0,00" style="max-width:180px;">
+            <input v-model="formEdit.valor" type="text" inputmode="decimal" class="input" placeholder="0,00" style="max-width:180px;">
           </div>
 
           <div class="field">
