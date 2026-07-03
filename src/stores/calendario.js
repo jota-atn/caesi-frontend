@@ -6,8 +6,14 @@ const _eventos = ref(JSON.parse(localStorage.getItem(KEY) || '[]'))
 
 export const eventos = computed(() => _eventos.value)
 
+function hojeLocalISO() {
+  const d = new Date()
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
 export const proximosEventos = computed(() => {
-  const hoje = new Date().toISOString().split('T')[0]
+  const hoje = hojeLocalISO()
   return _eventos.value
     .filter(e => e.data >= hoje)
     .sort((a, b) => a.data.localeCompare(b.data))
