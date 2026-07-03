@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 import { professores } from '../stores/informacoes.js'
 
-const busca = ref('')
+const route = useRoute()
+const busca = ref(route.query.busca ?? '')
 
 const lista = computed(() => {
   const t = busca.value.toLowerCase().trim()

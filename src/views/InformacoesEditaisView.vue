@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import paperclipIcon from '../assets/icons/paperclip.svg?raw'
 import { editais } from '../stores/informacoes.js'
 
-const busca = ref('')
+const route = useRoute()
+const busca = ref(route.query.busca ?? '')
 const expandidoId = ref(null)
 
 const lista = computed(() => {
