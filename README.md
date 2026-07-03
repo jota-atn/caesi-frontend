@@ -1,24 +1,16 @@
-# CAESI Ouvidoria
+# CAESI
 
-Frontend da ouvidoria do CAESI — Centro Acadêmico de Ciência da Computação da UFCG.
-Desenvolvido para a disciplina de Engenharia de Software.
+Site do Centro Acadêmico de Ciência da Computação da UFCG — plataforma centralizada de comunicação entre o CA e os alunos. Projeto da disciplina de Engenharia de Software.
 
-## Especificação do projeto
-
-Documento completo: [Projeto Engenharia de Software](https://docs.google.com/document/d/1GczG7c4P32HvuVDDlvWGSI0YJzxiSTNTUNarAkjAnr0/edit?tab=t.0)
-
-O projeto é composto por duas frentes:
-
-**Sistema novo** — esta ouvidoria. Cobre as etapas de planejamento (tempo, custo, riscos), levantamento de requisitos funcionais e não-funcionais, prototipação, arquitetura, especificação formal (Alloy), implementação e testes.
-
-**Sistema real** — análise do [JBake](https://github.com/jbake-org/jbake), gerador de sites estáticos em Java (>10 KLOC). Cobre coleta de métricas, identificação de bad smells (SpotBugs, PMD, Checkstyle), geração de testes automatizados (EvoSuite/Randoop) e refatoração com comparação antes/depois.
+Especificação completa: [Projeto Engenharia de Software](https://docs.google.com/document/d/1GczG7c4P32HvuVDDlvWGSI0YJzxiSTNTUNarAkjAnr0/edit?tab=t.0)
 
 ## Stack
 
-- **Vue 3** com `<script setup>` (Composition API)
-- **Vue Router 4** com lazy loading e guards de navegação
+- **Vue 3** (`<script setup>`, Composition API) + **Vue Router 4**
 - **Vite 6**
 - **CSS vanilla** — sistema de design próprio, sem framework externo
+- `leaflet` (mapa do campus), `marked` (markdown no Mural), `chart.js`/`vue-chartjs` (gráficos)
+- Persistência em `localStorage` — **sem backend ainda**, tudo mockado no frontend
 
 ## Como rodar
 
@@ -29,53 +21,47 @@ npm run dev
 
 Acesse `http://localhost:5173`.
 
-## Credenciais de teste
+## Acesso admin
 
-| Perfil | Identificador | Senha   |
-|--------|---------------|---------|
-| Admin  | `admin`       | `admin` |
-| Aluno  | cadastre-se   | —       |
+Login em `/admin` com senha `caesi2025` (sem usuário/matrícula — é a única forma de autenticação hoje). Não existe cadastro/login de aluno; visitantes acessam tudo publicamente sem conta.
 
-> Os dados são persistidos no `localStorage`. Para limpar, abra DevTools → Application → Local Storage → remover chaves `caesi_*`.
+Membros do workspace de tasks acessam via link único (`/workspace/:token`), sem login.
+
+> Dados ficam no `localStorage` do navegador. Pra limpar, DevTools → Application → Local Storage → remover chaves `caesi_*`.
+
+## Módulos
+
+| Módulo | Rotas públicas | Rota admin |
+|---|---|---|
+| Ouvidoria (tickets) | `/`, `/ouvidoria/consulta` | `/admin/mensagens` |
+| Mural | `/mural`, `/mural/:id` | `/admin/mural` |
+| Formulários e eventos | `/formularios`, `/formularios/:id` | `/admin/formularios` |
+| Calendário | seção da Home (`/#calendario`) | `/admin/calendario` |
+| Mapa do campus | seção da Home (`/#mapa`) | `/admin/mapa` |
+| Portal (artefatos) | `/portal`, `/portal/:id` | `/admin/portal` |
+| Informações (editais, Tamburetei, professores, laboratórios) | `/informacoes/*` | `/admin/informacoes/*` |
+| Tasks + workspace de membros | `/workspace/:token` | `/admin/tasks` |
+| Equipe / Quem Somos | `/sobre` | `/admin/equipe` |
+| Estatuto | `/estatuto` | — (conteúdo estático) |
+
+Calendário e Mapa vivem como seções interativas da Home (não são páginas próprias) — admin logado pode criar/editar/excluir eventos e estruturas direto por lá, além das telas de gestão dedicadas.
 
 ## Estrutura
 
 ```
 src/
-├── assets/
-│   ├── styles.css          # ponto de entrada (imports)
-│   ├── base.css            # variáveis, reset, tipografia
-│   ├── layout.css          # wrappers, paper, headings
-│   ├── buttons.css
-│   ├── forms.css
-│   ├── components/         # navbar, badges, cards, footer...
-│   └── views/              # estilos por view (home, login, perfil...)
-├── components/             # Badge, MsgCard, Navbar, NotifBell, SiteFooter, Tag...
-├── router/index.js         # rotas + guards
-├── stores/                 # auth, mensagens, notificacoes, usuarios, equipe
+├── assets/              # CSS global (base, layout, buttons, forms + por view/componente)
+├── components/          # Navbar, SiteFooter, CalendarioSecao, MapaSecao, Pagination...
+├── composables/         # usePagination, usePersistedFilter, useEscapeKey...
+├── router/index.js      # rotas + guard de admin
+├── stores/               # um arquivo por domínio (auth, mensagens, mural, formularios,
+│                         # calendario, mapa, portal, informacoes, equipe, tasks) — cada
+│                         # um encapsula seu próprio localStorage
 └── views/
-    ├── admin/              # GeralView, PainelView, DetalheView, UsuariosView, EquipeView
-    ├── aluno/              # MensagensView, NovaMensagemView, DetalheView, MensagemEnviadaView
-    └── *.vue               # Home, Sobre, Estatuto, Contato, Login, Cadastro, Perfil
+    ├── admin/           # telas de gestão (uma por módulo)
+    └── *.vue            # telas públicas
 ```
 
-## Rotas
+## Estado do projeto
 
-| Rota                     | Acesso | Descrição                      |
-|--------------------------|--------|-------------------------------|
-| `/`                      | Todos  | Landing page + envio anônimo  |
-| `/sobre`                 | Todos  | Sobre o CAESI                 |
-| `/estatuto`              | Todos  | Estatuto                      |
-| `/contato`               | Todos  | Formulário de contato         |
-| `/login`                 | Todos  | Login                         |
-| `/cadastro`              | Todos  | Cadastro de aluno             |
-| `/esqueci-senha`         | Todos  | Recuperação de senha          |
-| `/perfil`                | Aluno  | Dados e senha do perfil       |
-| `/aluno/mensagens`       | Aluno  | Lista de mensagens            |
-| `/aluno/nova-mensagem`   | Aluno  | Enviar nova mensagem          |
-| `/aluno/mensagem/:id`    | Aluno  | Detalhe e status              |
-| `/admin/painel`          | Admin  | Visão geral (dashboard)       |
-| `/admin/mensagens`       | Admin  | Gestão de mensagens           |
-| `/admin/mensagens/:id`   | Admin  | Detalhe + ações               |
-| `/admin/usuarios`        | Admin  | Gestão de usuários            |
-| `/admin/equipe`          | Admin  | Edição da equipe CAESI        |
+Todos os módulos de frontend da especificação estão implementados (mockados, sem backend). Falta integrar com a API real (FastAPI + MySQL + S3, conforme especificação) e evoluir a autenticação (JWT + Google OAuth). Ver `MOCKADOS.local.md` e `PENDENCIAS_TECNICAS.local.md` (não versionados) para detalhes de handoff com o backend.
