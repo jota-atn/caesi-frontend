@@ -67,6 +67,7 @@ const mapaMarkers = new Map()
 
 const buscaMapa = ref('')
 const estruturaModal = ref(null)
+const imagemAtivaIdx = ref(0)
 
 const resultadosBusca = computed(() => {
   const t = buscaMapa.value.toLowerCase().trim()
@@ -80,6 +81,7 @@ function rotaUrl(e) {
 
 function abrirEstrutura(e) {
   estruturaModal.value = e
+  imagemAtivaIdx.value = 0
   if (mapa) {
     mapa.flyTo([e.lat, e.lng], 18, { duration: 0.6 })
   }
@@ -87,6 +89,12 @@ function abrirEstrutura(e) {
 
 function fecharModal() { estruturaModal.value = null }
 useEscapeKey(fecharModal)
+
+// Trava o scroll da página enquanto o modal de detalhe está aberto.
+watch(estruturaModal, (aberto) => {
+  document.body.style.overflow = aberto ? 'hidden' : ''
+})
+onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 function renderMapaMarkers() {
   if (!mapa) return
@@ -386,6 +394,19 @@ const posts = [
         <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-estrutura-title" v-focus-trap>
           <div class="modal-title" id="modal-estrutura-title">{{ estruturaModal.nome }}</div>
           <div class="modal-body">
+            <div v-if="estruturaModal.imagens?.length" class="mapa-modal-galeria">
+              <img :src="estruturaModal.imagens[imagemAtivaIdx]" :alt="estruturaModal.nome" class="mapa-modal-hero">
+              <div v-if="estruturaModal.imagens.length > 1" class="mapa-modal-thumbs">
+                <button
+                  v-for="(img, i) in estruturaModal.imagens" :key="i"
+                  class="mapa-modal-thumb-btn"
+                  :class="{ 'mapa-modal-thumb-btn--ativo': i === imagemAtivaIdx }"
+                  @click="imagemAtivaIdx = i"
+                >
+                  <img :src="img" :alt="`Imagem ${i + 1}`" class="mapa-modal-thumb-img">
+                </button>
+              </div>
+            </div>
             <p v-if="estruturaModal.descricao">{{ estruturaModal.descricao }}</p>
             <p v-else style="color:var(--cinza);font-style:italic;">Sem descrição cadastrada.</p>
           </div>
