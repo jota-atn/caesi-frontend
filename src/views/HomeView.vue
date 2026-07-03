@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
@@ -61,6 +62,7 @@ function resetForm() {
 }
 
 // ── Mapa do campus ──────────────────────────────────────
+const route = useRoute()
 const mapaEl = ref(null)
 let mapa = null
 const mapaMarkers = new Map()
@@ -115,6 +117,13 @@ onMounted(() => {
     maxZoom: 19,
   }).addTo(mapa)
   renderMapaMarkers()
+
+  // Vindo de um link "Ver localização" (Professores/Laboratórios): abre a modal direto.
+  const estruturaId = Number(route.query.estrutura)
+  if (estruturaId) {
+    const alvo = estruturas.value.find(e => e.id === estruturaId)
+    if (alvo) abrirEstrutura(alvo)
+  }
 })
 
 watch(estruturas, () => renderMapaMarkers())

@@ -47,6 +47,7 @@ function ariaCurrent(path) {
         <RouterLink to="/admin/calendario" class="nav-link" :aria-current="ariaCurrent('/admin/calendario')" @click="menuOpen = false">Calendário</RouterLink>
         <RouterLink to="/admin/portal"     class="nav-link" :aria-current="ariaCurrent('/admin/portal')"     @click="menuOpen = false">Portal</RouterLink>
         <RouterLink to="/admin/mapa"       class="nav-link" :aria-current="ariaCurrent('/admin/mapa')"       @click="menuOpen = false">Mapa</RouterLink>
+        <RouterLink to="/admin/informacoes" class="nav-link" :aria-current="ariaCurrent('/admin/informacoes')" @click="menuOpen = false">Informações</RouterLink>
         <span class="nav-separator" />
         <RouterLink to="/sobre"    class="nav-link nav-link--pub" :aria-current="ariaCurrent('/sobre')"    @click="menuOpen = false">Sobre</RouterLink>
         <RouterLink to="/estatuto" class="nav-link nav-link--pub" :aria-current="ariaCurrent('/estatuto')" @click="menuOpen = false">Estatuto</RouterLink>
@@ -64,6 +65,7 @@ function ariaCurrent(path) {
         <RouterLink to="/calendario"  class="nav-link" :aria-current="ariaCurrent('/calendario')"  @click="menuOpen = false">Calendário</RouterLink>
         <RouterLink to="/portal"      class="nav-link" :aria-current="ariaCurrent('/portal')"      @click="menuOpen = false">Portal</RouterLink>
         <RouterLink to="/#mapa"       class="nav-link"                                              @click="menuOpen = false">Mapa</RouterLink>
+        <RouterLink to="/informacoes" class="nav-link" :aria-current="ariaCurrent('/informacoes')" @click="menuOpen = false">Informações</RouterLink>
         <RouterLink to="/formularios" class="nav-link" :aria-current="ariaCurrent('/formularios')" @click="menuOpen = false">Formulários</RouterLink>
       </template>
 
