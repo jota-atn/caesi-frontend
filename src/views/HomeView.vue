@@ -10,9 +10,10 @@ import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import { addMensagem } from '../stores/mensagens.js'
 import { isAdmin } from '../stores/auth.js'
-import { proximosEventos } from '../stores/calendario.js'
+import { eventos, proximosEventos } from '../stores/calendario.js'
 import { estruturas, CENTRO_PADRAO } from '../stores/mapa.js'
 import { useEscapeKey } from '../composables/useEscapeKey.js'
+import calendarIcon from '../assets/icons/calendar.svg?raw'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
@@ -90,13 +91,6 @@ function abrirEstrutura(e) {
 }
 
 function fecharModal() { estruturaModal.value = null }
-useEscapeKey(fecharModal)
-
-// Trava o scroll da página enquanto o modal de detalhe está aberto.
-watch(estruturaModal, (aberto) => {
-  document.body.style.overflow = aberto ? 'hidden' : ''
-})
-onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 function renderMapaMarkers() {
   if (!mapa) return
@@ -129,6 +123,117 @@ onMounted(() => {
 watch(estruturas, () => renderMapaMarkers())
 
 onBeforeUnmount(() => { mapa?.remove() })
+
+// ── Calendário ────────────────────────────────────────────
+const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+const MESES_EXT   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+
+const padCal = n => String(n).padStart(2, '0')
+const fmtISOCal = d => `${d.getFullYear()}-${padCal(d.getMonth() + 1)}-${padCal(d.getDate())}`
+
+const agoraCal = new Date()
+const anoAtualCal = ref(agoraCal.getFullYear())
+const mesAtualCal = ref(agoraCal.getMonth())
+const hojeISOCal  = fmtISOCal(agoraCal)
+
+function mesAnteriorCal() {
+  if (mesAtualCal.value === 0) { mesAtualCal.value = 11; anoAtualCal.value-- } else mesAtualCal.value--
+}
+function mesSeguinteCal() {
+  if (mesAtualCal.value === 11) { mesAtualCal.value = 0; anoAtualCal.value++ } else mesAtualCal.value++
+}
+
+const eventosPorDiaCal = computed(() => {
+  const mapa = {}
+  for (const e of eventos.value) {
+    if (!mapa[e.data]) mapa[e.data] = []
+    mapa[e.data].push(e)
+  }
+  return mapa
+})
+
+const celulasCal = computed(() => {
+  const primeiroDia = new Date(anoAtualCal.value, mesAtualCal.value, 1)
+  const offset = primeiroDia.getDay()
+  const inicio = new Date(anoAtualCal.value, mesAtualCal.value, 1 - offset)
+  return Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(inicio)
+    d.setDate(inicio.getDate() + i)
+    const iso = fmtISOCal(d)
+    return {
+      iso,
+      dia: d.getDate(),
+      outroMes: d.getMonth() !== mesAtualCal.value,
+      hoje: iso === hojeISOCal,
+      eventos: eventosPorDiaCal.value[iso] ?? [],
+    }
+  })
+})
+
+const buscaCalendario = ref('')
+const resultadosBuscaCalendario = computed(() => {
+  const t = buscaCalendario.value.toLowerCase().trim()
+  if (!t) return []
+  return eventos.value.filter(e => e.nome.toLowerCase().includes(t))
+})
+
+const eventoModal = ref(null)
+const diaModal = ref(null)
+
+function abrirEvento(e) {
+  diaModal.value = null
+  eventoModal.value = e
+}
+function abrirDia(celula) {
+  if (celula.eventos.length === 0) return
+  if (celula.eventos.length === 1) { abrirEvento(celula.eventos[0]); return }
+  diaModal.value = celula
+}
+function fecharEventoModal() { eventoModal.value = null }
+function fecharDiaModal() { diaModal.value = null }
+
+function formatDataExtCal(iso) {
+  const [ano, mes, dia] = iso.split('-').map(Number)
+  return `${dia} de ${MESES_EXT[mes - 1]} de ${ano}`
+}
+
+function baixarIcs(evento) {
+  const [ano, mes, dia] = evento.data.split('-')
+  const dtstart = `${ano}${mes}${dia}`
+  const uid = `evento-${evento.id}@caesi.ufcg`
+  const esc = s => String(s ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//CAESI UFCG//Calendario//PT-BR',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${dtstart}T000000Z`,
+    `DTSTART;VALUE=DATE:${dtstart}`,
+    `SUMMARY:${esc(evento.nome)}`,
+    `DESCRIPTION:${esc(evento.descricao)}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n')
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8;' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = `${evento.nome.toLowerCase().replace(/\s+/g, '-')}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// ── Modais: fechar com Esc e travar o scroll enquanto algum estiver aberto ──
+useEscapeKey(() => { fecharModal(); fecharEventoModal(); fecharDiaModal() })
+
+const algumModalAberto = computed(() => !!estruturaModal.value || !!eventoModal.value || !!diaModal.value)
+watch(algumModalAberto, (aberto) => {
+  document.body.style.overflow = aberto ? 'hidden' : ''
+})
+onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 const posts = [
   { cor: 'rgba(80,64,160,0.28)',  icon: '📢', caption: 'Semana de Boas-Vindas 2026! Recepção aos calouros de CC — sábado, 8h, no SPLAB. Venha com a galera!', data: '12 mai' },
@@ -318,29 +423,67 @@ const posts = [
       </div>
     </section>
 
-    <!-- Próximos eventos -->
-    <section v-if="proximosEventos.length > 0" class="home-section">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:12px;">
-        <div>
-          <div class="section-label">Agenda</div>
-          <h2 class="section-title" style="margin-bottom:0;">Próximos <span>eventos</span></h2>
+    <!-- Calendário -->
+    <section class="home-section" id="calendario" style="scroll-margin-top:80px;">
+      <div class="section-label">Agenda</div>
+      <h2 class="section-title">Calendário do <span>CAESI</span></h2>
+
+      <div class="cal-home-layout">
+        <!-- Próximos eventos: quadradinhos à esquerda -->
+        <div class="cal-home-teasers">
+          <p v-if="proximosEventos.length === 0" class="cal-home-sem-evento">Nenhum evento agendado no momento.</p>
+          <button
+            v-for="e in proximosEventos.slice(0, 6)" :key="e.id"
+            class="evento-teaser"
+            @click="abrirEvento(e)"
+          >
+            <div class="evento-teaser-data">
+              <span class="evento-teaser-dia">{{ diaMes(e.data).dia }}</span>
+              <span class="evento-teaser-mes">{{ diaMes(e.data).mes }}</span>
+            </div>
+            <div class="evento-teaser-nome">{{ e.nome }}</div>
+          </button>
         </div>
-        <RouterLink to="/calendario" class="btn btn-outline btn-sm btn-outline-creme">
-          Ver calendário →
-        </RouterLink>
-      </div>
-      <div class="eventos-grid">
-        <RouterLink
-          v-for="e in proximosEventos.slice(0, 4)" :key="e.id"
-          to="/calendario"
-          class="evento-teaser"
-        >
-          <div class="evento-teaser-data">
-            <span class="evento-teaser-dia">{{ diaMes(e.data).dia }}</span>
-            <span class="evento-teaser-mes">{{ diaMes(e.data).mes }}</span>
+
+        <!-- Grade de mês + busca à direita -->
+        <div class="paper cal-home-paper">
+          <input
+            v-model="buscaCalendario" type="search" class="mapa-home-search"
+            placeholder="Buscar evento…"
+          >
+          <div v-if="resultadosBuscaCalendario.length > 0" class="mapa-home-resultados">
+            <button
+              v-for="e in resultadosBuscaCalendario" :key="e.id"
+              class="mapa-home-resultado-item"
+              @click="abrirEvento(e); buscaCalendario = ''"
+            >{{ e.nome }}</button>
           </div>
-          <div class="evento-teaser-nome">{{ e.nome }}</div>
-        </RouterLink>
+          <div v-else-if="buscaCalendario.trim()" class="mapa-home-resultados">
+            <span class="mapa-home-sem-resultado">Nenhum evento encontrado.</span>
+          </div>
+
+          <div class="cal-home-header">
+            <button class="cal-home-nav-btn" @click="mesAnteriorCal" aria-label="Mês anterior">←</button>
+            <div class="cal-home-titulo">{{ MESES_EXT[mesAtualCal] }} {{ anoAtualCal }}</div>
+            <button class="cal-home-nav-btn" @click="mesSeguinteCal" aria-label="Próximo mês">→</button>
+          </div>
+
+          <div class="cal-home-semana">
+            <span v-for="d in DIAS_SEMANA" :key="d">{{ d }}</span>
+          </div>
+          <div class="cal-home-dias">
+            <button
+              v-for="c in celulasCal" :key="c.iso"
+              class="cal-home-dia"
+              :class="{ 'cal-home-dia--outro-mes': c.outroMes, 'cal-home-dia--hoje': c.hoje, 'cal-home-dia--com-evento': c.eventos.length > 0 }"
+              :disabled="c.eventos.length === 0"
+              @click="abrirDia(c)"
+            >
+              {{ c.dia }}
+              <span v-if="c.eventos.length > 0" class="cal-home-dia-dot"></span>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -424,6 +567,48 @@ const posts = [
             <a :href="rotaUrl(estruturaModal)" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
               Ver rota →
             </a>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Modal: detalhe de um evento -->
+    <Teleport to="body">
+      <div v-if="eventoModal" class="modal-overlay" @click.self="fecharEventoModal">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-evento-title" v-focus-trap>
+          <div class="modal-title" id="modal-evento-title">{{ eventoModal.nome }}</div>
+          <div class="modal-body">
+            <p style="font-size:0.85rem;color:var(--cinza);margin-bottom:0.6rem;">{{ formatDataExtCal(eventoModal.data) }}</p>
+            <p v-if="eventoModal.descricao">{{ eventoModal.descricao }}</p>
+            <p v-else style="color:var(--cinza);font-style:italic;">Sem descrição cadastrada.</p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline btn-sm" @click="fecharEventoModal">Fechar</button>
+            <RouterLink v-if="eventoModal.formularioId" :to="`/formularios/${eventoModal.formularioId}`" class="btn btn-outline btn-sm">
+              Ver formulário →
+            </RouterLink>
+            <button class="btn btn-primary btn-sm" @click="baixarIcs(eventoModal)">
+              <span class="btn-icon" v-html="calendarIcon"></span> Adicionar ao calendário
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Modal: lista de eventos de um dia -->
+    <Teleport to="body">
+      <div v-if="diaModal" class="modal-overlay" @click.self="fecharDiaModal">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-dia-title" v-focus-trap>
+          <div class="modal-title" id="modal-dia-title">{{ formatDataExtCal(diaModal.iso) }}</div>
+          <div class="modal-body">
+            <button
+              v-for="e in diaModal.eventos" :key="e.id"
+              class="cal-home-dia-evento-item"
+              @click="abrirEvento(e)"
+            >{{ e.nome }}</button>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-outline btn-sm" @click="fecharDiaModal">Fechar</button>
           </div>
         </div>
       </div>

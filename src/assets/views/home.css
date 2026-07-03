@@ -149,15 +149,136 @@
   font-weight: 600;
 }
 
-.eventos-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+.cal-home-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
+
+.cal-home-teasers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  flex: 0 0 260px;
+}
+
+.cal-home-sem-evento {
+  font-size: 0.85rem;
+  color: rgba(242,230,196,0.6);
+}
+
+.cal-home-paper {
+  flex: 1 1 340px;
+  min-width: 300px;
+  padding: 1.2rem;
+}
+
+.cal-home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem 0 0.6rem;
+}
+.cal-home-nav-btn {
+  background: none;
+  border: 1.5px solid var(--creme-escuro);
+  border-radius: 2px;
+  color: var(--roxo-escuro);
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.9rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.cal-home-nav-btn:hover { border-color: var(--roxo); }
+.cal-home-titulo {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 1rem;
+  color: var(--roxo-escuro);
+  text-transform: capitalize;
+}
+
+.cal-home-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.cal-home-semana span {
+  text-align: center;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--cinza);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cal-home-dias {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-home-dia {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1.5px solid var(--creme-escuro);
+  background: var(--branco);
+  border-radius: 2px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.8rem;
+  color: var(--preto);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cal-home-dia:disabled { cursor: default; opacity: 0.55; }
+.cal-home-dia--outro-mes { opacity: 0.35; }
+.cal-home-dia--hoje { border-color: var(--amarelo); border-width: 2px; font-weight: 700; }
+.cal-home-dia--com-evento {
+  cursor: pointer;
+  background: rgba(80,64,160,0.08);
+  font-weight: 700;
+}
+.cal-home-dia--com-evento:hover { border-color: var(--roxo); }
+
+.cal-home-dia-dot {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--roxo);
+}
+
+.cal-home-dia-evento-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border: 1.5px solid var(--creme-escuro);
+  border-radius: 2px;
+  background: var(--creme);
+  cursor: pointer;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--preto);
+  transition: border-color 0.15s;
+}
+.cal-home-dia-evento-item:hover { border-color: var(--roxo); }
+
 .evento-teaser {
   background: var(--creme);
   border-radius: 2px;
   border-left: 4px solid var(--amarelo);
+  border-top: none; border-right: none; border-bottom: none;
   box-shadow: 3px 3px 0 var(--roxo-escuro);
   text-decoration: none;
   color: inherit;
@@ -165,6 +286,9 @@
   align-items: center;
   gap: 0.8rem;
   padding: 0.9rem 1rem;
+  width: 100%;
+  max-width: 260px;
+  cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .evento-teaser:hover {
@@ -380,16 +504,18 @@
   .steps-grid { grid-template-columns: 1fr; }
   .step-card  { padding: 1.4rem 1.2rem; }
 
-  .eventos-grid {
-    display: flex;
+  .cal-home-layout { flex-direction: column; }
+  .cal-home-teasers {
+    flex-direction: row;
     flex-wrap: nowrap;
     overflow-x: auto;
     gap: 0.75rem;
     padding-bottom: 0.75rem;
+    width: 100%;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
   }
-  .eventos-grid::-webkit-scrollbar { display: none; }
+  .cal-home-teasers::-webkit-scrollbar { display: none; }
   .evento-teaser {
     flex: 0 0 78vw;
     max-width: 280px;
