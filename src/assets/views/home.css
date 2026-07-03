@@ -211,7 +211,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-auto-rows: auto;
-  align-content: center;
+  align-content: start;
   gap: 0.7rem;
   flex: 1;
   min-height: 0;
@@ -379,6 +379,25 @@
   opacity: 0.6;
 }
 .evento-teaser--passado .evento-teaser-data { background: var(--cinza); }
+
+.evento-teaser--placeholder {
+  background: transparent;
+  border: 1.5px dashed rgba(242,230,196,0.18);
+  border-left: 1.5px dashed rgba(242,230,196,0.18);
+  box-shadow: none;
+  justify-content: center;
+  cursor: default;
+}
+.evento-teaser--placeholder:hover {
+  transform: none;
+  box-shadow: none;
+}
+.evento-teaser-placeholder-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(242,230,196,0.18);
+}
 .evento-teaser-data {
   flex-shrink: 0;
   width: 44px;

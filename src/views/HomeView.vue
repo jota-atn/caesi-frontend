@@ -185,11 +185,21 @@ const passadosCal = computed(() =>
     .sort((a, b) => b.data.localeCompare(a.data))
 )
 
-const teasersCal = computed(() => {
+const teasersRealCal = computed(() => {
   const prox = proximosEventos.value.slice(0, 6).map(e => ({ ...e, passado: false }))
   if (prox.length >= 6) return prox
   const passadosPreenchimento = passadosCal.value.slice(0, 6 - prox.length).map(e => ({ ...e, passado: true }))
   return [...prox, ...passadosPreenchimento]
+})
+
+// Completa até 6 quadradinhos com placeholders vazios (sem esticar/centralizar
+// o pouco conteúdo real) quando há menos de 6 eventos reais no total.
+const teasersGridCal = computed(() => {
+  const reais = teasersRealCal.value
+  if (reais.length === 0) return []
+  const faltam = 6 - reais.length
+  const placeholders = Array.from({ length: faltam }, (_, i) => ({ id: `placeholder-${i}`, placeholder: true }))
+  return [...reais, ...placeholders]
 })
 
 const eventoModal = ref(null)
@@ -493,23 +503,27 @@ const posts = [
         <!-- Próximos eventos: quadradinhos à esquerda -->
         <div class="cal-home-teasers-col">
           <p class="cal-home-teasers-titulo">Eventos próximos</p>
-          <div class="cal-home-teasers" :class="{ 'cal-home-teasers--vazio': teasersCal.length === 0 }">
-            <div v-if="teasersCal.length === 0" class="cal-home-vazio">
+          <div class="cal-home-teasers" :class="{ 'cal-home-teasers--vazio': teasersRealCal.length === 0 }">
+            <div v-if="teasersRealCal.length === 0" class="cal-home-vazio">
               <span class="cal-home-vazio-icon" v-html="calendarIcon"></span>
               <p>Nenhum evento por aqui ainda.</p>
               <span>Fique de olho — novidades aparecem nesse espaço.</span>
             </div>
             <button
-              v-for="e in teasersCal" :key="e.id"
+              v-for="e in teasersGridCal" :key="e.id"
               class="evento-teaser"
-              :class="{ 'evento-teaser--passado': e.passado }"
-              @click="abrirEvento(e)"
+              :class="{ 'evento-teaser--passado': e.passado, 'evento-teaser--placeholder': e.placeholder }"
+              :disabled="e.placeholder"
+              @click="!e.placeholder && abrirEvento(e)"
             >
-              <div class="evento-teaser-data">
-                <span class="evento-teaser-dia">{{ diaMes(e.data).dia }}</span>
-                <span class="evento-teaser-mes">{{ diaMes(e.data).mes }}</span>
-              </div>
-              <div class="evento-teaser-nome">{{ e.nome }}</div>
+              <template v-if="!e.placeholder">
+                <div class="evento-teaser-data">
+                  <span class="evento-teaser-dia">{{ diaMes(e.data).dia }}</span>
+                  <span class="evento-teaser-mes">{{ diaMes(e.data).mes }}</span>
+                </div>
+                <div class="evento-teaser-nome">{{ e.nome }}</div>
+              </template>
+              <span v-else class="evento-teaser-placeholder-dot"></span>
             </button>
           </div>
         </div>
