@@ -501,6 +501,7 @@
   overflow: hidden;
   border: 1.5px solid var(--creme-escuro);
 }
+.mapa-home-leaflet--admin { cursor: crosshair; }
 
 .mapa-modal-galeria { margin-bottom: 1rem; }
 
