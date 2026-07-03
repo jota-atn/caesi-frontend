@@ -150,29 +150,28 @@
 }
 
 .cal-home-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  align-items: start;
 }
 
 .cal-home-teasers {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-content: start;
   gap: 0.7rem;
-  flex: 0 0 260px;
 }
 
 .cal-home-sem-evento {
+  grid-column: 1 / -1;
   font-size: 0.85rem;
   color: rgba(242,230,196,0.6);
 }
 
 .cal-home-paper {
-  flex: 1 1 340px;
-  min-width: 300px;
   padding: 1.2rem;
+  max-width: 100%;
 }
 
 .cal-home-header {
@@ -504,8 +503,9 @@
   .steps-grid { grid-template-columns: 1fr; }
   .step-card  { padding: 1.4rem 1.2rem; }
 
-  .cal-home-layout { flex-direction: column; }
+  .cal-home-layout { grid-template-columns: 1fr; }
   .cal-home-teasers {
+    display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     overflow-x: auto;
