@@ -33,9 +33,12 @@ const fileAddRef   = ref(null)
 const formAdd = reactive({ titulo: '', tipo: '', mensagem: '', imagens: [], anexos: [] })
 const erros   = reactive({ titulo: '', mensagem: '' })
 
+function validarTitulo(titulo)     { return titulo.trim().length < 3     ? 'Título obrigatório (mín. 3 caracteres).'     : '' }
+function validarMensagem(mensagem) { return mensagem.trim().length < 10 ? 'Mensagem obrigatória (mín. 10 caracteres).' : '' }
+
 function validar(form) {
-  erros.titulo   = form.titulo.trim().length < 3   ? 'Título obrigatório (mín. 3 caracteres).' : ''
-  erros.mensagem = form.mensagem.trim().length < 10 ? 'Mensagem obrigatória (mín. 10 caracteres).' : ''
+  erros.titulo   = validarTitulo(form.titulo)
+  erros.mensagem = validarMensagem(form.mensagem)
   return !erros.titulo && !erros.mensagem
 }
 
@@ -67,6 +70,7 @@ function cancelarAdd() {
 const editandoId  = ref(null)
 const fileEditRef = ref(null)  // dentro de v-for → vira array; usar [0]
 const formEdit = reactive({ titulo: '', tipo: '', mensagem: '', imagens: [] })
+const errosEdit = reactive({ titulo: '', mensagem: '' })
 
 function triggerFileEdit() {
   const el = Array.isArray(fileEditRef.value) ? fileEditRef.value[0] : fileEditRef.value
@@ -75,6 +79,7 @@ function triggerFileEdit() {
 
 function abrirEdit(p) {
   editandoId.value = p.id
+  errosEdit.titulo = errosEdit.mensagem = ''
   Object.assign(formEdit, {
     titulo:   p.titulo,
     tipo:     p.tipo ?? '',
@@ -94,8 +99,9 @@ async function onImagensEdit(e) {
 function removerImagemEdit(i) { formEdit.imagens.splice(i, 1) }
 
 function salvarEdit(id) {
-  if (!formEdit.titulo.trim())   { showToast('Título não pode ficar vazio.', 'error');   return }
-  if (!formEdit.mensagem.trim()) { showToast('Mensagem não pode ficar vazia.', 'error'); return }
+  errosEdit.titulo   = validarTitulo(formEdit.titulo)
+  errosEdit.mensagem = validarMensagem(formEdit.mensagem)
+  if (errosEdit.titulo || errosEdit.mensagem) return
   updatePublicacao(id, {
     titulo:   formEdit.titulo.trim(),
     tipo:     formEdit.tipo.trim(),
@@ -153,7 +159,7 @@ const lista = computed(() => {
         <div class="field">
           <label class="label">Título *</label>
           <input v-model="formAdd.titulo" type="text" class="input" placeholder="Título da publicação">
-          <span v-if="erros.titulo" class="field-error">{{ erros.titulo }}</span>
+          <span v-if="erros.titulo" class="error-msg" style="display:block;">{{ erros.titulo }}</span>
         </div>
 
         <div class="field">
@@ -164,7 +170,7 @@ const lista = computed(() => {
         <div class="field">
           <label class="label">Mensagem *</label>
           <textarea v-model="formAdd.mensagem" class="input textarea" rows="7" placeholder="Conteúdo da publicação…"></textarea>
-          <span v-if="erros.mensagem" class="field-error">{{ erros.mensagem }}</span>
+          <span v-if="erros.mensagem" class="error-msg" style="display:block;">{{ erros.mensagem }}</span>
         </div>
 
         <!-- Upload imagens -->
@@ -245,6 +251,7 @@ const lista = computed(() => {
           <div class="field">
             <label class="label">Título *</label>
             <input v-model="formEdit.titulo" type="text" class="input">
+            <span v-if="errosEdit.titulo" class="error-msg" style="display:block;">{{ errosEdit.titulo }}</span>
           </div>
 
           <div class="field">
@@ -255,6 +262,7 @@ const lista = computed(() => {
           <div class="field">
             <label class="label">Mensagem *</label>
             <textarea v-model="formEdit.mensagem" class="input textarea" rows="7"></textarea>
+            <span v-if="errosEdit.mensagem" class="error-msg" style="display:block;">{{ errosEdit.mensagem }}</span>
           </div>
 
           <div class="field">

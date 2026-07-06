@@ -13,8 +13,12 @@ const mostrarForm = ref(false)
 const formAdd = reactive({ nome: '', estruturaId: '', lattes: '', googleAcademico: '', linkedin: '' })
 const erros   = reactive({ nome: '' })
 
+function validarNome(nome) {
+  return nome.trim().length < 2 ? 'Nome obrigatório (mínimo 2 caracteres).' : ''
+}
+
 function validar(form) {
-  erros.nome = form.nome.trim().length < 2 ? 'Nome obrigatório.' : ''
+  erros.nome = validarNome(form.nome)
   return !erros.nome
 }
 
@@ -41,9 +45,11 @@ function cancelarAdd() {
 // --------------- Edição inline ---------------
 const editandoId = ref(null)
 const formEdit = reactive({ nome: '', estruturaId: '', lattes: '', googleAcademico: '', linkedin: '' })
+const errosEdit = reactive({ nome: '' })
 
 function abrirEdit(p) {
   editandoId.value = p.id
+  errosEdit.nome = ''
   Object.assign(formEdit, {
     nome: p.nome,
     estruturaId: p.estruturaId ?? '',
@@ -54,7 +60,8 @@ function abrirEdit(p) {
 }
 
 function salvarEdit(id) {
-  if (!formEdit.nome.trim()) { showToast('Nome não pode ficar vazio.', 'error'); return }
+  errosEdit.nome = validarNome(formEdit.nome)
+  if (errosEdit.nome) return
   updateProfessor(id, {
     nome: formEdit.nome.trim(),
     estruturaId: formEdit.estruturaId ? Number(formEdit.estruturaId) : null,
@@ -173,6 +180,7 @@ const lista = computed(() => {
           <div class="field">
             <label class="label">Nome *</label>
             <input v-model="formEdit.nome" type="text" class="input">
+            <span v-if="errosEdit.nome" class="error-msg" style="display:block;">{{ errosEdit.nome }}</span>
           </div>
           <div class="field">
             <label class="label">Sala / Localização</label>

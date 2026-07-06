@@ -18,8 +18,12 @@ const fileAddRef  = ref(null)
 const formAdd = reactive({ titulo: '', descricao: '', data: '', anexoNome: '' })
 const erros   = reactive({ titulo: '' })
 
+function validarTitulo(titulo) {
+  return titulo.trim().length < 3 ? 'Título obrigatório (mín. 3 caracteres).' : ''
+}
+
 function validar(form) {
-  erros.titulo = form.titulo.trim().length < 3 ? 'Título obrigatório (mín. 3 caracteres).' : ''
+  erros.titulo = validarTitulo(form.titulo)
   return !erros.titulo
 }
 
@@ -48,6 +52,7 @@ function cancelarAdd() {
 const editandoId  = ref(null)
 const fileEditRef = ref(null)
 const formEdit = reactive({ titulo: '', descricao: '', data: '', anexoNome: '' })
+const errosEdit = reactive({ titulo: '' })
 
 function triggerFileEdit() {
   const el = Array.isArray(fileEditRef.value) ? fileEditRef.value[0] : fileEditRef.value
@@ -56,12 +61,14 @@ function triggerFileEdit() {
 
 function abrirEdit(e) {
   editandoId.value = e.id
+  errosEdit.titulo = ''
   Object.assign(formEdit, { titulo: e.titulo, descricao: e.descricao, data: e.data ?? '', anexoNome: e.anexo?.nome ?? '' })
 }
 function onArquivoEdit(e) { formEdit.anexoNome = e.target.files?.[0]?.name ?? '' }
 
 function salvarEdit(id) {
-  if (formEdit.titulo.trim().length < 3) { showToast('Título obrigatório (mín. 3 caracteres).', 'error'); return }
+  errosEdit.titulo = validarTitulo(formEdit.titulo)
+  if (errosEdit.titulo) return
   updateEdital(id, {
     titulo: formEdit.titulo.trim(),
     descricao: formEdit.descricao.trim(),
@@ -175,6 +182,7 @@ const lista = computed(() => {
           <div class="field">
             <label class="label">Título *</label>
             <input v-model="formEdit.titulo" type="text" class="input">
+            <span v-if="errosEdit.titulo" class="error-msg" style="display:block;">{{ errosEdit.titulo }}</span>
           </div>
           <div class="field">
             <label class="label">Data</label>

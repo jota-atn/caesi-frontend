@@ -35,8 +35,12 @@ const fileAddRef  = ref(null)
 const formAdd = reactive({ nome: '', sigla: '', descricao: '', imagem: '', linkExterno: '', estruturaId: '' })
 const erros   = reactive({ nome: '' })
 
+function validarNome(nome) {
+  return nome.trim().length < 2 ? 'Nome obrigatório (mínimo 2 caracteres).' : ''
+}
+
 function validar(form) {
-  erros.nome = form.nome.trim().length < 2 ? 'Nome obrigatório.' : ''
+  erros.nome = validarNome(form.nome)
   return !erros.nome
 }
 
@@ -72,6 +76,7 @@ function cancelarAdd() {
 const editandoId  = ref(null)
 const fileEditRef = ref(null)
 const formEdit = reactive({ nome: '', sigla: '', descricao: '', imagem: '', linkExterno: '', estruturaId: '' })
+const errosEdit = reactive({ nome: '' })
 
 function triggerFileEdit() {
   const el = Array.isArray(fileEditRef.value) ? fileEditRef.value[0] : fileEditRef.value
@@ -80,6 +85,7 @@ function triggerFileEdit() {
 
 function abrirEdit(l) {
   editandoId.value = l.id
+  errosEdit.nome = ''
   Object.assign(formEdit, {
     nome: l.nome, sigla: l.sigla ?? '', descricao: l.descricao ?? '',
     imagem: l.imagem ?? '', linkExterno: l.linkExterno ?? '', estruturaId: l.estruturaId ?? '',
@@ -94,7 +100,8 @@ async function onImagemEdit(e) {
 function removerImagemEdit() { formEdit.imagem = '' }
 
 function salvarEdit(id) {
-  if (!formEdit.nome.trim()) { showToast('Nome não pode ficar vazio.', 'error'); return }
+  errosEdit.nome = validarNome(formEdit.nome)
+  if (errosEdit.nome) return
   updateLaboratorio(id, {
     nome: formEdit.nome.trim(),
     sigla: formEdit.sigla.trim(),
@@ -227,6 +234,7 @@ const lista = computed(() => {
           <div class="field">
             <label class="label">Nome *</label>
             <input v-model="formEdit.nome" type="text" class="input">
+            <span v-if="errosEdit.nome" class="error-msg" style="display:block;">{{ errosEdit.nome }}</span>
           </div>
           <div class="field">
             <label class="label">Sigla</label>

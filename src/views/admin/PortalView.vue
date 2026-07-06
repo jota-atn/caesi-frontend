@@ -23,8 +23,12 @@ function parseValor(str) {
   return { valor: num, error: null }
 }
 
+function validarDescricao(descricao) {
+  return descricao.trim().length < 5 ? 'Descrição obrigatória (mín. 5 caracteres).' : ''
+}
+
 function validar(form) {
-  erros.descricao = form.descricao.trim().length < 5 ? 'Descrição obrigatória (mín. 5 caracteres).' : ''
+  erros.descricao = validarDescricao(form.descricao)
   erros.valor = parseValor(form.valor).error ?? ''
   return !erros.descricao && !erros.valor
 }
@@ -57,6 +61,7 @@ function cancelarAdd() {
 const editandoId  = ref(null)
 const fileEditRef = ref(null)
 const formEdit = reactive({ tipo: '', descricao: '', valor: '', anexoNome: '' })
+const errosEdit = reactive({ descricao: '', valor: '' })
 
 function triggerFileEdit() {
   const el = Array.isArray(fileEditRef.value) ? fileEditRef.value[0] : fileEditRef.value
@@ -66,6 +71,7 @@ function triggerFileEdit() {
 function abrirEdit(a) {
   editandoId.value = a.id
   confirmarDeleteId.value = null
+  errosEdit.descricao = errosEdit.valor = ''
   Object.assign(formEdit, {
     tipo: a.tipo ?? '',
     descricao: a.descricao,
@@ -79,12 +85,10 @@ function onArquivoEdit(e) {
 }
 
 function salvarEdit(id) {
-  if (formEdit.descricao.trim().length < 5) {
-    showToast('Descrição obrigatória (mín. 5 caracteres).', 'error')
-    return
-  }
+  errosEdit.descricao = validarDescricao(formEdit.descricao)
   const { valor, error } = parseValor(formEdit.valor)
-  if (error) { showToast(error, 'error'); return }
+  errosEdit.valor = error ?? ''
+  if (errosEdit.descricao || errosEdit.valor) return
   updateArtefato(id, {
     tipo: formEdit.tipo.trim(),
     descricao: formEdit.descricao.trim(),
@@ -226,12 +230,14 @@ const lista = computed(() => {
 
           <div class="field">
             <label class="label">Descrição / Objeto *</label>
-            <textarea v-model="formEdit.descricao" class="input textarea" rows="5"></textarea>
+            <textarea v-model="formEdit.descricao" class="input textarea" rows="5" :class="{ invalid: errosEdit.descricao }"></textarea>
+            <span class="error-msg">{{ errosEdit.descricao }}</span>
           </div>
 
           <div class="field">
             <label class="label">Valor (R$)</label>
-            <input v-model="formEdit.valor" type="text" inputmode="decimal" class="input" placeholder="0,00" style="max-width:180px;">
+            <input v-model="formEdit.valor" type="text" inputmode="decimal" class="input" placeholder="0,00" style="max-width:180px;" :class="{ invalid: errosEdit.valor }">
+            <span class="error-msg">{{ errosEdit.valor }}</span>
           </div>
 
           <div class="field">
