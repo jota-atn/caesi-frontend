@@ -15,7 +15,6 @@ import xIcon     from '../../assets/icons/x.svg?raw'
 // --- Informações da gestão ---
 const info     = ref({ ...gestaoInfo.value })
 const descricao = ref(descricaoGestao.value)
-const infoSalvo = ref(false)
 
 function salvarInfo() {
   saveInfo({
@@ -26,8 +25,7 @@ function salvarInfo() {
     anoFim:    info.value.anoFim,
   })
   saveDescricao(descricao.value.trim())
-  infoSalvo.value = true
-  setTimeout(() => { infoSalvo.value = false }, 2000)
+  showToast('Informações salvas.', 'success')
 }
 
 // --- Editar admin existente ---
@@ -234,11 +232,7 @@ function comprimirImagem(file) {
           <div class="char-count">{{ descricao.length }} caracteres</div>
         </div>
 
-        <button class="btn btn-primary"
-          :style="infoSalvo ? 'background:var(--verde);border-color:var(--verde);' : ''"
-          @click="salvarInfo">
-          {{ infoSalvo ? '✓ Salvo' : 'Salvar informações →' }}
-        </button>
+        <button class="btn btn-primary" @click="salvarInfo">Salvar informações →</button>
       </div>
 
       <!-- Header de administradores -->

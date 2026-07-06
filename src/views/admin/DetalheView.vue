@@ -34,7 +34,6 @@ const respostaSalva = ref(false)
 const emailAberto   = ref(false)
 const emailAssunto  = ref('')
 const emailCorpo    = ref('')
-const emailEnviado  = ref(false)
 
 const atendida = computed(() => status.value === 'atendida')
 
@@ -67,11 +66,10 @@ function salvarResposta() {
 }
 
 function enviarEmail() {
-  emailEnviado.value = true
   emailAberto.value = false
   emailAssunto.value = ''
   emailCorpo.value = ''
-  setTimeout(() => { emailEnviado.value = false }, 3000)
+  showToast('E-mail enviado!', 'success')
 }
 
 function confirmarExcluir() {
@@ -165,31 +163,24 @@ function confirmarExcluir() {
           — {{ mensagem.email }}
         </p>
 
-        <div v-if="emailEnviado" class="alert-atendida">
-          <span style="font-size:1.3rem;">✓</span>
-          <div class="alert-atendida-title">E-mail enviado!</div>
-        </div>
+        <button v-if="!emailAberto" class="btn btn-outline btn-sm" @click="emailAberto = true">
+          Enviar e-mail
+        </button>
 
-        <template v-else>
-          <button v-if="!emailAberto" class="btn btn-outline btn-sm" @click="emailAberto = true">
-            Enviar e-mail
-          </button>
-
-          <div v-else>
-            <div class="field" style="margin-bottom:0.8rem;">
-              <label class="label-sm">Assunto</label>
-              <input v-model="emailAssunto" type="text" placeholder="Ex.: Retorno sobre sua mensagem — {{ mensagem.protocolo }}">
-            </div>
-            <div class="field" style="margin-bottom:0.8rem;">
-              <label class="label-sm">Mensagem</label>
-              <textarea v-model="emailCorpo" rows="4" placeholder="Escreva o conteúdo do e-mail…"></textarea>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-amarelo btn-sm" @click="enviarEmail">Enviar</button>
-              <button class="btn btn-outline btn-sm" @click="emailAberto = false; emailAssunto = ''; emailCorpo = ''">Cancelar</button>
-            </div>
+        <div v-else>
+          <div class="field" style="margin-bottom:0.8rem;">
+            <label class="label-sm">Assunto</label>
+            <input v-model="emailAssunto" type="text" placeholder="Ex.: Retorno sobre sua mensagem — {{ mensagem.protocolo }}">
           </div>
-        </template>
+          <div class="field" style="margin-bottom:0.8rem;">
+            <label class="label-sm">Mensagem</label>
+            <textarea v-model="emailCorpo" rows="4" placeholder="Escreva o conteúdo do e-mail…"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-amarelo btn-sm" @click="enviarEmail">Enviar</button>
+            <button class="btn btn-outline btn-sm" @click="emailAberto = false; emailAssunto = ''; emailCorpo = ''">Cancelar</button>
+          </div>
+        </div>
       </div>
 
       <!-- Resposta pública -->

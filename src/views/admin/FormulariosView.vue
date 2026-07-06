@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
 import { formularios, inscricoes, addFormulario } from '../../stores/formularios.js'
 import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
+import { showToast } from '../../stores/toast.js'
 
 const filtro = usePersistedFilter('caesi-admin-forms-filtro', 'todos')
 const busca  = usePersistedFilter('caesi-admin-forms-busca', '')
@@ -47,7 +48,6 @@ function formatData(data) {
 
 // ── Criação de formulário ────────────────────────────────
 const showNovoForm    = ref(false)
-const novoFormSuccess = ref(false)
 const novoFormErrors  = ref({})
 const novoForm = ref({
   titulo: '', tipo: '', descricao: '',
@@ -58,7 +58,6 @@ const novoForm = ref({
 
 function cancelNovoForm() {
   showNovoForm.value = false
-  novoFormSuccess.value = false
   novoFormErrors.value = {}
   novoForm.value = { titulo: '', tipo: '', descricao: '', pago: false, valor: '', prazoInscricao: '', dataEvento: '', limiteVagas: '', requerMatricula: false, campos: [] }
 }
@@ -126,8 +125,8 @@ function submitNovoForm() {
     campos,
   })
 
-  novoFormSuccess.value = true
-  setTimeout(() => cancelNovoForm(), 1800)
+  cancelNovoForm()
+  showToast('Formulário criado!', 'success')
 }
 </script>
 
@@ -166,12 +165,7 @@ function submitNovoForm() {
       <div v-if="showNovoForm" class="paper paper-mb-lg">
         <h3 class="paper-subtitle">Criar formulário</h3>
 
-        <div v-if="novoFormSuccess" style="text-align:center;padding:1.2rem 0;">
-          <div style="font-size:2rem;margin-bottom:0.5rem;">✓</div>
-          <div style="font-family:'Archivo Black',sans-serif;font-weight:700;color:var(--verde);">Formulário criado!</div>
-        </div>
-
-        <form v-else @submit.prevent="submitNovoForm" novalidate>
+        <form @submit.prevent="submitNovoForm" novalidate>
           <div class="field-grid">
             <div class="field">
               <label>Título *</label>
