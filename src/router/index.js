@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAdmin } from '../stores/auth.js'
+import { isAdmin, mustChangePassword } from '../stores/auth.js'
 
 const routes = [
   { path: '/',                       component: () => import('../views/HomeView.vue') },
@@ -18,6 +18,7 @@ const routes = [
   { path: '/informacoes/professores',        component: () => import('../views/InformacoesProfessoresView.vue') },
   { path: '/informacoes/laboratorios',       component: () => import('../views/InformacoesLaboratoriosView.vue') },
   { path: '/admin',                  component: () => import('../views/admin/LoginView.vue') },
+  { path: '/admin/trocar-senha',     component: () => import('../views/admin/TrocarSenhaView.vue'),         meta: { admin: true } },
   { path: '/admin/painel',           component: () => import('../views/admin/PainelView.vue'),              meta: { admin: true } },
   { path: '/admin/mensagens',        component: () => import('../views/admin/MensagensView.vue'),           meta: { admin: true } },
   { path: '/admin/mensagens/:id',    component: () => import('../views/admin/DetalheView.vue'),             meta: { admin: true } },
@@ -49,7 +50,8 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   if (to.meta.admin && !isAdmin.value) return '/admin'
-  if (to.path === '/admin' && isAdmin.value) return '/admin/painel'
+  if (to.meta.admin && mustChangePassword.value && to.path !== '/admin/trocar-senha') return '/admin/trocar-senha'
+  if (to.path === '/admin' && isAdmin.value) return mustChangePassword.value ? '/admin/trocar-senha' : '/admin/painel'
 })
 
 export default router

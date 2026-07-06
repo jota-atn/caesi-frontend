@@ -1,14 +1,32 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { loginComGoogle } from '../../stores/auth.js'
+import { loginAdmin, loginComGoogle } from '../../stores/auth.js'
 import googleIcon from '../../assets/icons/google.svg?raw'
 
 const router = useRouter()
+const email  = ref('')
+const senha  = ref('')
+const erro   = ref(false)
 const loading = ref(false)
+const loadingGoogle = ref(false)
+
+function entrar() {
+  erro.value = false
+  loading.value = true
+  setTimeout(() => {
+    loading.value = false
+    if (!loginAdmin(email.value, senha.value)) {
+      erro.value = true
+      senha.value = ''
+    } else {
+      router.push('/admin/painel')
+    }
+  }, 400)
+}
 
 function entrarComGoogle() {
-  loading.value = true
+  loadingGoogle.value = true
   setTimeout(() => {
     loginComGoogle()
     router.push('/admin/painel')
@@ -19,18 +37,52 @@ function entrarComGoogle() {
 <template>
   <div class="admin-login-page">
     <RouterLink to="/" class="admin-login-voltar">← Voltar ao site</RouterLink>
-    <div class="admin-login-box">
+    <form class="admin-login-box" @submit.prevent="entrar">
       <div class="admin-login-logo">
         <img src="/logo_caesi.png" alt="CAESI" />
       </div>
       <h2 class="admin-login-title">Acesso restrito</h2>
-      <p class="admin-login-sub">Entre com a conta Google cadastrada como administrador do CAESI.</p>
 
-      <button type="button" class="btn-google" :disabled="loading" @click="entrarComGoogle">
-        <span class="btn-google-icon" v-html="googleIcon"></span>
-        {{ loading ? 'Entrando...' : 'Entrar com Google' }}
+      <div v-if="erro" class="alert-erro">E-mail ou senha incorretos.</div>
+
+      <div class="field-group">
+        <label for="email" class="label-sm">E-mail</label>
+        <input
+          id="email"
+          v-model="email"
+          type="email"
+          class="admin-login-input"
+          placeholder="seu@ccc.ufcg.edu.br"
+          autocomplete="username"
+          required
+          autofocus
+        />
+      </div>
+
+      <div class="field-group">
+        <label for="senha" class="label-sm">Senha</label>
+        <input
+          id="senha"
+          v-model="senha"
+          type="password"
+          class="admin-login-input"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" :disabled="loading">
+        {{ loading ? 'Verificando...' : 'Entrar' }}
       </button>
-    </div>
+
+      <div class="admin-login-divisor"><span>ou</span></div>
+
+      <button type="button" class="btn-google" :disabled="loadingGoogle" @click="entrarComGoogle">
+        <span class="btn-google-icon" v-html="googleIcon"></span>
+        {{ loadingGoogle ? 'Entrando...' : 'Entrar com Google' }}
+      </button>
+    </form>
   </div>
 </template>
 
@@ -75,12 +127,42 @@ function entrarComGoogle() {
   margin: 0;
 }
 
-.admin-login-sub {
-  font-size: 0.85rem;
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-login-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--branco);
+  border: 2px solid var(--creme-escuro);
+  border-radius: 2px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 1rem;
+  color: var(--preto);
+  outline: none;
+  transition: border-color 0.2s;
+  letter-spacing: 0.15em;
+}
+.admin-login-input:focus { border-color: var(--roxo); }
+
+.admin-login-divisor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
   color: var(--cinza);
-  text-align: center;
-  margin: -0.6rem 0 0;
-  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.admin-login-divisor::before,
+.admin-login-divisor::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--creme-escuro);
 }
 
 .btn-google {
