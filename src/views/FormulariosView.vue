@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import { formularios, inscricoes } from '../stores/formularios.js'
 import { usePersistedFilter } from '../composables/usePersistedFilter.js'
 
@@ -74,6 +75,7 @@ const formulariosFiltrados = computed(() =>
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Formulários <span>e Eventos</span></h2>
       </div>

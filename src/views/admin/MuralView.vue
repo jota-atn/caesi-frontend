@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { publicacoes, addPublicacao, updatePublicacao, deletePublicacao } from '../../stores/mural.js'
 import { showToast } from '../../stores/toast.js'
 
@@ -137,6 +138,7 @@ const lista = computed(() => {
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Mural <span>Admin</span></h2>
         <button class="btn btn-primary" @click="mostrarForm = !mostrarForm">

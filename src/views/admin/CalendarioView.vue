@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { eventos, addEvento, updateEvento, removeEvento } from '../../stores/calendario.js'
 import { showToast } from '../../stores/toast.js'
 
@@ -121,6 +122,7 @@ function excluirEvento(e) {
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Gestão do <span>Calendário</span></h2>
       </div>

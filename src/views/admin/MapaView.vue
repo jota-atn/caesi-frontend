@@ -6,6 +6,7 @@ import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { estruturas, addEstrutura, updateEstrutura, removeEstrutura, CENTRO_PADRAO } from '../../stores/mapa.js'
 import { showToast } from '../../stores/toast.js'
 
@@ -166,6 +167,7 @@ onBeforeUnmount(() => { map?.remove() })
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Gestão do <span>Mapa</span></h2>
       </div>

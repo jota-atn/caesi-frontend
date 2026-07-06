@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import {
   admins, addAdmin, removeAdmin, updateAdmin,
   descricaoGestao, saveDescricao, gestaoInfo, saveInfo, MESES,
@@ -11,9 +11,6 @@ import {
 import { showToast } from '../../stores/toast.js'
 import pencilIcon from '../../assets/icons/pencil.svg?raw'
 import xIcon     from '../../assets/icons/x.svg?raw'
-
-const router = useRouter()
-function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
 
 // --- Informações da gestão ---
 const info     = ref({ ...gestaoInfo.value })
@@ -189,7 +186,7 @@ function comprimirImagem(file) {
     <Navbar />
 
     <div class="page-content">
-      <button class="back-link" @click="voltar">← Voltar</button>
+      <BackLink to="/admin/painel" />
       <div class="page-heading">
         <h2>Gestão da <span>Equipe</span></h2>
       </div>

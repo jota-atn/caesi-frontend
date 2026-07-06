@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 import { professores } from '../stores/informacoes.js'
 
@@ -24,7 +25,7 @@ const lista = computed(() => {
     <Navbar />
 
     <div class="page-content">
-      <RouterLink to="/informacoes" class="back-link">← Informações</RouterLink>
+      <BackLink to="/informacoes" label="Informações" />
       <div class="page-heading">
         <h2>Professores do <span>Curso</span></h2>
       </div>

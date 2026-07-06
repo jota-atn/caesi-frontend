@@ -1,11 +1,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
-
-const router = useRouter()
-function voltar() { window.history.state?.back ? router.back() : router.push('/') }
+import BackLink from '../components/BackLink.vue'
 
 const titulos = [
   { id: 'titulo-1', num: 'I',   texto: 'Princípios e Finalidades' },
@@ -51,7 +48,7 @@ onBeforeUnmount(() => {
     <Navbar />
 
     <div class="home-section" style="padding-top:3.5rem;flex:1;">
-      <button class="back-link" style="margin-bottom:1.2rem;" @click="voltar">← Voltar</button>
+      <BackLink to="/" style="margin-bottom:1.2rem;" />
       <div class="section-label">Documentação oficial</div>
       <h1 class="section-title">Estatuto do <span>CAESI</span></h1>
 

@@ -3,6 +3,7 @@ import { marked } from 'marked'
 import { computed } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import { tamburetei } from '../stores/informacoes.js'
 
 const html = computed(() => marked.parse(tamburetei.value.descricao || ''))
@@ -15,7 +16,7 @@ const html = computed(() => marked.parse(tamburetei.value.descricao || ''))
     <Navbar />
 
     <div class="page-content">
-      <RouterLink to="/informacoes" class="back-link">← Informações</RouterLink>
+      <BackLink to="/informacoes" label="Informações" />
       <div class="page-heading">
         <h2>{{ tamburetei.titulo }}</h2>
       </div>

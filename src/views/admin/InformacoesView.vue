@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import clipboardIcon from '../../assets/icons/clipboard.svg?raw'
 import usersIcon     from '../../assets/icons/users.svg?raw'
 import userIcon      from '../../assets/icons/user.svg?raw'
@@ -27,6 +28,7 @@ const secoes = computed(() => [
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Gestão de <span>Informações</span></h2>
       </div>

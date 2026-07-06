@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { tamburetei, saveTamburetei } from '../../stores/informacoes.js'
 import { showToast } from '../../stores/toast.js'
 
@@ -27,7 +28,7 @@ function salvar() {
     <Navbar />
 
     <div class="page-content">
-      <RouterLink to="/admin/informacoes" class="back-link">← Informações</RouterLink>
+      <BackLink to="/admin/informacoes" label="Informações" />
       <div class="page-heading">
         <h2>Tamburetei <span>Admin</span></h2>
       </div>

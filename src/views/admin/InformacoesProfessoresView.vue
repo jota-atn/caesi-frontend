@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { professores, addProfessor, updateProfessor, deleteProfessor } from '../../stores/informacoes.js'
 import { estruturas } from '../../stores/mapa.js'
 import { showToast } from '../../stores/toast.js'
@@ -93,7 +94,7 @@ const lista = computed(() => {
     <Navbar />
 
     <div class="page-content">
-      <RouterLink to="/admin/informacoes" class="back-link">← Informações</RouterLink>
+      <BackLink to="/admin/informacoes" label="Informações" />
       <div class="page-heading">
         <h2>Professores <span>Admin</span></h2>
         <button class="btn btn-primary" @click="mostrarForm = !mostrarForm">

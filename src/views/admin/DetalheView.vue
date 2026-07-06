@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import Badge from '../../components/Badge.vue'
 import Tag from '../../components/Tag.vue'
 import { mensagens, updateStatus, updateNota, updateResposta, deleteMensagem } from '../../stores/mensagens.js'
@@ -94,7 +95,7 @@ function confirmarExcluir() {
     <Navbar />
 
     <div class="page-content">
-      <RouterLink to="/admin/mensagens" class="back-link">← Voltar ao painel</RouterLink>
+      <BackLink to="/admin/mensagens" label="Voltar ao painel" />
 
       <div class="paper paper-mb">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">

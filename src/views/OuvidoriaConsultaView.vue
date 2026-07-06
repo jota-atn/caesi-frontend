@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import { mensagens, addComplemento } from '../stores/mensagens.js'
 
 const route    = useRoute()
@@ -74,6 +75,7 @@ onMounted(() => {
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Consultar <span>protocolo</span></h2>
       </div>

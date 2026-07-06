@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados, aprovarCancelamento, recusarCancelamento } from '../../stores/formularios.js'
 import { showToast } from '../../stores/toast.js'
 import { useEscapeKey } from '../../composables/useEscapeKey.js'
@@ -250,7 +251,7 @@ function excluirFormulario() {
     <Navbar />
 
     <div class="page-content">
-      <RouterLink to="/admin/formularios" class="back-link">← Voltar aos formulários</RouterLink>
+      <BackLink to="/admin/formularios" label="Voltar aos formulários" />
 
       <!-- Cabeçalho do formulário -->
       <div class="paper paper-mb">

@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import { formularios, inscricoes, addInscricao } from '../stores/formularios.js'
 import { showToast } from '../stores/toast.js'
 
@@ -13,10 +14,6 @@ const id = Number(route.params.id)
 const formulario = computed(() => formularios.value.find(f => f.id === id))
 
 if (!formulario.value) router.replace('/formularios')
-
-function voltar() {
-  window.history.state?.back ? router.back() : router.push('/formularios')
-}
 
 const TIPO_LABEL = {
   'evento-com-certificado': 'Evento c/ Certificado',
@@ -160,7 +157,7 @@ function submitForm() {
     <Navbar />
 
     <div class="page-content">
-      <button class="back-link" @click="voltar">← Voltar</button>
+      <BackLink to="/formularios" />
 
       <!-- Cabeçalho -->
       <div class="paper paper-mb">

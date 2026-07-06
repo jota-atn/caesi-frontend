@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import MsgCard from '../../components/MsgCard.vue'
 import Pagination from '../../components/Pagination.vue'
 import { usePagination } from '../../composables/usePagination.js'
@@ -154,6 +155,7 @@ const barOptions = {
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Painel de <span>Mensagens</span></h2>
         <button class="btn btn-outline btn-sm" :disabled="mensagens.length === 0" @click="exportarCSV">

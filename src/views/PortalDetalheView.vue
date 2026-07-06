@@ -1,19 +1,15 @@
 <script setup>
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import paperclipIcon from '../assets/icons/paperclip.svg?raw'
 import { artefatos } from '../stores/portal.js'
 
 const route  = useRoute()
-const router = useRouter()
 
 const artefato = computed(() => artefatos.value.find(a => a.id === Number(route.params.id)))
-
-function voltar() {
-  window.history.state?.back ? router.back() : router.push('/portal')
-}
 
 function formatValor(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
@@ -32,7 +28,7 @@ function formatData(data) {
     <Navbar />
 
     <div class="page-content">
-      <button class="back-link" @click="voltar">← Voltar</button>
+      <BackLink to="/portal" />
 
       <div v-if="!artefato" class="empty-state">
         <p>Artefato não encontrado.</p>

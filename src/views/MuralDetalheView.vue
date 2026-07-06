@@ -1,17 +1,17 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { marked } from 'marked'
 import cameraIcon     from '../assets/icons/camera.svg?raw'
 import paperclipIcon  from '../assets/icons/paperclip.svg?raw'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import { publicacoes } from '../stores/mural.js'
 
 marked.use({ breaks: true, gfm: true })
 
 const route  = useRoute()
-const router = useRouter()
 
 const publicacao = computed(() =>
   publicacoes.value.find(p => p.id === Number(route.params.id))
@@ -28,10 +28,6 @@ const tituloPartes = computed(() => {
   if (i === -1) return { inicio: '', ultimo: titulo }
   return { inicio: titulo.slice(0, i), ultimo: titulo.slice(i + 1) }
 })
-
-function voltar() {
-  window.history.state?.back ? router.back() : router.push('/mural')
-}
 
 // Lightbox
 const lightboxImgs = ref(null)
@@ -61,7 +57,7 @@ function onKey(e) {
     <Navbar />
 
     <div v-if="!publicacao" class="page-content">
-      <button class="back-link" style="margin-bottom:1.4rem;" @click="voltar">← Voltar</button>
+      <BackLink to="/mural" style="margin-bottom:1.4rem;" />
       <div class="empty-state">
         <p>Publicação não encontrada.</p>
         <span>Ela pode ter sido removida.</span>
@@ -72,7 +68,7 @@ function onKey(e) {
       <!-- ── Cabeçalho editorial ─────────────────────── -->
       <div class="pub-capa">
         <div class="pub-capa-inner">
-          <button class="back-link back-link--light" @click="voltar">← Voltar</button>
+          <BackLink to="/mural" class="back-link--light" />
 
           <div class="pub-capa-label">
             <span v-if="publicacao.tipo">{{ publicacao.tipo }}</span>

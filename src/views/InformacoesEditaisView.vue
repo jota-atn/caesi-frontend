@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import paperclipIcon from '../assets/icons/paperclip.svg?raw'
 import { editais } from '../stores/informacoes.js'
 
@@ -33,7 +34,7 @@ function formatData(data) {
     <Navbar />
 
     <div class="page-content">
-      <RouterLink to="/informacoes" class="back-link">← Informações</RouterLink>
+      <BackLink to="/informacoes" label="Informações" />
       <div class="page-heading">
         <h2>Editais do <span>CAESI</span></h2>
       </div>

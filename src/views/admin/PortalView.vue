@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { artefatos, addArtefato, updateArtefato, deleteArtefato } from '../../stores/portal.js'
 import { showToast } from '../../stores/toast.js'
 import paperclipIcon from '../../assets/icons/paperclip.svg?raw'
@@ -126,6 +127,7 @@ const lista = computed(() => {
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Portal <span>Admin</span></h2>
         <button class="btn btn-primary" @click="mostrarForm = !mostrarForm">

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
+import BackLink from '../../components/BackLink.vue'
 import { showToast } from '../../stores/toast.js'
 import { useEscapeKey } from '../../composables/useEscapeKey.js'
 import {
@@ -15,9 +15,6 @@ import unlockIcon   from '../../assets/icons/unlock.svg?raw'
 import warningIcon  from '../../assets/icons/warning.svg?raw'
 import zapIcon      from '../../assets/icons/zap.svg?raw'
 import calendarIcon from '../../assets/icons/calendar.svg?raw'
-
-const router = useRouter()
-function voltar() { window.history.state?.back ? router.back() : router.push('/admin/painel') }
 
 // ── Membros ───────────────────────────────────────────────
 const adicionandoMembro = ref(false)
@@ -225,11 +222,9 @@ useEscapeKey(() => {
 
     <div class="kanban-wrapper">
 
+      <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
-        <div>
-          <button class="back-link" style="margin-bottom:0.5rem;" @click="voltar">← Voltar</button>
-          <h2>Mural de <span>Tasks</span></h2>
-        </div>
+        <h2>Mural de <span>Tasks</span></h2>
         <button class="btn btn-amarelo" @click="abrirCriar">+ Nova task</button>
       </div>
 

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { marked } from 'marked'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import BackLink from '../components/BackLink.vue'
 import Pagination from '../components/Pagination.vue'
 import { usePagination } from '../composables/usePagination.js'
 import { usePersistedFilter } from '../composables/usePersistedFilter.js'
@@ -51,6 +52,7 @@ function textoPlano(md) {
     <Navbar />
 
     <div class="page-content">
+      <BackLink to="/" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
         <h2>Mural do <span>CAESI</span></h2>
       </div>
