@@ -6,6 +6,7 @@ import BackLink from '../../components/BackLink.vue'
 import Badge from '../../components/Badge.vue'
 import Tag from '../../components/Tag.vue'
 import { mensagens, updateStatus, updateNota, updateResposta, deleteMensagem } from '../../stores/mensagens.js'
+import { showToast } from '../../stores/toast.js'
 
 const TIPO_LABEL = {
   disciplina:     'Disciplina',
@@ -34,20 +35,14 @@ const emailAberto   = ref(false)
 const emailAssunto  = ref('')
 const emailCorpo    = ref('')
 const emailEnviado  = ref(false)
-const notifEmailMsg = ref('')
 
 const atendida = computed(() => status.value === 'atendida')
-
-function mostrarNotifEmail(texto) {
-  notifEmailMsg.value = texto
-  setTimeout(() => { notifEmailMsg.value = '' }, 3500)
-}
 
 function marcarAtendida() {
   status.value = 'atendida'
   updateStatus(id, 'atendida')
   if (mensagem.value?.email) {
-    mostrarNotifEmail(`E-mail de notificação enviado para ${mensagem.value.email}`)
+    showToast(`E-mail de notificação enviado para ${mensagem.value.email}`, 'info')
   }
 }
 
@@ -67,7 +62,7 @@ function salvarResposta() {
   respostaSalva.value = true
   setTimeout(() => { respostaSalva.value = false }, 2000)
   if (resposta.value.trim() && mensagem.value?.email) {
-    mostrarNotifEmail(`E-mail de notificação enviado para ${mensagem.value.email}`)
+    showToast(`E-mail de notificação enviado para ${mensagem.value.email}`, 'info')
   }
 }
 
@@ -224,13 +219,6 @@ function confirmarExcluir() {
           >{{ respostaSalva ? '✓ Salvo' : 'Salvar resposta' }}</button>
         </div>
       </div>
-
-      <!-- Toast de e-mail mock -->
-      <Transition name="toast">
-        <div v-if="notifEmailMsg" class="notif-email-toast">
-          {{ notifEmailMsg }}
-        </div>
-      </Transition>
 
       <div class="paper">
         <h3 class="paper-subtitle">Ação do CAESI</h3>
