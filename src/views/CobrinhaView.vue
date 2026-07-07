@@ -7,9 +7,9 @@ import capeloIcon from '../assets/icons/graduation-cap.svg?raw'
 
 const router = useRouter()
 
-const CELL = 22
-const COLS = 24
-const ROWS = 16
+const CELL = 24
+const COLS = 28
+const ROWS = 18
 
 const VETORES = {
   cima:     { x: 0, y: -1 },
@@ -25,9 +25,7 @@ const TECLA_PARA_DIRECAO = {
 
 const cobra = ref([])
 const direcao = ref(VETORES.direita)
-const direcaoNome = ref('direita')
-let proximaDirecao = VETORES.direita
-let proximaDirecaoNome = 'direita'
+let filaDirecoes = []
 
 const comida = reactive({ x: 0, y: 0, especial: false })
 const obstaculos = ref([])
@@ -85,9 +83,7 @@ function iniciar() {
     { x: CENTRO_X - 2, y: CENTRO_Y },
   ]
   direcao.value = VETORES.direita
-  direcaoNome.value = 'direita'
-  proximaDirecao = VETORES.direita
-  proximaDirecaoNome = 'direita'
+  filaDirecoes = []
   obstaculos.value = []
   score.value = 0
   comidasComidas = 0
@@ -111,8 +107,7 @@ function trocarVelocidade() {
 function tick() {
   if (estado.value !== 'jogando') return
 
-  direcao.value = proximaDirecao
-  direcaoNome.value = proximaDirecaoNome
+  if (filaDirecoes.length) direcao.value = filaDirecoes.shift()
   const cabeca = cobra.value[0]
   const novaCabeca = { x: cabeca.x + direcao.value.x, y: cabeca.y + direcao.value.y }
 
@@ -149,7 +144,8 @@ function tick() {
 }
 
 function onKeydown(e) {
-  if (estado.value === 'fim' && e.key === 'Enter') { reiniciar(); return }
+  if (e.repeat) return // ignora o auto-repeat do navegador pra tecla segurada não atropelar outros toques
+  if (estado.value === 'fim' && (e.key === 'Enter' || e.key === 'r' || e.key === 'R')) { reiniciar(); return }
   if (e.key === 'Escape') { router.push('/'); return }
   if (e.key === 'p' || e.key === 'P') {
     if (estado.value === 'jogando') estado.value = 'pausado'
@@ -161,10 +157,12 @@ function onKeydown(e) {
   if (!nomeDirecao) return
   const nova = VETORES[nomeDirecao]
   e.preventDefault()
-  // impede reverter direto pro próprio pescoço
-  if (nova.x === -direcao.value.x && nova.y === -direcao.value.y) return
-  proximaDirecao = nova
-  proximaDirecaoNome = nomeDirecao
+  if (filaDirecoes.length >= 2) return
+  const ultima = filaDirecoes.length ? filaDirecoes[filaDirecoes.length - 1] : direcao.value
+  // impede reverter direto pro próprio pescoço, e ignora repetir a mesma direção
+  if (nova.x === -ultima.x && nova.y === -ultima.y) return
+  if (nova.x === ultima.x && nova.y === ultima.y) return
+  filaDirecoes.push(nova)
 }
 
 onMounted(() => {
@@ -221,12 +219,7 @@ onUnmounted(() => {
             class="cobrinha-segmento"
             :class="{ 'cobrinha-segmento--cabeca': i === 0 }"
             :style="{ left: seg.x * CELL + 'px', top: seg.y * CELL + 'px', width: CELL + 'px', height: CELL + 'px' }"
-          >
-            <template v-if="i === 0">
-              <span class="cobrinha-olho" :class="'cobrinha-olho--' + direcaoNome"></span>
-              <span class="cobrinha-olho" :class="'cobrinha-olho--' + direcaoNome"></span>
-            </template>
-          </div>
+          ></div>
 
           <div v-if="estado === 'fim'" class="cobrinha-overlay">
             <p class="cobrinha-overlay-titulo">A cobrinha foi capturada!</p>
@@ -234,7 +227,7 @@ onUnmounted(() => {
               Pontuação: {{ score }}
               <template v-if="score > 0 && score >= recorde"> — novo recorde!</template>
             </p>
-            <button class="btn btn-amarelo" @click="reiniciar">Jogar de novo (Enter)</button>
+            <button class="btn btn-amarelo" @click="reiniciar">Jogar de novo (Enter ou R)</button>
           </div>
 
           <div v-if="estado === 'pausado'" class="cobrinha-overlay">
@@ -242,9 +235,25 @@ onUnmounted(() => {
             <p class="cobrinha-overlay-sub">Aperte P pra continuar</p>
           </div>
         </div>
-      </div>
 
-      <p class="cobrinha-dica">Setas ou WASD move · P pausa · Esc sai — cuidado com os blocos vermelhos</p>
+        <div class="cobrinha-info">
+          <div class="cobrinha-legenda">
+            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--roxo)"></span>você</span>
+            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--amarelo)"></span>comida</span>
+            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--vermelho)"></span>obstáculo</span>
+          </div>
+          <div class="cobrinha-controles">
+            <span class="cobrinha-tecla-grupo">
+              <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+              <span class="cobrinha-ou">ou</span>
+              <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd>
+              mover
+            </span>
+            <span class="cobrinha-tecla-grupo"><kbd>P</kbd>pausar</span>
+            <span class="cobrinha-tecla-grupo"><kbd>Esc</kbd>sair</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -284,18 +293,21 @@ onUnmounted(() => {
 .cobrinha-paper {
   padding: 1.2rem;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   overflow: auto;
 }
 
 .cobrinha-area {
   position: relative;
-  background-color: var(--creme);
-  background-image: radial-gradient(circle, rgba(80,64,160,0.09) 1.5px, transparent 1.5px);
-  background-size: 22px 22px;
-  border: 3px solid var(--roxo-escuro);
-  border-radius: 4px;
-  box-shadow: inset 0 0 0 5px var(--creme);
+  background-color: var(--creme-escuro);
+  background-image:
+    linear-gradient(to right, rgba(80,64,160,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(80,64,160,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 1px solid rgba(80,64,160,0.3);
+  border-radius: 2px;
   overflow: hidden;
   max-width: 100%;
 }
@@ -311,8 +323,8 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: var(--roxo);
-  border-radius: 6px;
-  box-shadow: 1px 1px 0 rgba(80,64,160,0.4);
+  border-radius: 3px;
+  box-shadow: 2px 2px 0 var(--roxo-escuro);
 }
 .cobrinha-segmento--cabeca {
   z-index: 2;
@@ -320,30 +332,8 @@ onUnmounted(() => {
 }
 .cobrinha-segmento--cabeca::before {
   background: var(--roxo-escuro);
-  border-radius: 7px;
-  box-shadow: 1px 1px 0 rgba(40,30,90,0.5);
+  box-shadow: 2px 2px 0 var(--preto);
 }
-
-.cobrinha-olho {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--creme);
-  top: 6px;
-}
-.cobrinha-olho--direita { right: 4px; }
-.cobrinha-olho--direita:first-of-type { top: 5px; }
-.cobrinha-olho--direita:last-of-type { top: auto; bottom: 5px; }
-.cobrinha-olho--esquerda { left: 4px; }
-.cobrinha-olho--esquerda:first-of-type { top: 5px; }
-.cobrinha-olho--esquerda:last-of-type { top: auto; bottom: 5px; }
-.cobrinha-olho--cima { top: 4px; }
-.cobrinha-olho--cima:first-of-type { left: 5px; }
-.cobrinha-olho--cima:last-of-type { left: auto; right: 5px; }
-.cobrinha-olho--baixo { top: auto; bottom: 4px; }
-.cobrinha-olho--baixo:first-of-type { left: 5px; }
-.cobrinha-olho--baixo:last-of-type { left: auto; right: 5px; }
 
 .cobrinha-comida {
   position: absolute;
@@ -359,7 +349,7 @@ onUnmounted(() => {
   inset: 3px;
   background: var(--amarelo);
   border-radius: 50%;
-  box-shadow: 1px 1px 0 rgba(80,64,160,0.25);
+  box-shadow: 2px 2px 0 var(--roxo-escuro);
 }
 .cobrinha-comida--especial::before {
   background: var(--creme);
@@ -390,14 +380,14 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: var(--vermelho);
-  background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.12) 0 3px, transparent 3px 7px);
   border-radius: 2px;
-  box-shadow: 1px 1px 0 rgba(140,40,40,0.5);
+  box-shadow: 2px 2px 0 var(--preto);
 }
 
 .cobrinha-overlay {
   position: absolute;
   inset: 0;
+  z-index: 5;
   background: rgba(80,64,160,0.92);
   display: flex;
   flex-direction: column;
@@ -414,10 +404,78 @@ onUnmounted(() => {
 }
 .cobrinha-overlay-sub { font-size: 0.9rem; color: var(--creme); }
 
-.cobrinha-dica {
-  margin-top: 1rem;
+.cobrinha-info {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1.4rem;
+  background: rgba(80,64,160,0.06);
+  border: 1px solid rgba(80,64,160,0.15);
+  border-radius: 5px;
+  padding: 0.6rem 1rem;
+}
+
+.cobrinha-legenda {
+  display: flex;
+  gap: 0.9rem;
+  padding-right: 1.2rem;
+  border-right: 1px solid rgba(80,64,160,0.2);
+}
+.cobrinha-legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 0.78rem;
-  color: rgba(242,230,196,0.5);
-  text-align: center;
+  color: var(--roxo-escuro);
+  opacity: 0.85;
+}
+.cobrinha-legenda-cor {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+}
+
+.cobrinha-controles {
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+.cobrinha-tecla-grupo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--roxo-escuro);
+  opacity: 0.85;
+}
+.cobrinha-tecla-grupo kbd {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.66rem;
+  background: var(--roxo-escuro);
+  color: var(--creme);
+  border-radius: 3px;
+  padding: 2px 6px;
+  box-shadow: 0 2px 0 rgba(40,30,90,0.5);
+  line-height: 1.3;
+}
+.cobrinha-ou {
+  font-size: 0.68rem;
+  opacity: 0.6;
+  margin: 0 2px;
+}
+
+@media (max-width: 560px) {
+  .cobrinha-legenda {
+    border-right: none;
+    padding-right: 0;
+    width: 100%;
+    justify-content: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(80,64,160,0.15);
+  }
 }
 </style>
