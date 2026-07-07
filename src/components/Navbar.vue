@@ -1,11 +1,12 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAdmin, logout } from '../stores/auth.js'
 
 const menuOpen     = ref(false)
 const conteudoOpen = ref(false)
 const dropdownRef  = ref(null)
+const triggerRef   = ref(null)
 const route        = useRoute()
 const router       = useRouter()
 
@@ -31,6 +32,32 @@ function onClickFora(e) {
   if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
     conteudoOpen.value = false
   }
+}
+
+function itensDropdown() {
+  return [...(dropdownRef.value?.querySelectorAll('.nav-dropdown-item') ?? [])]
+}
+
+async function onDropdownKeydown(e) {
+  if (e.key === 'Escape') {
+    conteudoOpen.value = false
+    triggerRef.value?.focus()
+    return
+  }
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+  e.preventDefault()
+  if (!conteudoOpen.value) {
+    conteudoOpen.value = true
+    await nextTick()
+    const itens = itensDropdown()
+    itens[e.key === 'ArrowDown' ? 0 : itens.length - 1]?.focus()
+    return
+  }
+  const itens = itensDropdown()
+  if (!itens.length) return
+  const atual = itens.indexOf(document.activeElement)
+  const prox  = e.key === 'ArrowDown' ? (atual + 1) % itens.length : (atual - 1 + itens.length) % itens.length
+  itens[prox].focus()
 }
 
 onMounted(() => document.addEventListener('click', onClickFora))
@@ -63,8 +90,9 @@ onUnmounted(() => document.removeEventListener('click', onClickFora))
         <RouterLink to="/admin/tasks"       class="nav-link" :aria-current="ariaCurrent('/admin/tasks')"       @click="fecharTudo">Tasks</RouterLink>
         <RouterLink to="/admin/equipe"      class="nav-link" :aria-current="ariaCurrent('/admin/equipe')"      @click="fecharTudo">Equipe</RouterLink>
 
-        <div class="nav-dropdown" :class="{ open: conteudoOpen }" ref="dropdownRef">
-          <button type="button" class="nav-link nav-dropdown-trigger" :class="{ 'router-link-active': conteudoAtivo }" @click="conteudoOpen = !conteudoOpen">
+        <div class="nav-dropdown" :class="{ open: conteudoOpen }" ref="dropdownRef" @keydown="onDropdownKeydown">
+          <button type="button" ref="triggerRef" class="nav-link nav-dropdown-trigger" :class="{ 'router-link-active': conteudoAtivo }"
+            :aria-expanded="conteudoOpen" @click="conteudoOpen = !conteudoOpen">
             Conteúdo
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
           </button>
