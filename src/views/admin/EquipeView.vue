@@ -9,15 +9,39 @@ import {
   arquivarGestaoAtual, removerGestaoHistorico, adicionarGestaoManual,
 } from '../../stores/equipe.js'
 import { showToast } from '../../stores/toast.js'
-import { isEmail, isUrl } from '../../utils/validation.js'
+import { isEmail, isUrl, isValidImageFile } from '../../utils/validation.js'
 import pencilIcon from '../../assets/icons/pencil.svg?raw'
 import xIcon     from '../../assets/icons/x.svg?raw'
 
 // --- Informações da gestão ---
 const info     = ref({ ...gestaoInfo.value })
 const descricao = ref(descricaoGestao.value)
+const errosInfo = ref({})
+
+function validarAno(ano) {
+  if (!ano) return ''
+  const n = Number(ano)
+  return (n < 1990 || n > 2099) ? 'Ano deve estar entre 1990 e 2099.' : ''
+}
+
+function validarInfo() {
+  const e = {}
+  e.anoInicio = validarAno(info.value.anoInicio)
+  e.anoFim    = validarAno(info.value.anoFim)
+  if (!e.anoInicio && !e.anoFim && info.value.anoInicio && info.value.anoFim) {
+    const idxIni = MESES.indexOf(info.value.mesInicio)
+    const idxFim = MESES.indexOf(info.value.mesFim)
+    const valIni = Number(info.value.anoInicio) * 12 + (idxIni >= 0 ? idxIni : 0)
+    const valFim = Number(info.value.anoFim) * 12 + (idxFim >= 0 ? idxFim : 0)
+    if (valFim < valIni) e.anoFim = 'O fim da gestão não pode ser antes do início.'
+  }
+  return e
+}
 
 function salvarInfo() {
+  const e = validarInfo()
+  errosInfo.value = e
+  if (e.anoInicio || e.anoFim) return
   saveInfo({
     nomeChapa: info.value.nomeChapa.trim(),
     mesInicio: info.value.mesInicio,
@@ -50,6 +74,7 @@ function cancelarEdicao() {
 async function onFotoEdit(e) {
   const file = e.target.files[0]
   if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
   editForm.value.foto = await comprimirImagem(file)
   e.target.value = ''
 }
@@ -100,6 +125,7 @@ function resetFormAdd() {
 async function onFotoAdd(e) {
   const file = e.target.files[0]
   if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
   formAdd.value.foto = await comprimirImagem(file)
   e.target.value = ''
 }
@@ -135,6 +161,7 @@ function addMembroManual() {
 async function onFotoMembroManual(e, i) {
   const file = e.target.files[0]
   if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
   membrosManual.value[i].foto = await comprimirImagem(file)
   e.target.value = ''
 }
@@ -226,7 +253,8 @@ function comprimirImagem(file) {
                   <option value="">Mês</option>
                   <option v-for="m in MESES" :key="m" :value="m">{{ m }}</option>
                 </select>
-                <input v-model="info.anoInicio" type="number" class="input-ano" placeholder="Ano" min="1990" max="2099">
+                <input v-model="info.anoInicio" type="number" class="input-ano" placeholder="Ano" min="1990" max="2099" :class="{ invalid: errosInfo.anoInicio }">
+                <span v-if="errosInfo.anoInicio" class="error-msg" style="display:block;">{{ errosInfo.anoInicio }}</span>
               </div>
             </div>
             <span class="periodo-sep">–</span>
@@ -237,7 +265,8 @@ function comprimirImagem(file) {
                   <option value="">Mês</option>
                   <option v-for="m in MESES" :key="m" :value="m">{{ m }}</option>
                 </select>
-                <input v-model="info.anoFim" type="number" class="input-ano" placeholder="Ano" min="1990" max="2099">
+                <input v-model="info.anoFim" type="number" class="input-ano" placeholder="Ano" min="1990" max="2099" :class="{ invalid: errosInfo.anoFim }">
+                <span v-if="errosInfo.anoFim" class="error-msg" style="display:block;">{{ errosInfo.anoFim }}</span>
               </div>
             </div>
           </div>

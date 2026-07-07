@@ -6,7 +6,7 @@ import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
 import { formularios, inscricoes, addInscricao } from '../stores/formularios.js'
 import { showToast } from '../stores/toast.js'
-import { isEmail } from '../utils/validation.js'
+import { isEmail, isValidImageFile } from '../utils/validation.js'
 
 const route  = useRoute()
 const router = useRouter()
@@ -78,7 +78,16 @@ const totalEstimado = computed(() => {
 })
 
 function onFileChange(e) {
-  comprovanteNome.value = e.target.files?.[0]?.name ?? ''
+  const file = e.target.files?.[0]
+  if (!file) { comprovanteNome.value = ''; return }
+  const ehPdf = file.type === 'application/pdf'
+  if (!ehPdf && !isValidImageFile(file)) {
+    showToast('Selecione uma imagem ou PDF de até 8MB.', 'error')
+    e.target.value = ''
+    comprovanteNome.value = ''
+    return
+  }
+  comprovanteNome.value = file.name
 }
 
 const hasInteracted = ref(false)

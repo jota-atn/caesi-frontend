@@ -6,6 +6,7 @@ import BackLink from '../../components/BackLink.vue'
 import { formularios, inscricoes, addFormulario } from '../../stores/formularios.js'
 import { usePersistedFilter } from '../../composables/usePersistedFilter.js'
 import { showToast } from '../../stores/toast.js'
+import { isTodayOrFuture } from '../../utils/validation.js'
 
 const filtro = usePersistedFilter('caesi-admin-forms-filtro', 'todos')
 const busca  = usePersistedFilter('caesi-admin-forms-busca', '')
@@ -100,6 +101,8 @@ function submitNovoForm() {
   if (!novoForm.value.tipo)          e.tipo = true
   if (novoForm.value.pago && (!novoForm.value.valor || Number(novoForm.value.valor) <= 0)) e.valor = true
   if (novoForm.value.limiteVagas !== '' && Number(novoForm.value.limiteVagas) < 1) e.limiteVagas = true
+  if (!isTodayOrFuture(novoForm.value.prazoInscricao)) e.prazoInscricao = true
+  if (!isTodayOrFuture(novoForm.value.dataEvento))     e.dataEvento = true
   if (novoForm.value.campos.some(c => c.label.trim() && c.tipo === 'select' && !c.opcoesStr.split(',').map(s => s.trim()).filter(Boolean).length)) {
     e.campos = true
   }
@@ -220,7 +223,8 @@ function submitNovoForm() {
           <div class="field-grid" style="margin-top:1.2rem;">
             <div class="field">
               <label>Prazo de inscrição</label>
-              <input v-model="novoForm.prazoInscricao" type="date">
+              <input v-model="novoForm.prazoInscricao" type="date" :class="{ invalid: novoFormErrors.prazoInscricao }">
+              <span class="error-msg">O prazo não pode estar no passado.</span>
             </div>
             <div class="field">
               <label>Limite de submissões <span class="field-hint">(opcional)</span></label>
@@ -231,7 +235,8 @@ function submitNovoForm() {
 
           <div v-if="ehTipoEvento(novoForm.tipo)" class="field">
             <label>Data do evento <span class="field-hint">(opcional — adiciona ao calendário público)</span></label>
-            <input v-model="novoForm.dataEvento" type="date">
+            <input v-model="novoForm.dataEvento" type="date" :class="{ invalid: novoFormErrors.dataEvento }">
+            <span class="error-msg">A data não pode estar no passado.</span>
           </div>
 
           <label class="check-anon" style="margin-top:1rem;margin-bottom:0;">

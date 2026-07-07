@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
 import { publicacoes, addPublicacao, updatePublicacao, deletePublicacao } from '../../stores/mural.js'
 import { showToast } from '../../stores/toast.js'
+import { isValidImageFile } from '../../utils/validation.js'
 
 // --------------- Compressão ---------------
 function comprimirImagem(file) {
@@ -43,10 +44,13 @@ function validar(form) {
 }
 
 async function onImagensAdd(e) {
+  let invalido = false
   for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
     const b64 = await comprimirImagem(file)
     formAdd.imagens.push(b64)
   }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
   e.target.value = ''
 }
 
@@ -89,10 +93,13 @@ function abrirEdit(p) {
 }
 
 async function onImagensEdit(e) {
+  let invalido = false
   for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
     const b64 = await comprimirImagem(file)
     formEdit.imagens.push(b64)
   }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
   e.target.value = ''
 }
 

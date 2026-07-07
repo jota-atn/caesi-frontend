@@ -5,6 +5,7 @@ import BackLink from '../../components/BackLink.vue'
 import { editais, addEdital, updateEdital, deleteEdital } from '../../stores/informacoes.js'
 import { showToast } from '../../stores/toast.js'
 import paperclipIcon from '../../assets/icons/paperclip.svg?raw'
+import { isTodayOrFuture } from '../../utils/validation.js'
 
 function formatData(data) {
   if (!data) return ''
@@ -16,7 +17,7 @@ function formatData(data) {
 const mostrarForm = ref(false)
 const fileAddRef  = ref(null)
 const formAdd = reactive({ titulo: '', descricao: '', data: '', anexoNome: '' })
-const erros   = reactive({ titulo: '' })
+const erros   = reactive({ titulo: '', data: '' })
 
 function validarTitulo(titulo) {
   return titulo.trim().length < 3 ? 'Título obrigatório (mín. 3 caracteres).' : ''
@@ -24,7 +25,8 @@ function validarTitulo(titulo) {
 
 function validar(form) {
   erros.titulo = validarTitulo(form.titulo)
-  return !erros.titulo
+  erros.data   = !isTodayOrFuture(form.data) ? 'A data não pode estar no passado.' : ''
+  return !erros.titulo && !erros.data
 }
 
 function onArquivoAdd(e) { formAdd.anexoNome = e.target.files?.[0]?.name ?? '' }
@@ -44,7 +46,7 @@ function publicar() {
 
 function cancelarAdd() {
   Object.assign(formAdd, { titulo: '', descricao: '', data: '', anexoNome: '' })
-  erros.titulo = ''
+  Object.assign(erros, { titulo: '', data: '' })
   mostrarForm.value = false
 }
 
@@ -127,7 +129,8 @@ const lista = computed(() => {
 
         <div class="field">
           <label class="label">Data <span class="field-hint">(opcional)</span></label>
-          <input v-model="formAdd.data" type="date" class="input" style="max-width:180px;">
+          <input v-model="formAdd.data" type="date" class="input" style="max-width:180px;" :class="{ invalid: erros.data }">
+          <span v-if="erros.data" class="error-msg" style="display:block;">{{ erros.data }}</span>
         </div>
 
         <div class="field">

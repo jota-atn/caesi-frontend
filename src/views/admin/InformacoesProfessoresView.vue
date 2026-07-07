@@ -5,7 +5,7 @@ import BackLink from '../../components/BackLink.vue'
 import { professores, addProfessor, updateProfessor, deleteProfessor } from '../../stores/informacoes.js'
 import { estruturas } from '../../stores/mapa.js'
 import { showToast } from '../../stores/toast.js'
-import { isEmail, isUrl } from '../../utils/validation.js'
+import { isEmail, isUrl, isValidImageFile } from '../../utils/validation.js'
 
 function nomeEstrutura(id) { return estruturas.value.find(e => e.id === id)?.nome ?? null }
 
@@ -59,7 +59,9 @@ function validar(form) {
 
 async function onFotoAdd(e) {
   const file = e.target.files?.[0]
-  if (file) formAdd.foto = await comprimirImagem(file)
+  if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  formAdd.foto = await comprimirImagem(file)
   e.target.value = ''
 }
 function removerFotoAdd() { formAdd.foto = '' }
@@ -117,7 +119,9 @@ function abrirEdit(p) {
 
 async function onFotoEdit(e) {
   const file = e.target.files?.[0]
-  if (file) formEdit.foto = await comprimirImagem(file)
+  if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  formEdit.foto = await comprimirImagem(file)
   e.target.value = ''
 }
 function removerFotoEdit() { formEdit.foto = '' }

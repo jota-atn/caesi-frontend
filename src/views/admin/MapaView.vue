@@ -9,6 +9,7 @@ import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
 import { estruturas, addEstrutura, updateEstrutura, removeEstrutura, CENTRO_PADRAO } from '../../stores/mapa.js'
 import { showToast } from '../../stores/toast.js'
+import { isValidImageFile } from '../../utils/validation.js'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
@@ -51,17 +52,23 @@ function comprimirImagem(file) {
 }
 
 async function onImagensNovo(e) {
+  let invalido = false
   for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
     formNovo.value.imagens.push(await comprimirImagem(file))
   }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
   e.target.value = ''
 }
 function removerImagemNovo(i) { formNovo.value.imagens.splice(i, 1) }
 
 async function onImagensEdit(e) {
+  let invalido = false
   for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
     formEdit.value.imagens.push(await comprimirImagem(file))
   }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
   e.target.value = ''
 }
 function removerImagemEdit(i) { formEdit.value.imagens.splice(i, 1) }

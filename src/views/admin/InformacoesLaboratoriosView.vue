@@ -5,7 +5,7 @@ import BackLink from '../../components/BackLink.vue'
 import { laboratorios, addLaboratorio, updateLaboratorio, deleteLaboratorio } from '../../stores/informacoes.js'
 import { estruturas } from '../../stores/mapa.js'
 import { showToast } from '../../stores/toast.js'
-import { isEmail, isUrl } from '../../utils/validation.js'
+import { isEmail, isUrl, isValidImageFile } from '../../utils/validation.js'
 
 function nomeEstrutura(id) { return estruturas.value.find(e => e.id === id)?.nome ?? null }
 
@@ -58,15 +58,20 @@ function validar(form) {
 
 async function onImagemAdd(e) {
   const file = e.target.files?.[0]
-  if (file) formAdd.imagem = await comprimirImagem(file)
+  if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  formAdd.imagem = await comprimirImagem(file)
   e.target.value = ''
 }
 function removerImagemAdd() { formAdd.imagem = '' }
 
 async function onGaleriaAdd(e) {
+  let invalido = false
   for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
     formAdd.imagens.push(await comprimirImagem(file))
   }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
   e.target.value = ''
 }
 function removerGaleriaAdd(i) { formAdd.imagens.splice(i, 1) }
@@ -123,15 +128,20 @@ function abrirEdit(l) {
 
 async function onImagemEdit(e) {
   const file = e.target.files?.[0]
-  if (file) formEdit.imagem = await comprimirImagem(file)
+  if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  formEdit.imagem = await comprimirImagem(file)
   e.target.value = ''
 }
 function removerImagemEdit() { formEdit.imagem = '' }
 
 async function onGaleriaEdit(e) {
+  let invalido = false
   for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
     formEdit.imagens.push(await comprimirImagem(file))
   }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
   e.target.value = ''
 }
 function removerGaleriaEdit(i) { formEdit.imagens.splice(i, 1) }
