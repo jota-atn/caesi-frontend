@@ -46,7 +46,17 @@ function formatData(data) {
       </div>
 
       <div class="evento-lista">
-        <div v-for="e in lista" :key="e.id" class="evento-card" @click="toggleExpandir(e.id)">
+        <div
+          v-for="e in lista"
+          :key="e.id"
+          class="evento-card"
+          role="button"
+          tabindex="0"
+          :aria-expanded="expandidoId === e.id"
+          @click="toggleExpandir(e.id)"
+          @keydown.enter="toggleExpandir(e.id)"
+          @keydown.space.prevent="toggleExpandir(e.id)"
+        >
           <div class="evento-corpo">
             <div class="evento-top">
               <span class="evento-nome">{{ e.titulo }}</span>

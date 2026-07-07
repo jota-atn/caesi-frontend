@@ -8,6 +8,15 @@ import { admins, descricaoGestao, gestaoInfo, periodoFormatado, historicoGestoes
 const expandido = ref(null)
 function toggleGestao(id) { expandido.value = expandido.value === id ? null : id }
 
+const equipeCarrosselEl = ref(null)
+function equipeScrollBy(dir) {
+  const el = equipeCarrosselEl.value
+  if (!el) return
+  const card = el.querySelector('.membro-card')
+  const passo = card ? card.offsetWidth + 16 : 200
+  el.scrollBy({ left: dir * passo, behavior: 'smooth' })
+}
+
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 import mailIcon from '../assets/icons/mail.svg?raw'
 import instagramIcon from '../assets/icons/instagram.svg?raw'
@@ -50,7 +59,16 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
         <div v-if="admins.length === 0" style="font-size:0.9rem;color:var(--cinza);padding:0.5rem 0;">
           Nenhum administrador cadastrado ainda.
         </div>
-        <div v-else class="equipe-carrossel">
+        <div
+          v-else
+          ref="equipeCarrosselEl"
+          class="equipe-carrossel"
+          tabindex="0"
+          role="region"
+          aria-label="Carrossel de membros da gestão"
+          @keydown.left="equipeScrollBy(-1)"
+          @keydown.right="equipeScrollBy(1)"
+        >
           <div v-for="a in admins" :key="a.id" class="membro-card">
             <div class="membro-avatar">
               <img v-if="a.foto" :src="a.foto" :alt="a.nome" class="membro-foto">

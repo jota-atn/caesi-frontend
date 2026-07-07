@@ -287,7 +287,16 @@ function submitForm() {
           <div v-if="formulario.pago" class="field">
             <label>Comprovante de pagamento *</label>
             <input ref="fileInputRef" type="file" accept="image/*,.pdf" style="display:none;" @change="onFileChange">
-            <div class="comprovante-area" :class="{ 'has-file': comprovanteNome }" @click="fileInputRef.click()">
+            <div
+              class="comprovante-area"
+              :class="{ 'has-file': comprovanteNome }"
+              role="button"
+              tabindex="0"
+              aria-label="Anexar comprovante de pagamento"
+              @click="fileInputRef.click()"
+              @keydown.enter="fileInputRef.click()"
+              @keydown.space.prevent="fileInputRef.click()"
+            >
               <template v-if="comprovanteNome">
                 <div class="comprovante-filename">{{ comprovanteNome }}</div>
                 <p>Clique para trocar o arquivo</p>

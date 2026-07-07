@@ -72,8 +72,12 @@ function onKey(e) {
         <div
           v-if="todasImagens.length > 0"
           class="pub-hero"
+          role="button"
+          tabindex="0"
           :title="todasImagens.length > 1 ? `Ver galeria (${todasImagens.length} fotos)` : 'Ampliar'"
           @click="abrirLightbox(0)"
+          @keydown.enter="abrirLightbox(0)"
+          @keydown.space.prevent="abrirLightbox(0)"
         >
           <img :src="todasImagens[0]" :alt="laboratorio.nome" class="pub-hero-img">
           <div v-if="todasImagens.length > 1" class="pub-hero-label">
@@ -111,7 +115,12 @@ function onKey(e) {
               v-for="(img, i) in todasImagens"
               :key="i"
               class="pub-galeria-item"
+              role="button"
+              tabindex="0"
+              :aria-label="`Ver foto ${i + 1}`"
               @click="abrirLightbox(i)"
+              @keydown.enter="abrirLightbox(i)"
+              @keydown.space.prevent="abrirLightbox(i)"
             >
               <img :src="img" :alt="`Foto ${i + 1}`" class="pub-galeria-img">
               <div v-if="i === 0" class="pub-galeria-capa">capa</div>
