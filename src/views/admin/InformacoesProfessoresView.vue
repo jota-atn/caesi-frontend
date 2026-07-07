@@ -5,6 +5,7 @@ import BackLink from '../../components/BackLink.vue'
 import { professores, addProfessor, updateProfessor, deleteProfessor } from '../../stores/informacoes.js'
 import { estruturas } from '../../stores/mapa.js'
 import { showToast } from '../../stores/toast.js'
+import { isEmail } from '../../utils/validation.js'
 
 function nomeEstrutura(id) { return estruturas.value.find(e => e.id === id)?.nome ?? null }
 
@@ -32,16 +33,21 @@ function comprimirImagem(file) {
 // --------------- Formulário adicionar ---------------
 const mostrarForm = ref(false)
 const fileAddRef  = ref(null)
-const formAdd = reactive({ nome: '', sala: '', estruturaId: '', descricao: '', foto: '', lattes: '', googleAcademico: '', linkedin: '' })
-const erros   = reactive({ nome: '' })
+const formAdd = reactive({ nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
+const erros   = reactive({ nome: '', email: '' })
 
 function validarNome(nome) {
   return nome.trim().length < 2 ? 'Nome obrigatório (mínimo 2 caracteres).' : ''
 }
 
+function validarEmailOpcional(email) {
+  return email.trim() && !isEmail(email) ? 'Informe um e-mail válido.' : ''
+}
+
 function validar(form) {
-  erros.nome = validarNome(form.nome)
-  return !erros.nome
+  erros.nome  = validarNome(form.nome)
+  erros.email = validarEmailOpcional(form.email)
+  return !erros.nome && !erros.email
 }
 
 async function onFotoAdd(e) {
@@ -59,26 +65,28 @@ function publicar() {
     estruturaId: formAdd.estruturaId ? Number(formAdd.estruturaId) : null,
     descricao: formAdd.descricao.trim(),
     foto: formAdd.foto || '',
+    email: formAdd.email.trim(),
     lattes: formAdd.lattes.trim(),
     googleAcademico: formAdd.googleAcademico.trim(),
     linkedin: formAdd.linkedin.trim(),
   })
-  Object.assign(formAdd, { nome: '', sala: '', estruturaId: '', descricao: '', foto: '', lattes: '', googleAcademico: '', linkedin: '' })
+  Object.assign(formAdd, { nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
   mostrarForm.value = false
   showToast('Professor cadastrado.', 'success')
 }
 
 function cancelarAdd() {
-  Object.assign(formAdd, { nome: '', sala: '', estruturaId: '', descricao: '', foto: '', lattes: '', googleAcademico: '', linkedin: '' })
+  Object.assign(formAdd, { nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
   erros.nome = ''
+  erros.email = ''
   mostrarForm.value = false
 }
 
 // --------------- Edição inline ---------------
 const editandoId  = ref(null)
 const fileEditRef = ref(null)
-const formEdit = reactive({ nome: '', sala: '', estruturaId: '', descricao: '', foto: '', lattes: '', googleAcademico: '', linkedin: '' })
-const errosEdit = reactive({ nome: '' })
+const formEdit = reactive({ nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
+const errosEdit = reactive({ nome: '', email: '' })
 
 function triggerFileEdit() {
   const el = Array.isArray(fileEditRef.value) ? fileEditRef.value[0] : fileEditRef.value
@@ -88,12 +96,14 @@ function triggerFileEdit() {
 function abrirEdit(p) {
   editandoId.value = p.id
   errosEdit.nome = ''
+  errosEdit.email = ''
   Object.assign(formEdit, {
     nome: p.nome,
     sala: p.sala ?? '',
     estruturaId: p.estruturaId ?? '',
     descricao: p.descricao ?? '',
     foto: p.foto ?? '',
+    email: p.email ?? '',
     lattes: p.lattes ?? '',
     googleAcademico: p.googleAcademico ?? '',
     linkedin: p.linkedin ?? '',
@@ -108,14 +118,16 @@ async function onFotoEdit(e) {
 function removerFotoEdit() { formEdit.foto = '' }
 
 function salvarEdit(id) {
-  errosEdit.nome = validarNome(formEdit.nome)
-  if (errosEdit.nome) return
+  errosEdit.nome  = validarNome(formEdit.nome)
+  errosEdit.email = validarEmailOpcional(formEdit.email)
+  if (errosEdit.nome || errosEdit.email) return
   updateProfessor(id, {
     nome: formEdit.nome.trim(),
     sala: formEdit.sala.trim(),
     estruturaId: formEdit.estruturaId ? Number(formEdit.estruturaId) : null,
     descricao: formEdit.descricao.trim(),
     foto: formEdit.foto || '',
+    email: formEdit.email.trim(),
     lattes: formEdit.lattes.trim(),
     googleAcademico: formEdit.googleAcademico.trim(),
     linkedin: formEdit.linkedin.trim(),
@@ -203,6 +215,12 @@ const lista = computed(() => {
         </div>
 
         <div class="field">
+          <label class="label">E-mail de contato <span class="field-hint">(opcional)</span></label>
+          <input v-model="formAdd.email" type="email" class="input" placeholder="professor@ccc.ufcg.edu.br" :class="{ invalid: erros.email }">
+          <span v-if="erros.email" class="error-msg" style="display:block;">{{ erros.email }}</span>
+        </div>
+
+        <div class="field">
           <label class="label">Lattes <span class="field-hint">(opcional)</span></label>
           <input v-model="formAdd.lattes" type="url" class="input" placeholder="http://lattes.cnpq.br/...">
         </div>
@@ -244,6 +262,7 @@ const lista = computed(() => {
             </div>
           </div>
           <p v-if="p.descricao" class="pub-card-preview" style="margin-top:0.6rem;">{{ p.descricao }}</p>
+          <div v-if="p.email" style="font-size:0.8rem;color:var(--cinza);margin-top:0.4rem;">{{ p.email }}</div>
           <div v-if="p.lattes || p.googleAcademico || p.linkedin" class="diretorio-links" style="margin-top:0.6rem;">
             <span v-if="p.lattes" class="diretorio-pill">Lattes</span>
             <span v-if="p.googleAcademico" class="diretorio-pill">Google Acadêmico</span>
@@ -291,6 +310,11 @@ const lista = computed(() => {
               {{ formEdit.foto ? 'Trocar foto' : '+ Adicionar foto' }}
             </button>
             <input ref="fileEditRef" type="file" accept="image/*" style="display:none" @change="onFotoEdit">
+          </div>
+          <div class="field">
+            <label class="label">E-mail de contato</label>
+            <input v-model="formEdit.email" type="email" class="input" :class="{ invalid: errosEdit.email }">
+            <span v-if="errosEdit.email" class="error-msg" style="display:block;">{{ errosEdit.email }}</span>
           </div>
           <div class="field">
             <label class="label">Lattes</label>

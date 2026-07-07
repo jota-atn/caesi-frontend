@@ -37,8 +37,8 @@ function persistProfessores(list) {
   _professores.value = [...list]
 }
 
-export function addProfessor({ nome, sala = '', estruturaId = null, descricao = '', foto = '', lattes = '', googleAcademico = '', linkedin = '' }) {
-  const novo = { id: Date.now(), nome, sala, estruturaId, descricao, foto, lattes, googleAcademico, linkedin }
+export function addProfessor({ nome, sala = '', estruturaId = null, descricao = '', foto = '', email = '', lattes = '', googleAcademico = '', linkedin = '' }) {
+  const novo = { id: Date.now(), nome, sala, estruturaId, descricao, foto, email, lattes, googleAcademico, linkedin }
   persistProfessores([..._professores.value, novo])
   return novo
 }

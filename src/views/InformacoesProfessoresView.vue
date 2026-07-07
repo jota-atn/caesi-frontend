@@ -47,6 +47,7 @@ const lista = computed(() => {
             </div>
           </div>
           <p v-if="p.descricao" class="diretorio-desc">{{ p.descricao }}</p>
+          <a v-if="p.email" :href="`mailto:${p.email}`" class="diretorio-email">{{ p.email }}</a>
           <div v-if="p.lattes || p.googleAcademico || p.linkedin" class="diretorio-links">
             <a v-if="p.lattes"          :href="p.lattes"          target="_blank" rel="noopener" class="diretorio-pill">Lattes</a>
             <a v-if="p.googleAcademico" :href="p.googleAcademico" target="_blank" rel="noopener" class="diretorio-pill">Google Acadêmico</a>
@@ -108,6 +109,8 @@ const lista = computed(() => {
 }
 .diretorio-sala { font-size: 0.78rem; color: var(--cinza); margin-top: 2px; }
 .diretorio-desc { font-size: 0.84rem; color: var(--preto); opacity: 0.75; line-height: 1.55; }
+.diretorio-email { font-size: 0.8rem; color: var(--roxo-escuro); font-weight: 600; text-decoration: none; word-break: break-all; }
+.diretorio-email:hover { text-decoration: underline; }
 
 .diretorio-links { display: flex; gap: 6px; flex-wrap: wrap; }
 .diretorio-pill {
