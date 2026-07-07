@@ -19,6 +19,7 @@ html {
   scroll-behavior: smooth;
   background-color: var(--roxo-escuro);
 }
+html.is-admin { background-color: #3B2F88; }
 
 body {
   font-family: 'Archivo', sans-serif;
