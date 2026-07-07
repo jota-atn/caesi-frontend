@@ -26,6 +26,7 @@ const TECLA_PARA_DIRECAO = {
 const cobra = ref([])
 const direcao = ref(VETORES.direita)
 let filaDirecoes = []
+let ordemSegurando = [] // nomes das teclas de direção fisicamente pressionadas, da mais antiga pra mais recente
 
 const comida = reactive({ x: 0, y: 0, especial: false })
 const obstaculos = ref([])
@@ -84,19 +85,25 @@ function iniciar() {
   ]
   direcao.value = VETORES.direita
   filaDirecoes = []
+  ordemSegurando = []
   obstaculos.value = []
   score.value = 0
   comidasComidas = 0
   velocidade = 130
-  estado.value = 'jogando'
+  estado.value = 'aguardando'
   gerarObstaculos(6, true)
   reposicionarComida()
+}
+
+function comecarJogo() {
+  estado.value = 'jogando'
+  tickId = setInterval(tick, velocidade)
 }
 
 function reiniciar() {
   clearInterval(tickId)
   iniciar()
-  tickId = setInterval(tick, velocidade)
+  comecarJogo()
 }
 
 function trocarVelocidade() {
@@ -107,7 +114,13 @@ function trocarVelocidade() {
 function tick() {
   if (estado.value !== 'jogando') return
 
-  if (filaDirecoes.length) direcao.value = filaDirecoes.shift()
+  if (filaDirecoes.length) {
+    direcao.value = filaDirecoes.shift()
+  } else if (ordemSegurando.length) {
+    const seguraVetor = VETORES[ordemSegurando[ordemSegurando.length - 1]]
+    const ehReversao = seguraVetor.x === -direcao.value.x && seguraVetor.y === -direcao.value.y
+    if (!ehReversao) direcao.value = seguraVetor
+  }
   const cabeca = cobra.value[0]
   const novaCabeca = { x: cabeca.x + direcao.value.x, y: cabeca.y + direcao.value.y }
 
@@ -138,7 +151,7 @@ function tick() {
     }
     reposicionarComida()
     if (comidasComidas % 5 === 0) gerarObstaculos(1)
-    velocidade = Math.max(65, 130 - comidasComidas * 3)
+    velocidade = Math.max(75, 130 - comidasComidas * 1.5)
     trocarVelocidade()
   }
 }
@@ -146,17 +159,28 @@ function tick() {
 function onKeydown(e) {
   if (estado.value === 'fim' && (e.key === 'Enter' || e.key === 'r' || e.key === 'R')) { reiniciar(); return }
   if (e.key === 'Escape') { router.push('/'); return }
+
+  const teclaNormalizada = e.key.length === 1 ? e.key.toLowerCase() : e.key
+  const nomeDirecao = TECLA_PARA_DIRECAO[teclaNormalizada]
+
+  if (estado.value === 'aguardando') {
+    if (!nomeDirecao) return
+    comecarJogo()
+  }
+
   if (e.key === 'p' || e.key === 'P') {
     if (e.repeat) return
     if (estado.value === 'jogando') estado.value = 'pausado'
     else if (estado.value === 'pausado') estado.value = 'jogando'
     return
   }
-  const teclaNormalizada = e.key.length === 1 ? e.key.toLowerCase() : e.key
-  const nomeDirecao = TECLA_PARA_DIRECAO[teclaNormalizada]
   if (!nomeDirecao) return
-  const nova = VETORES[nomeDirecao]
   e.preventDefault()
+
+  if (!ordemSegurando.includes(nomeDirecao)) ordemSegurando.push(nomeDirecao)
+  if (e.repeat) return // auto-repeat só mantém o "segurando", não empilha mais toques na fila
+
+  const nova = VETORES[nomeDirecao]
   if (filaDirecoes.length >= 2) return
   const ultima = filaDirecoes.length ? filaDirecoes[filaDirecoes.length - 1] : direcao.value
   // impede reverter direto pro próprio pescoço, e ignora repetir a mesma direção
@@ -165,13 +189,21 @@ function onKeydown(e) {
   filaDirecoes.push(nova)
 }
 
+function onKeyup(e) {
+  const teclaNormalizada = e.key.length === 1 ? e.key.toLowerCase() : e.key
+  const nomeDirecao = TECLA_PARA_DIRECAO[teclaNormalizada]
+  if (!nomeDirecao) return
+  ordemSegurando = ordemSegurando.filter(d => d !== nomeDirecao)
+}
+
 onMounted(() => {
   document.addEventListener('keydown', onKeydown)
+  document.addEventListener('keyup', onKeyup)
   iniciar()
-  tickId = setInterval(tick, velocidade)
 })
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
+  document.removeEventListener('keyup', onKeyup)
   clearInterval(tickId)
 })
 </script>
@@ -233,6 +265,11 @@ onUnmounted(() => {
           <div v-if="estado === 'pausado'" class="cobrinha-overlay">
             <p class="cobrinha-overlay-titulo">Pausado</p>
             <p class="cobrinha-overlay-sub">Aperte P pra continuar</p>
+          </div>
+
+          <div v-if="estado === 'aguardando'" class="cobrinha-overlay">
+            <p class="cobrinha-overlay-titulo">Pronta?</p>
+            <p class="cobrinha-overlay-sub">Aperte uma tecla pra começar</p>
           </div>
         </div>
 
