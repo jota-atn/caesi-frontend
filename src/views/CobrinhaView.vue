@@ -144,10 +144,10 @@ function tick() {
 }
 
 function onKeydown(e) {
-  if (e.repeat) return // ignora o auto-repeat do navegador pra tecla segurada não atropelar outros toques
   if (estado.value === 'fim' && (e.key === 'Enter' || e.key === 'r' || e.key === 'R')) { reiniciar(); return }
   if (e.key === 'Escape') { router.push('/'); return }
   if (e.key === 'p' || e.key === 'P') {
+    if (e.repeat) return
     if (estado.value === 'jogando') estado.value = 'pausado'
     else if (estado.value === 'pausado') estado.value = 'jogando'
     return
