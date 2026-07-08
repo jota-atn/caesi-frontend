@@ -8,6 +8,10 @@ import capeloIcon from '../assets/icons/graduation-cap.svg?raw'
 
 const router = useRouter()
 
+// DEBUG temporário: começa direto na luta do chefe e pula pro próximo assim que derrota, sem esperar pontuação.
+// Lembrar de voltar pra false antes de mesclar/lançar.
+const DEBUG_COMECAR_NO_CHEFE = false
+
 const mqDesktop = window.matchMedia('(any-pointer: fine)')
 const ehDesktop = ref(mqDesktop.matches)
 function atualizarEhDesktop(e) { ehDesktop.value = e.matches }
@@ -61,17 +65,37 @@ let ordemSegurando = [] // nomes das teclas de direção fisicamente pressionada
 
 const comida = reactive({ x: 0, y: 0, especial: false })
 const obstaculos = ref([])
+const inimigos = ref([])
+let proximoIdInimigo = 1
+const projeteis = ref([])
+let proximoIdProjetil = 1
+
+const LIMIAR_CHEFE_INICIAL = 300
+const LIMIAR_CHEFE_INCREMENTO = 300
+
+const chefeAtivo = ref(null)
+const chefesDerrotados = ref(0)
+const proximoLimiarChefe = ref(LIMIAR_CHEFE_INICIAL)
+const TIPOS_CHEFE = ['perseguidor', 'fantasma', 'invasor']
+const NOMES_CHEFE = {
+  perseguidor: 'O Grande Cubo Vermelho',
+  fantasma: 'Sombra Rancorosa da Borda',
+  invasor: 'Invasor Verde do Espaço',
+}
 
 const score = ref(0)
 const recorde = ref(Number(localStorage.getItem('caesi_cobrinha_recorde') || 0))
-const estado = ref('jogando') // 'jogando' | 'pausado' | 'fim'
+const estado = ref('jogando') // 'jogando' | 'pausado' | 'fim' | 'vencido'
 
 let tickId = null
 let velocidade = 130
 let comidasComidas = 0
+let invulneravelInimigos = 0
 
 function celulaOcupada(x, y) {
   if (obstaculos.value.some(o => o.x === x && o.y === y)) return true
+  if (inimigos.value.some(i => i.x === x && i.y === y)) return true
+  if (chefeAtivo.value && celulasChefe(chefeAtivo.value).some(c => c.x === x && c.y === y)) return true
   return cobra.value.some(seg => seg.x === x && seg.y === y)
 }
 
@@ -82,12 +106,17 @@ function pertoDoCentro(x, y) {
   return Math.abs(x - CENTRO_X) <= 4 && Math.abs(y - CENTRO_Y) <= 3
 }
 
-function posicaoLivre(evitarCentro = false) {
+function pertoDaCobra(x, y) {
+  const cabeca = cobra.value[0]
+  return Math.abs(x - cabeca.x) <= 4 && Math.abs(y - cabeca.y) <= 3
+}
+
+function posicaoLivre(evitarCentro = false, evitarCobra = false) {
   let x, y
   do {
     x = Math.floor(Math.random() * COLS)
     y = Math.floor(Math.random() * ROWS)
-  } while (celulaOcupada(x, y) || (evitarCentro && pertoDoCentro(x, y)))
+  } while (celulaOcupada(x, y) || (evitarCentro && pertoDoCentro(x, y)) || (evitarCobra && pertoDaCobra(x, y)))
   return { x, y }
 }
 
@@ -98,14 +127,191 @@ function reposicionarComida() {
   comida.especial = comidasComidas > 0 && comidasComidas % 6 === 0
 }
 
-function gerarObstaculos(qtd, evitarCentro = false) {
+function gerarObstaculos(qtd, evitarCentro = false, evitarCobra = false) {
   const novos = []
   for (let i = 0; i < qtd; i++) {
-    const p = posicaoLivre(evitarCentro)
+    const p = posicaoLivre(evitarCentro, evitarCobra)
     novos.push(p)
     obstaculos.value = [...obstaculos.value, p]
   }
   return novos
+}
+
+// tipos de inimigo comum liberados conforme os chefes vão caindo:
+// fase 1 (nenhum chefe derrotado) = só patrulha; fase 2 = +rápido; fase 3 = +atirador
+function tiposInimigoDisponiveis() {
+  const tipos = ['patrulha']
+  if (chefesDerrotados.value >= 1) tipos.push('rapido')
+  if (chefesDerrotados.value >= 2) tipos.push('atirador')
+  return tipos
+}
+
+function gerarInimigo(evitarCentro = false, evitarCobra = false) {
+  const tipos = tiposInimigoDisponiveis()
+  const tipo = tipos[Math.floor(Math.random() * tipos.length)]
+  const p = posicaoLivre(evitarCentro, evitarCobra)
+
+  if (tipo === 'atirador') {
+    inimigos.value = [...inimigos.value, { id: proximoIdInimigo++, tipo, x: p.x, y: p.y, cooldownTiro: 5 }]
+    return
+  }
+
+  const horizontal = Math.random() < 0.5
+  const sentido = Math.random() < 0.5 ? -1 : 1
+  inimigos.value = [...inimigos.value, {
+    id: proximoIdInimigo++,
+    tipo,
+    x: p.x,
+    y: p.y,
+    dx: horizontal ? sentido : 0,
+    dy: horizontal ? 0 : sentido,
+  }]
+}
+
+function tentarMover(x, y, dx, dy) {
+  const nx = x + dx
+  const ny = y + dy
+  if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) return null
+  if (obstaculos.value.some(o => o.x === nx && o.y === ny)) return null
+  return { nx, ny }
+}
+
+function moverPasso(inimigo) {
+  let destino = tentarMover(inimigo.x, inimigo.y, inimigo.dx, inimigo.dy)
+  if (!destino) {
+    inimigo.dx *= -1
+    inimigo.dy *= -1
+    destino = tentarMover(inimigo.x, inimigo.y, inimigo.dx, inimigo.dy)
+  }
+  if (destino) {
+    inimigo.x = destino.nx
+    inimigo.y = destino.ny
+  }
+}
+
+function atirar(inimigo) {
+  const cabeca = cobra.value[0]
+  const dx = cabeca.x - inimigo.x
+  const dy = cabeca.y - inimigo.y
+  let dirX = 0, dirY = 0
+  if (Math.abs(dx) >= Math.abs(dy) && dx !== 0) dirX = dx > 0 ? 1 : -1
+  else if (dy !== 0) dirY = dy > 0 ? 1 : -1
+  else dirX = 1
+  projeteis.value = [...projeteis.value, { id: proximoIdProjetil++, x: inimigo.x, y: inimigo.y, dx: dirX, dy: dirY }]
+}
+
+function moverInimigo(inimigo) {
+  if (inimigo.tipo === 'atirador') {
+    inimigo.cooldownTiro -= 1
+    if (inimigo.cooldownTiro <= 0) {
+      atirar(inimigo)
+      inimigo.cooldownTiro = 5
+    }
+    return
+  }
+  const vezes = inimigo.tipo === 'rapido' ? 2 : 1
+  for (let i = 0; i < vezes; i++) moverPasso(inimigo)
+}
+
+// ── Chefes (a cada X pontos, mapa limpo + miniboss) ────────
+function gerarCaminhoPerimetro() {
+  const minX = 1, maxX = COLS - 3
+  const minY = 1, maxY = ROWS - 3
+  const caminho = []
+  for (let x = minX; x <= maxX; x++) caminho.push({ x, y: minY })
+  for (let y = minY + 1; y <= maxY; y++) caminho.push({ x: maxX, y })
+  for (let x = maxX - 1; x >= minX; x--) caminho.push({ x, y: maxY })
+  for (let y = maxY - 1; y > minY; y--) caminho.push({ x: minX, y })
+  return caminho
+}
+
+const ATAQUE_CHEFE_COOLDOWN = 9
+
+function criarChefe(tipo) {
+  if (tipo === 'perseguidor') {
+    return { tipo, x: COLS - 3, y: ROWS - 3, vidas: 3, atordoado: 0, ataqueCooldown: ATAQUE_CHEFE_COOLDOWN }
+  }
+  if (tipo === 'fantasma') {
+    const caminho = gerarCaminhoPerimetro()
+    return { tipo, x: caminho[0].x, y: caminho[0].y, vidas: 3, atordoado: 0, ataqueCooldown: ATAQUE_CHEFE_COOLDOWN, caminho, indiceCaminho: 0 }
+  }
+  return { tipo: 'invasor', x: 1, y: 2, dx: 1, vidas: 3, atordoado: 0, ataqueCooldown: ATAQUE_CHEFE_COOLDOWN }
+}
+
+function empurrarChefe(chefe) {
+  const distancia = 5
+  chefe.x = Math.min(Math.max(chefe.x + direcao.value.x * distancia, 0), COLS - 2)
+  chefe.y = Math.min(Math.max(chefe.y + direcao.value.y * distancia, 0), ROWS - 2)
+}
+
+// só o corpo conta como obstáculo pro chefe (a cabeça precisa continuar alcançável, é o alvo)
+function corpoOcupaCelula(x, y) {
+  return cobra.value.some((seg, idx) => idx > 0 && seg.x === x && seg.y === y)
+}
+
+function chefeColidiriaComCorpo(x, y) {
+  return corpoOcupaCelula(x, y) || corpoOcupaCelula(x + 1, y) || corpoOcupaCelula(x, y + 1) || corpoOcupaCelula(x + 1, y + 1)
+}
+
+function moverChefe(chefe) {
+  if (chefe.tipo === 'perseguidor') {
+    const cabeca = cobra.value[0]
+    const dx = cabeca.x - chefe.x
+    const dy = cabeca.y - chefe.y
+    const candidatos = []
+    const passoX = { x: Math.min(Math.max(chefe.x + (dx > 0 ? 1 : -1), 0), COLS - 2), y: chefe.y }
+    const passoY = { x: chefe.x, y: Math.min(Math.max(chefe.y + (dy > 0 ? 1 : -1), 0), ROWS - 2) }
+    if (Math.abs(dx) > Math.abs(dy) && dx !== 0) {
+      candidatos.push(passoX)
+      if (dy !== 0) candidatos.push(passoY)
+    } else if (dy !== 0) {
+      candidatos.push(passoY)
+      if (dx !== 0) candidatos.push(passoX)
+    } else if (dx !== 0) {
+      candidatos.push(passoX)
+    }
+    const livre = candidatos.find(c => !chefeColidiriaComCorpo(c.x, c.y))
+    if (livre) {
+      chefe.x = livre.x
+      chefe.y = livre.y
+    } // senão, fica parado esse tick — o corpo tá no caminho
+  } else if (chefe.tipo === 'fantasma') {
+    const proximoIndice = (chefe.indiceCaminho + 1) % chefe.caminho.length
+    const passo = chefe.caminho[proximoIndice]
+    if (!chefeColidiriaComCorpo(passo.x, passo.y)) {
+      chefe.indiceCaminho = proximoIndice
+      chefe.x = passo.x
+      chefe.y = passo.y
+    }
+  } else if (chefe.tipo === 'invasor') {
+    const minX = 1, maxX = COLS - 3
+    let novoX = chefe.x + chefe.dx
+    if (novoX < minX || novoX > maxX) {
+      chefe.dx *= -1
+      novoX = chefe.x + chefe.dx
+    }
+    if (!chefeColidiriaComCorpo(novoX, chefe.y)) {
+      chefe.x = novoX
+    }
+  }
+}
+
+function celulasChefe(chefe) {
+  return [
+    { x: chefe.x, y: chefe.y },
+    { x: chefe.x + 1, y: chefe.y },
+    { x: chefe.x, y: chefe.y + 1 },
+    { x: chefe.x + 1, y: chefe.y + 1 },
+  ]
+}
+
+function iniciarBatalhaChefe() {
+  obstaculos.value = []
+  inimigos.value = []
+  projeteis.value = []
+  chefeAtivo.value = criarChefe(TIPOS_CHEFE[chefesDerrotados.value])
+  gerarObstaculos(6, false, true)
+  showToast(`Chefe ${chefesDerrotados.value + 1} de 3 apareceu! Acerte a cabeça nele.`, 'info')
 }
 
 function iniciar() {
@@ -118,12 +324,23 @@ function iniciar() {
   filaDirecoes = []
   ordemSegurando = []
   obstaculos.value = []
+  inimigos.value = []
+  projeteis.value = []
+  chefeAtivo.value = null
+  chefesDerrotados.value = 0
+  proximoLimiarChefe.value = LIMIAR_CHEFE_INICIAL
   score.value = 0
   comidasComidas = 0
+  invulneravelInimigos = 0
   velocidade = 130
   estado.value = 'aguardando'
   gerarObstaculos(6, true)
+  gerarInimigo(true)
+  gerarInimigo(true)
   reposicionarComida()
+
+  // DEBUG temporário: começa direto na luta do chefe pra testar. Tirar depois.
+  if (DEBUG_COMECAR_NO_CHEFE) iniciarBatalhaChefe()
 }
 
 function comecarJogo() {
@@ -142,8 +359,18 @@ function trocarVelocidade() {
   tickId = setInterval(tick, velocidade)
 }
 
+function morrer() {
+  estado.value = 'fim'
+  if (score.value > recorde.value) {
+    recorde.value = score.value
+    localStorage.setItem('caesi_cobrinha_recorde', String(recorde.value))
+  }
+}
+
 function tick() {
   if (estado.value !== 'jogando') return
+
+  if (invulneravelInimigos > 0) invulneravelInimigos -= 1
 
   if (filaDirecoes.length) {
     direcao.value = filaDirecoes.shift()
@@ -159,14 +386,77 @@ function tick() {
   const bateuObstaculo = obstaculos.value.some(o => o.x === novaCabeca.x && o.y === novaCabeca.y)
   const bateuNoProprioCorpo = cobra.value.some((seg, i) => i < cobra.value.length - 1 && seg.x === novaCabeca.x && seg.y === novaCabeca.y)
 
-  if (bateuParede || bateuObstaculo || bateuNoProprioCorpo) {
-    estado.value = 'fim'
-    if (score.value > recorde.value) {
-      recorde.value = score.value
-      localStorage.setItem('caesi_cobrinha_recorde', String(recorde.value))
+  if (bateuParede || bateuObstaculo || bateuNoProprioCorpo) { morrer(); return }
+
+  if (chefeAtivo.value && chefeAtivo.value.atordoado > 0) {
+    chefeAtivo.value.atordoado -= 1
+  } else if (chefeAtivo.value) {
+    let acertouChefe = celulasChefe(chefeAtivo.value).some(c => c.x === novaCabeca.x && c.y === novaCabeca.y)
+    if (!acertouChefe) {
+      moverChefe(chefeAtivo.value)
+      // checa de novo: o chefe pode ter atravessado pra cima da cabeça nova ao se mover
+      acertouChefe = celulasChefe(chefeAtivo.value).some(c => c.x === novaCabeca.x && c.y === novaCabeca.y)
     }
-    return
+    if (acertouChefe) {
+      chefeAtivo.value.vidas -= 1
+      score.value += 20
+      if (chefeAtivo.value.vidas <= 0) {
+        chefesDerrotados.value += 1
+        score.value += 50
+        chefeAtivo.value = null
+        if (chefesDerrotados.value >= 3) {
+          estado.value = 'vencido'
+          if (score.value > recorde.value) {
+            recorde.value = score.value
+            localStorage.setItem('caesi_cobrinha_recorde', String(recorde.value))
+          }
+          return
+        }
+        showToast('Chefe derrotado! +50', 'success')
+        proximoLimiarChefe.value += LIMIAR_CHEFE_INCREMENTO
+        gerarObstaculos(6, false, true)
+        gerarInimigo(false, true)
+        gerarInimigo(false, true)
+        invulneravelInimigos = 15
+        // DEBUG temporário: pula direto pro próximo chefe, sem esperar pontuação. Tirar depois.
+        if (DEBUG_COMECAR_NO_CHEFE) iniciarBatalhaChefe()
+      } else {
+        empurrarChefe(chefeAtivo.value)
+        chefeAtivo.value.atordoado = 10
+        chefeAtivo.value.ataqueCooldown = ATAQUE_CHEFE_COOLDOWN + 5 // respiro maior logo após o golpe
+        showToast(`Chefe atingido! ${chefeAtivo.value.vidas} vida(s) restante(s)`, 'info')
+      }
+      return // bounce: a cobra não avança essa rodada
+    }
+
+    chefeAtivo.value.ataqueCooldown -= 1
+    if (chefeAtivo.value.ataqueCooldown <= 0) {
+      atirar(chefeAtivo.value)
+      chefeAtivo.value.ataqueCooldown = ATAQUE_CHEFE_COOLDOWN
+    }
   }
+
+  let totalInimigosAntes = inimigos.value.length
+  inimigos.value = inimigos.value.filter(i => !(i.x === novaCabeca.x && i.y === novaCabeca.y))
+  let eliminouInimigo = inimigos.value.length < totalInimigosAntes
+
+  inimigos.value.forEach(moverInimigo)
+
+  // checa de novo: um sobrevivente pode ter atravessado pra cima da cabeça nova ao se mover
+  totalInimigosAntes = inimigos.value.length
+  inimigos.value = inimigos.value.filter(i => !(i.x === novaCabeca.x && i.y === novaCabeca.y))
+  eliminouInimigo = eliminouInimigo || inimigos.value.length < totalInimigosAntes
+
+  if (eliminouInimigo) {
+    score.value += 15
+    showToast('Inimigo eliminado! +15', 'success')
+  }
+
+  projeteis.value.forEach(p => { p.x += p.dx; p.y += p.dy })
+  projeteis.value = projeteis.value.filter(p =>
+    p.x >= 0 && p.x < COLS && p.y >= 0 && p.y < ROWS &&
+    !obstaculos.value.some(o => o.x === p.x && o.y === p.y)
+  )
 
   const comeu = novaCabeca.x === comida.x && novaCabeca.y === comida.y
   cobra.value = [novaCabeca, ...cobra.value]
@@ -181,15 +471,26 @@ function tick() {
       score.value += 10
     }
     reposicionarComida()
-    if (comidasComidas % 5 === 0) gerarObstaculos(1)
+    if (!chefeAtivo.value && comidasComidas % 5 === 0) gerarObstaculos(1, false, true)
+    if (!chefeAtivo.value && comidasComidas % 2 === 0) gerarInimigo(false, true)
     velocidade = Math.max(75, 130 - comidasComidas * 1.5)
     trocarVelocidade()
+  }
+
+  const pegoPeloInimigo = invulneravelInimigos <= 0 && inimigos.value.some(i => cobra.value.some((seg, idx) => idx > 0 && seg.x === i.x && seg.y === i.y))
+  if (pegoPeloInimigo) { morrer(); return }
+
+  const atingidoPorProjetil = invulneravelInimigos <= 0 && projeteis.value.some(p => cobra.value.some(seg => seg.x === p.x && seg.y === p.y))
+  if (atingidoPorProjetil) { morrer(); return }
+
+  if (!chefeAtivo.value && chefesDerrotados.value < 3 && score.value >= proximoLimiarChefe.value) {
+    iniciarBatalhaChefe()
   }
 }
 
 function onKeydown(e) {
   if (modalBoasVindas.value || modalConfirmarSaida.value) return
-  if (estado.value === 'fim' && (e.key === 'Enter' || e.key === 'r' || e.key === 'R')) { reiniciar(); return }
+  if ((estado.value === 'fim' || estado.value === 'vencido') && (e.key === 'Enter' || e.key === 'r' || e.key === 'R')) { reiniciar(); return }
 
   const teclaNormalizada = e.key.length === 1 ? e.key.toLowerCase() : e.key
   const nomeDirecao = TECLA_PARA_DIRECAO[teclaNormalizada]
@@ -273,11 +574,45 @@ onUnmounted(() => {
           ></div>
 
           <div
+            v-for="inimigo in inimigos"
+            :key="inimigo.id"
+            class="cobrinha-inimigo"
+            :class="'cobrinha-inimigo--' + inimigo.tipo"
+            :style="{ left: inimigo.x * CELL + 'px', top: inimigo.y * CELL + 'px', width: CELL + 'px', height: CELL + 'px' }"
+          ></div>
+
+          <div
+            v-for="p in projeteis"
+            :key="'p' + p.id"
+            class="cobrinha-projetil"
+            :style="{ left: p.x * CELL + 'px', top: p.y * CELL + 'px', width: CELL + 'px', height: CELL + 'px' }"
+          ></div>
+
+          <div
             class="cobrinha-comida"
             :class="{ 'cobrinha-comida--especial': comida.especial }"
             :style="{ left: comida.x * CELL + 'px', top: comida.y * CELL + 'px', width: CELL + 'px', height: CELL + 'px' }"
             v-html="comida.especial ? capeloIcon : ''"
           ></div>
+
+          <div
+            v-if="chefeAtivo"
+            class="cobrinha-chefe"
+            :class="['cobrinha-chefe--' + chefeAtivo.tipo, { 'cobrinha-chefe--atordoado': chefeAtivo.atordoado > 0 }]"
+            :style="{ left: chefeAtivo.x * CELL + 'px', top: chefeAtivo.y * CELL + 'px', width: (CELL * 2) + 'px', height: (CELL * 2) + 'px' }"
+          ></div>
+
+          <div v-if="chefeAtivo" class="cobrinha-chefe-banner">
+            <span class="cobrinha-chefe-nome">{{ NOMES_CHEFE[chefeAtivo.tipo] }}</span>
+            <span class="cobrinha-chefe-barra">
+              <span
+                v-for="n in 3"
+                :key="n"
+                class="cobrinha-chefe-segmento"
+                :class="{ 'cobrinha-chefe-segmento--perdido': n > chefeAtivo.vidas }"
+              ></span>
+            </span>
+          </div>
 
           <div
             v-for="(seg, i) in cobra"
@@ -305,6 +640,15 @@ onUnmounted(() => {
             <p class="cobrinha-overlay-titulo">Pronta?</p>
             <p class="cobrinha-overlay-sub">Aperte uma tecla pra começar</p>
           </div>
+
+          <div v-if="estado === 'vencido'" class="cobrinha-overlay">
+            <p class="cobrinha-overlay-titulo">Você venceu o jogo!</p>
+            <p class="cobrinha-overlay-sub">
+              Os 3 chefes foram derrotados. Pontuação final: {{ score }}
+              <template v-if="score > 0 && score >= recorde"> — novo recorde!</template>
+            </p>
+            <button class="btn btn-amarelo" @click="reiniciar">Jogar de novo</button>
+          </div>
         </div>
 
         <div class="cobrinha-info">
@@ -312,6 +656,10 @@ onUnmounted(() => {
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--roxo)"></span>você</span>
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--amarelo)"></span>comida</span>
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--vermelho)"></span>obstáculo</span>
+            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--preto)"></span>inimigo (cabeça elimina +15, corpo mata)</span>
+            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--vermelho)"></span>inimigo rápido (mesma regra, 2x mais veloz)</span>
+            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--preto)"></span>atirador (parado, atira; o tiro mata em qualquer parte)</span>
+            <span class="cobrinha-legenda-item">a cada 300 pontos: um chefe (3 acertos de cabeça pra vencer, mas ele atira de volta)</span>
           </div>
           <div class="cobrinha-controles">
             <span class="cobrinha-tecla-grupo">
@@ -493,6 +841,100 @@ onUnmounted(() => {
   background: var(--vermelho);
   border-radius: 0;
   box-shadow: 3px 3px 0 var(--preto);
+}
+
+.cobrinha-inimigo {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 1.5px;
+}
+.cobrinha-inimigo::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--preto);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--vermelho);
+}
+.cobrinha-inimigo--rapido::before {
+  background: var(--vermelho);
+  box-shadow: 3px 3px 0 var(--preto);
+}
+.cobrinha-inimigo--atirador::before {
+  box-shadow: 3px 3px 0 var(--amarelo);
+}
+
+.cobrinha-projetil {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 9px;
+}
+.cobrinha-projetil::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--amarelo);
+  box-shadow: 2px 2px 0 var(--preto);
+}
+
+.cobrinha-chefe {
+  position: absolute;
+  box-sizing: border-box;
+}
+.cobrinha-chefe::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 var(--preto);
+}
+.cobrinha-chefe--perseguidor::before { background: var(--vermelho); }
+.cobrinha-chefe--fantasma::before { background: var(--roxo-escuro); }
+.cobrinha-chefe--invasor::before { background: var(--verde); }
+
+.cobrinha-chefe--atordoado::before {
+  animation: cobrinha-piscar 0.15s steps(1, end) infinite;
+}
+@keyframes cobrinha-piscar {
+  50% { opacity: 0.2; }
+}
+
+.cobrinha-chefe-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 6px 10px;
+  background: var(--preto);
+  pointer-events: none;
+}
+.cobrinha-chefe-nome {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.8rem;
+  color: var(--creme);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cobrinha-chefe-barra {
+  display: flex;
+  gap: 3px;
+}
+.cobrinha-chefe-segmento {
+  width: 34px;
+  height: 8px;
+  background: var(--vermelho);
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+}
+.cobrinha-chefe-segmento--perdido {
+  background: rgba(242,230,196,0.15);
+  box-shadow: none;
 }
 
 .cobrinha-overlay {
