@@ -526,8 +526,8 @@ function tick() {
   eliminouInimigo = eliminouInimigo || inimigos.value.length < totalInimigosAntes
 
   if (eliminouInimigo) {
-    score.value += 15
-    showToast('Inimigo eliminado! +15', 'success')
+    score.value += 25
+    showToast('Inimigo eliminado! +25', 'success')
   }
 
   projeteis.value.forEach(p => { p.x += p.dx; p.y += p.dy })
@@ -543,10 +543,10 @@ function tick() {
   } else {
     comidasComidas += 1
     if (comida.especial) {
-      score.value += 30
-      showToast(`${mensagemAleatoria(MENSAGENS_COMIDA_ESPECIAL)} +30`, 'success')
+      score.value += 50
+      showToast(`${mensagemAleatoria(MENSAGENS_COMIDA_ESPECIAL)} +50`, 'success')
     } else {
-      score.value += 10
+      score.value += 15
     }
     reposicionarComida()
     if (!chefeAtivo.value && comidasComidas % 5 === 0) gerarObstaculos(1, false, true)
@@ -741,7 +741,7 @@ onUnmounted(() => {
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--roxo)"></span>você</span>
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--amarelo)"></span>comida</span>
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--vermelho)"></span>obstáculo</span>
-            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--preto)"></span>inimigo (cabeça elimina +15, corpo mata)</span>
+            <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--preto)"></span>inimigo (cabeça elimina +25, corpo mata)</span>
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--vermelho)"></span>inimigo rápido (mesma regra, 2x mais veloz)</span>
             <span class="cobrinha-legenda-item"><span class="cobrinha-legenda-cor" style="background:var(--preto)"></span>atirador (parado, atira; o tiro mata em qualquer parte)</span>
             <span class="cobrinha-legenda-item">a cada 300 pontos: um chefe (3 acertos de cabeça pra vencer, mas ele atira de volta)</span>
