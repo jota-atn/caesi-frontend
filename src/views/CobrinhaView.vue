@@ -117,7 +117,24 @@ const estado = ref('jogando') // 'jogando' | 'pausado' | 'fim' | 'vencido'
 let tickId = null
 let velocidade = 130
 let comidasComidas = 0
-let invulneravelInimigos = 0
+const invulneravelInimigos = ref(0)
+
+// feedback visual rápido (shake + flash) pra dar impacto sem pesar no loop de lógica
+const efeitoTela = ref(null) // null | 'acerto' | 'dano'
+let efeitoTelaTimeout = null
+function dispararEfeitoTela(tipo, duracao) {
+  efeitoTela.value = tipo
+  clearTimeout(efeitoTelaTimeout)
+  efeitoTelaTimeout = setTimeout(() => { efeitoTela.value = null }, duracao)
+}
+
+const pulsoComer = ref(false)
+let pulsoComerTimeout = null
+function dispararPulsoComer() {
+  pulsoComer.value = true
+  clearTimeout(pulsoComerTimeout)
+  pulsoComerTimeout = setTimeout(() => { pulsoComer.value = false }, 150)
+}
 
 function celulaOcupada(x, y) {
   if (comida.x === x && comida.y === y) return true
@@ -450,7 +467,9 @@ function iniciar() {
   transicaoFase.value = null
   score.value = 0
   comidasComidas = 0
-  invulneravelInimigos = 0
+  invulneravelInimigos.value = 0
+  efeitoTela.value = null
+  pulsoComer.value = false
   velocidade = 130
   estado.value = 'aguardando'
   gerarObstaculos(6, true, true)
@@ -480,6 +499,7 @@ function trocarVelocidade() {
 
 function morrer() {
   estado.value = 'fim'
+  dispararEfeitoTela('dano', 280)
   mensagemGameOver.value = mensagemAleatoria(MENSAGENS_GAME_OVER)
   if (score.value > recorde.value) {
     recorde.value = score.value
@@ -490,7 +510,7 @@ function morrer() {
 function tick() {
   if (estado.value !== 'jogando') return
 
-  if (invulneravelInimigos > 0) invulneravelInimigos -= 1
+  if (invulneravelInimigos.value > 0) invulneravelInimigos.value -= 1
 
   if (filaDirecoes.length) {
     direcao.value = filaDirecoes.shift()
@@ -526,6 +546,7 @@ function tick() {
       bounce = true
       chefe.vidas -= 1
       score.value += 20
+      dispararEfeitoTela('acerto', 200)
       if (chefe.vidas <= 0) {
         chefesAtivos.value = chefesAtivos.value.filter(c => c !== chefe)
         score.value += 50
@@ -549,7 +570,7 @@ function tick() {
         gerarObstaculos(6, false, true)
         gerarInimigo(false, true)
         gerarInimigo(false, true)
-        invulneravelInimigos = 15
+        invulneravelInimigos.value = 15
         // DEBUG temporário: pula direto pro próximo chefe, sem esperar pontuação. Tirar depois.
         if (DEBUG_COMECAR_NO_CHEFE) iniciarTransicaoChefe()
       } else {
@@ -600,6 +621,7 @@ function tick() {
     cobra.value.pop()
   } else {
     comidasComidas += 1
+    dispararPulsoComer()
     if (comida.especial) {
       score.value += 50
       showToast(`${mensagemAleatoria(MENSAGENS_COMIDA_ESPECIAL)} +50`, 'success')
@@ -613,10 +635,10 @@ function tick() {
     trocarVelocidade()
   }
 
-  const pegoPeloInimigo = invulneravelInimigos <= 0 && inimigos.value.some(i => cobra.value.some((seg, idx) => idx > 0 && seg.x === i.x && seg.y === i.y))
+  const pegoPeloInimigo = invulneravelInimigos.value <= 0 && inimigos.value.some(i => cobra.value.some((seg, idx) => idx > 0 && seg.x === i.x && seg.y === i.y))
   if (pegoPeloInimigo) { morrer(); return }
 
-  const atingidoPorProjetil = invulneravelInimigos <= 0 && projeteis.value.some(p => cobra.value.some(seg => seg.x === p.x && seg.y === p.y))
+  const atingidoPorProjetil = invulneravelInimigos.value <= 0 && projeteis.value.some(p => cobra.value.some(seg => seg.x === p.x && seg.y === p.y))
   if (atingidoPorProjetil) { morrer(); return }
 
   if (!chefesAtivos.value.length && chefesDerrotados.value < 3 && score.value >= proximoLimiarChefe.value) {
@@ -676,6 +698,8 @@ onUnmounted(() => {
   document.removeEventListener('keydown', onKeydown)
   document.removeEventListener('keyup', onKeyup)
   clearInterval(tickId)
+  clearTimeout(efeitoTelaTimeout)
+  clearTimeout(pulsoComerTimeout)
 })
 </script>
 
@@ -701,7 +725,13 @@ onUnmounted(() => {
       </div>
 
       <div v-if="ehDesktop" class="paper cobrinha-paper">
-        <div class="cobrinha-area" :style="{ width: COLS * CELL + 'px', height: ROWS * CELL + 'px', backgroundSize: CELL + 'px ' + CELL + 'px' }">
+        <div
+          class="cobrinha-area"
+          :class="{ 'cobrinha-area--efeito-acerto': efeitoTela === 'acerto', 'cobrinha-area--efeito-dano': efeitoTela === 'dano' }"
+          :style="{ width: COLS * CELL + 'px', height: ROWS * CELL + 'px', backgroundSize: CELL + 'px ' + CELL + 'px' }"
+        >
+          <div v-if="efeitoTela" class="cobrinha-flash" :class="'cobrinha-flash--' + efeitoTela"></div>
+
           <div
             v-for="o in obstaculos"
             :key="'o' + o.x + '-' + o.y"
@@ -757,7 +787,12 @@ onUnmounted(() => {
             v-for="(seg, i) in cobra"
             :key="'s' + i"
             class="cobrinha-segmento"
-            :class="{ 'cobrinha-segmento--cabeca': i === 0, 'cobrinha-segmento--par': i > 0 && i % 2 === 0 }"
+            :class="{
+              'cobrinha-segmento--cabeca': i === 0,
+              'cobrinha-segmento--par': i > 0 && i % 2 === 0,
+              'cobrinha-segmento--pulso': i === 0 && pulsoComer,
+              'cobrinha-segmento--invulneravel': invulneravelInimigos > 0,
+            }"
             :style="{ left: seg.x * CELL + 'px', top: seg.y * CELL + 'px', width: CELL + 'px', height: CELL + 'px' }"
           ></div>
 
@@ -909,6 +944,45 @@ onUnmounted(() => {
   max-width: 100%;
 }
 
+.cobrinha-area--efeito-acerto {
+  animation: cobrinha-shake 0.2s steps(4, end);
+}
+.cobrinha-area--efeito-dano {
+  animation: cobrinha-shake-forte 0.28s steps(5, end);
+}
+@keyframes cobrinha-shake {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, -2px); }
+}
+@keyframes cobrinha-shake-forte {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-6px, 3px); }
+  40% { transform: translate(5px, -4px); }
+  60% { transform: translate(-5px, -3px); }
+  80% { transform: translate(4px, 4px); }
+}
+
+.cobrinha-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+}
+.cobrinha-flash--acerto {
+  background: var(--amarelo);
+  animation: cobrinha-flash-fade 0.2s steps(3, end) forwards;
+}
+.cobrinha-flash--dano {
+  background: var(--vermelho);
+  animation: cobrinha-flash-fade 0.28s steps(4, end) forwards;
+}
+@keyframes cobrinha-flash-fade {
+  from { opacity: 0.4; }
+  to   { opacity: 0; }
+}
+
 .cobrinha-segmento {
   position: absolute;
   box-sizing: border-box;
@@ -933,6 +1007,17 @@ onUnmounted(() => {
 .cobrinha-segmento--cabeca::before {
   background: var(--roxo-escuro);
   box-shadow: 3px 3px 0 var(--preto);
+}
+.cobrinha-segmento--pulso::before {
+  animation: cobrinha-pop 0.15s steps(3, end);
+}
+@keyframes cobrinha-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+.cobrinha-segmento--invulneravel::before {
+  animation: cobrinha-piscar 0.15s steps(1, end) infinite;
 }
 
 .cobrinha-comida {
