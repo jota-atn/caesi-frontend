@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
+import { markdownParaHtmlSeguro } from '../utils/markdown.js'
 import cameraIcon     from '../assets/icons/camera.svg?raw'
 import paperclipIcon  from '../assets/icons/paperclip.svg?raw'
 import Navbar from '../components/Navbar.vue'
@@ -19,7 +20,7 @@ const publicacao = computed(() =>
 
 const htmlContent = computed(() => {
   if (!publicacao.value) return ''
-  return marked.parse(publicacao.value.mensagem)
+  return markdownParaHtmlSeguro(publicacao.value.mensagem)
 })
 
 const tituloPartes = computed(() => {

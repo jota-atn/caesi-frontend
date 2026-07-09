@@ -1,12 +1,12 @@
 <script setup>
-import { marked } from 'marked'
 import { computed } from 'vue'
+import { markdownParaHtmlSeguro } from '../utils/markdown.js'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
 import { tamburetei } from '../stores/informacoes.js'
 
-const html = computed(() => marked.parse(tamburetei.value.descricao || ''))
+const html = computed(() => markdownParaHtmlSeguro(tamburetei.value.descricao))
 </script>
 
 <template>
