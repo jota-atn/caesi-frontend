@@ -105,9 +105,20 @@ const MENSAGENS_GAME_OVER = [
   'Tentou enrolar Eanes por ponto e olha no que deu',
 ]
 
-function mensagemAleatoria(lista) {
-  return lista[Math.floor(Math.random() * lista.length)]
+// sorteia sem repetir a mesma mensagem duas vezes seguidas (cada lista tem seu próprio "último sorteado")
+function criarSorteador(lista) {
+  let ultimoIndice = -1
+  return () => {
+    if (lista.length <= 1) return lista[0]
+    let indice
+    do { indice = Math.floor(Math.random() * lista.length) } while (indice === ultimoIndice)
+    ultimoIndice = indice
+    return lista[indice]
+  }
 }
+
+const sortearMensagemComidaEspecial = criarSorteador(MENSAGENS_COMIDA_ESPECIAL)
+const sortearMensagemGameOver = criarSorteador(MENSAGENS_GAME_OVER)
 
 const mensagemGameOver = ref(MENSAGENS_GAME_OVER[0])
 
@@ -527,7 +538,7 @@ function trocarVelocidade() {
 function morrer() {
   estado.value = 'fim'
   dispararEfeitoTela('dano', 280)
-  mensagemGameOver.value = mensagemAleatoria(MENSAGENS_GAME_OVER)
+  mensagemGameOver.value = sortearMensagemGameOver()
   if (score.value > recorde.value) {
     recorde.value = score.value
     localStorage.setItem('caesi_cobrinha_recorde', String(recorde.value))
@@ -659,7 +670,7 @@ function tick() {
     dispararPulsoComer()
     if (comida.especial) {
       score.value += 50
-      showToast(`${mensagemAleatoria(MENSAGENS_COMIDA_ESPECIAL)} +50`, 'success')
+      showToast(`${sortearMensagemComidaEspecial()} +50`, 'success')
     } else {
       score.value += 15
     }
