@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BackLink from '../components/BackLink.vue'
 import { showToast } from '../stores/toast.js'
@@ -125,6 +125,11 @@ const mensagemGameOver = ref(MENSAGENS_GAME_OVER[0])
 const score = ref(0)
 const recorde = ref(Number(localStorage.getItem('caesi_cobrinha_recorde') || 0))
 const estado = ref('jogando') // 'jogando' | 'pausado' | 'fim' | 'vencido'
+
+const faltamProChefe = computed(() => {
+  if (chefesAtivos.value.length || chefesDerrotados.value >= 3) return null
+  return Math.max(0, proximoLimiarChefe.value - score.value)
+})
 
 let tickId = null
 let velocidade = 130
@@ -771,6 +776,7 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
+      <p v-if="ehDesktop && faltamProChefe !== null" class="cobrinha-progresso-chefe">Faltam {{ faltamProChefe }} pontos pro próximo chefe</p>
 
       <div v-if="ehDesktop" class="paper cobrinha-paper">
         <div
@@ -943,6 +949,13 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 0.7rem;
+}
+.cobrinha-progresso-chefe {
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--roxo-escuro);
+  opacity: 0.75;
 }
 .cobrinha-stat {
   display: flex;
