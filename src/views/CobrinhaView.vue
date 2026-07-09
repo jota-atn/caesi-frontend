@@ -411,6 +411,8 @@ const TAMANHO_COBRA_CHEFE = 3
 const TRANSICAO_DURACAO = 400
 const transicaoFase = ref(null) // null | 'fechando' | 'abrindo'
 const transicaoCentro = reactive({ x: 50, y: 50 })
+let tamanhoAntesDoChefe = TAMANHO_COBRA_CHEFE
+let crescimentoPendente = 0 // segmentos que a cobra ainda precisa recuperar depois da luta
 
 function centroDaCabecaPercentual() {
   if (!cobra.value.length) return { x: 50, y: 50 }
@@ -436,6 +438,8 @@ function iniciarTransicaoChefe() {
   const centro = centroDaCabecaPercentual()
   transicaoCentro.x = centro.x
   transicaoCentro.y = centro.y
+  tamanhoAntesDoChefe = cobra.value.length
+  crescimentoPendente = 0
   encolherCobraAnimado(TAMANHO_COBRA_CHEFE, () => {
     transicaoFase.value = 'fechando'
     setTimeout(() => {
@@ -470,6 +474,8 @@ function iniciar() {
   invulneravelInimigos.value = 0
   efeitoTela.value = null
   pulsoComer.value = false
+  tamanhoAntesDoChefe = TAMANHO_COBRA_CHEFE
+  crescimentoPendente = 0
   velocidade = 130
   estado.value = 'aguardando'
   gerarObstaculos(6, true, true)
@@ -571,6 +577,9 @@ function tick() {
         gerarInimigo(false, true)
         gerarInimigo(false, true)
         invulneravelInimigos.value = 15
+        // volta só até a metade do tamanho de antes da luta, não o tamanho cheio — mantém algum risco depois do chefe
+        const alvoRegrow = Math.max(TAMANHO_COBRA_CHEFE, Math.ceil(tamanhoAntesDoChefe / 2))
+        crescimentoPendente += Math.max(0, alvoRegrow - cobra.value.length)
         // DEBUG temporário: pula direto pro próximo chefe, sem esperar pontuação. Tirar depois.
         if (DEBUG_COMECAR_NO_CHEFE) iniciarTransicaoChefe()
       } else {
@@ -617,7 +626,10 @@ function tick() {
 
   const comeu = novaCabeca.x === comida.x && novaCabeca.y === comida.y
   cobra.value = [novaCabeca, ...cobra.value]
-  if (!comeu) {
+  if (!comeu && crescimentoPendente > 0) {
+    // recuperando o tamanho perdido na luta contra o chefe: cresce 1 segmento por movimento em vez de encolher
+    crescimentoPendente -= 1
+  } else if (!comeu) {
     cobra.value.pop()
   } else {
     comidasComidas += 1
