@@ -118,6 +118,7 @@ let comidasComidas = 0
 let invulneravelInimigos = 0
 
 function celulaOcupada(x, y) {
+  if (comida.x === x && comida.y === y) return true
   if (obstaculos.value.some(o => o.x === x && o.y === y)) return true
   if (inimigos.value.some(i => i.x === x && i.y === y)) return true
   if (chefeAtivo.value && celulasChefe(chefeAtivo.value).some(c => c.x === x && c.y === y)) return true
@@ -157,7 +158,7 @@ function reposicionarComida() {
   const livre = posicaoLivre()
   comida.x = livre.x
   comida.y = livre.y
-  comida.especial = comidasComidas > 0 && comidasComidas % 12 === 0
+  comida.especial = comidasComidas > 0 && comidasComidas % 10 === 0
 }
 
 function gerarObstaculos(qtd, evitarCentro = false, evitarCobra = false) {
