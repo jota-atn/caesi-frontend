@@ -513,6 +513,11 @@ function reiniciar() {
   comecarJogo()
 }
 
+function continuarInfinito() {
+  // os 3 chefes já foram derrotados (chefesDerrotados fica em 3) — só retoma o loop, sem mais chefes pela frente
+  estado.value = 'jogando'
+}
+
 function trocarVelocidade() {
   clearInterval(tickId)
   tickId = setInterval(tick, velocidade)
@@ -853,10 +858,14 @@ onUnmounted(() => {
           <div v-if="estado === 'vencido'" class="cobrinha-overlay">
             <p class="cobrinha-overlay-titulo">Você venceu o jogo!</p>
             <p class="cobrinha-overlay-sub">
-              Os 3 chefes foram derrotados. Pontuação final: {{ score }}
+              Os 3 chefes foram derrotados. Pontuação: {{ score }}
               <template v-if="score > 0 && score >= recorde"> — novo recorde!</template>
             </p>
-            <button class="btn btn-amarelo" @click="reiniciar">Jogar de novo</button>
+            <div class="cobrinha-overlay-acoes">
+              <button class="btn btn-amarelo" @click="continuarInfinito">Continuar jogando</button>
+              <button class="btn btn-outline btn-outline-creme" @click="reiniciar">Jogar de novo</button>
+              <button class="btn btn-outline btn-outline-creme" @click="router.push('/')">Sair</button>
+            </div>
           </div>
         </div>
 
@@ -1251,6 +1260,12 @@ onUnmounted(() => {
   color: var(--amarelo);
 }
 .cobrinha-overlay-sub { font-size: 0.9rem; color: var(--creme); }
+.cobrinha-overlay-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
 
 .cobrinha-info {
   width: 100%;
