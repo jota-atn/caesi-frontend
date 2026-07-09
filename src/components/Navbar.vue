@@ -2,10 +2,36 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAdmin, logout } from '../stores/auth.js'
+import { cobrinhaZerada } from '../stores/conquistas.js'
+import awardIcon from '../assets/icons/award.svg?raw'
 
 const menuOpen     = ref(false)
 const conteudoOpen = ref(false)
 const dropdownRef  = ref(null)
+
+const CORES_CONFETE = ['roxo', 'roxo-escuro', 'vermelho', 'verde', 'creme']
+const confetes = ref([])
+let proximoIdConfete = 1
+
+function explodirConfete() {
+  const novos = Array.from({ length: 14 }, () => {
+    const angulo = Math.random() * 360
+    const distancia = 30 + Math.random() * 26
+    return {
+      id: proximoIdConfete++,
+      cor: CORES_CONFETE[Math.floor(Math.random() * CORES_CONFETE.length)],
+      dx: Math.round(Math.cos(angulo * Math.PI / 180) * distancia),
+      dy: Math.round(Math.sin(angulo * Math.PI / 180) * distancia - 10),
+      rot: Math.round(Math.random() * 360 - 180),
+      atraso: Math.round(Math.random() * 60),
+    }
+  })
+  confetes.value = [...confetes.value, ...novos]
+  setTimeout(() => {
+    const idsNovos = new Set(novos.map(c => c.id))
+    confetes.value = confetes.value.filter(c => !idsNovos.has(c.id))
+  }, 750)
+}
 const triggerRef   = ref(null)
 const route        = useRoute()
 const router       = useRouter()
@@ -72,6 +98,21 @@ onUnmounted(() => document.removeEventListener('click', onClickFora))
       </div>
       <span class="navbar-title">
         CAESI <span v-if="isAdmin">Admin</span>
+      </span>
+      <span
+        v-if="!isAdmin && cobrinhaZerada"
+        class="navbar-badge"
+        title="Você zerou o Easter Egg da cobrinha!"
+        @click.stop.prevent="explodirConfete"
+      >
+        <span v-html="awardIcon"></span>
+        <span
+          v-for="c in confetes"
+          :key="c.id"
+          class="navbar-confete"
+          :class="'navbar-confete--' + c.cor"
+          :style="{ '--dx': c.dx + 'px', '--dy': c.dy + 'px', '--rot': c.rot + 'deg', animationDelay: c.atraso + 'ms' }"
+        ></span>
       </span>
     </RouterLink>
 

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import BackLink from '../components/BackLink.vue'
 import { showToast } from '../stores/toast.js'
 import { useEscapeKey } from '../composables/useEscapeKey.js'
+import { marcarCobrinhaZerada } from '../stores/conquistas.js'
 import capeloIcon from '../assets/icons/graduation-cap.svg?raw'
 
 const router = useRouter()
@@ -585,6 +586,7 @@ function tick() {
         chefesDerrotados.value += 1
         if (chefesDerrotados.value >= 3) {
           estado.value = 'vencido'
+          marcarCobrinhaZerada()
           if (score.value > recorde.value) {
             recorde.value = score.value
             localStorage.setItem('caesi_cobrinha_recorde', String(recorde.value))
