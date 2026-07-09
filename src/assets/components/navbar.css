@@ -45,6 +45,48 @@
 }
 .navbar-title span { color: var(--amarelo); }
 
+.navbar-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--amarelo);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0 var(--preto);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.navbar-badge:active { transform: translate(1px, 1px); }
+
+.navbar-confete {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  animation: navbar-confete-voa 0.6s steps(6, end) forwards;
+  pointer-events: none;
+}
+.navbar-confete--roxo { background: var(--roxo); }
+.navbar-confete--roxo-escuro { background: var(--roxo-escuro); }
+.navbar-confete--vermelho { background: var(--vermelho); }
+.navbar-confete--verde { background: var(--verde); }
+.navbar-confete--creme { background: var(--creme); }
+
+@keyframes navbar-confete-voa {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+
+.navbar-badge svg {
+  width: 14px;
+  height: 14px;
+  color: var(--roxo-escuro);
+}
+
 .navbar-user {
   display: flex;
   align-items: center;

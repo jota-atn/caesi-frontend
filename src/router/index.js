@@ -37,6 +37,7 @@ const routes = [
   { path: '/admin/informacoes/professores',      component: () => import('../views/admin/InformacoesProfessoresView.vue'),    meta: { admin: true } },
   { path: '/admin/informacoes/laboratorios',     component: () => import('../views/admin/InformacoesLaboratoriosView.vue'),   meta: { admin: true } },
   { path: '/workspace/:token',       component: () => import('../views/WorkspaceView.vue') },
+  { path: '/cobrinha-caesi',         component: () => import('../views/CobrinhaView.vue') },
   { path: '/:pathMatch(.*)*',        component: () => import('../views/NotFoundView.vue') },
 ]
 
