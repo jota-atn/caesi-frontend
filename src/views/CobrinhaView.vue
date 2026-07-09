@@ -391,6 +391,21 @@ function celulasChefe(chefe) {
   ]
 }
 
+const ALCANCE_SEGURO_ATAQUE = 3
+
+// jogador tá na mesma linha/coluna que o chefe, na direção em que está andando, e perto —
+// ou seja, indo pro bote de verdade. Só nesse caso o chefe segura o tiro; se o jogador só
+// tá passando perto (linha/coluna diferente), o chefe continua atirando normalmente.
+function chefeNaMiraDeAtaque(chefe) {
+  const cabeca = cobra.value[0]
+  const dir = direcao.value
+  return celulasChefe(chefe).some(c => {
+    const passosAFrente = (c.x - cabeca.x) * dir.x + (c.y - cabeca.y) * dir.y
+    const desvioLateral = dir.x !== 0 ? Math.abs(c.y - cabeca.y) : Math.abs(c.x - cabeca.x)
+    return desvioLateral === 0 && passosAFrente >= 0 && passosAFrente <= ALCANCE_SEGURO_ATAQUE
+  })
+}
+
 function iniciarBatalhaChefe() {
   obstaculos.value = []
   inimigos.value = []
@@ -594,6 +609,7 @@ function tick() {
 
     for (const chefe of chefesAtivos.value) {
       if (chefe.atordoado > 0) continue
+      if (chefeNaMiraDeAtaque(chefe)) continue // jogador tá indo pro ataque — cooldown só volta a contar quando ele sair da rota
       chefe.ataqueCooldown -= 1
       if (chefe.ataqueCooldown <= 0) {
         atirarChefe(chefe)
