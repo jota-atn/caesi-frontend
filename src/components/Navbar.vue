@@ -145,14 +145,12 @@ onUnmounted(() => document.removeEventListener('click', onClickFora))
           </div>
         </div>
 
-        <RouterLink to="/sobre" class="nav-link" :aria-current="ariaCurrent('/sobre')" @click="fecharTudo">Sobre</RouterLink>
         <span class="nav-separator" />
         <button class="nav-link nav-link-btn" @click="handleLogout">Sair</button>
       </template>
 
       <!-- Público -->
       <template v-else>
-        <RouterLink to="/sobre"       class="nav-link" :aria-current="ariaCurrent('/sobre')"       @click="menuOpen = false">Sobre</RouterLink>
         <RouterLink to="/mural"       class="nav-link" :aria-current="ariaCurrent('/mural')"       @click="menuOpen = false">Mural</RouterLink>
         <RouterLink to="/informacoes" class="nav-link" :aria-current="ariaCurrent('/informacoes')" @click="menuOpen = false">Informações</RouterLink>
         <RouterLink to="/formularios" class="nav-link" :aria-current="ariaCurrent('/formularios')" @click="menuOpen = false">Formulários</RouterLink>

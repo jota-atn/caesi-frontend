@@ -18,7 +18,6 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
       <div class="footer-group">
         <div class="footer-group-label">Navegação</div>
         <div class="footer-links">
-          <RouterLink to="/sobre" class="footer-link">Sobre</RouterLink>
           <RouterLink to="/informacoes" class="footer-link">Informações</RouterLink>
         </div>
       </div>

@@ -3,7 +3,6 @@ import { isAdmin, mustChangePassword } from '../stores/auth.js'
 
 const routes = [
   { path: '/',                       component: () => import('../views/HomeView.vue') },
-  { path: '/sobre',                  component: () => import('../views/SobreView.vue') },
   { path: '/estatuto',               component: () => import('../views/EstatutoView.vue') },
   { path: '/ouvidoria',              component: () => import('../views/OuvidoriaView.vue') },
   { path: '/ouvidoria/consulta',     component: () => import('../views/OuvidoriaConsultaView.vue') },

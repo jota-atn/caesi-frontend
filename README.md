@@ -41,7 +41,7 @@ Membros do workspace de tasks acessam via link único (`/workspace/:token`), sem
 | Portal (artefatos) | `/portal`, `/portal/:id` | `/admin/portal` |
 | Informações (editais, Tamburetei, professores, laboratórios) | `/informacoes/*` | `/admin/informacoes/*` |
 | Tasks + workspace de membros | `/workspace/:token` | `/admin/tasks` |
-| Equipe / Quem Somos | `/sobre` | `/admin/equipe` |
+| Equipe / Quem Somos | `/admin/equipe` |
 | Estatuto | `/estatuto` | — (conteúdo estático) |
 
 Calendário e Mapa vivem como seções interativas da Home (não são páginas próprias) — admin logado pode criar/editar/excluir eventos e estruturas direto por lá, além das telas de gestão dedicadas.
