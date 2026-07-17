@@ -81,7 +81,7 @@ function ariaCurrent(path) {
       <RouterLink v-if="isAdmin" to="/admin/painel" class="nav-link" :aria-current="ariaCurrent('/admin/painel')" @click="menuOpen = false">Painel</RouterLink>
       <RouterLink v-if="isAdmin" to="/admin/tasks" class="nav-link" :aria-current="ariaCurrent('/admin/tasks')" @click="menuOpen = false">Tasks</RouterLink>
       <RouterLink to="/sobre"       class="nav-link" :aria-current="ariaCurrent('/sobre')"       @click="menuOpen = false">Sobre</RouterLink>
-      <RouterLink to="/ouvidoria"   class="nav-link" :aria-current="ariaCurrent('/ouvidoria')"   @click="menuOpen = false">Ouvidoria</RouterLink>
+      <RouterLink to="/ouvidoria"   class="nav-link" :aria-current="ariaCurrent(isAdmin ? '/admin/ouvidoria' : '/ouvidoria')"   @click="menuOpen = false">Ouvidoria</RouterLink>
       <RouterLink to="/mural"       class="nav-link" :aria-current="ariaCurrent('/mural')"       @click="menuOpen = false">Mural</RouterLink>
       <RouterLink to="/mapa"        class="nav-link" :aria-current="ariaCurrent('/mapa')"        @click="menuOpen = false">Mapa</RouterLink>
       <RouterLink to="/informacoes" class="nav-link" :aria-current="ariaCurrent('/informacoes')" @click="menuOpen = false">Informações</RouterLink>
