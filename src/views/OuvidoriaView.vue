@@ -1,149 +1,226 @@
+<script setup>
+import { ref } from 'vue'
+import Navbar from '../components/Navbar.vue'
+import SiteFooter from '../components/SiteFooter.vue'
+import { addMensagem } from '../stores/mensagens.js'
+import { isAdmin } from '../stores/auth.js'
+import { isEmail } from '../utils/validation.js'
+
+const form = ref({ tipo: '', periodo: '', mensagem: '', nome: '', email: '' })
+const errors = ref({})
+const charCount = ref(0)
+const enviado = ref(false)
+const protocolo = ref('')
+const emailEnviado = ref(false)
+
+function onInput(e) {
+  charCount.value = e.target.value.length
+}
+
+function submit() {
+  const e = {}
+  if (!form.value.tipo)                       e.tipo = true
+  if (!form.value.periodo.trim())             e.periodo = true
+  if (form.value.mensagem.trim().length < 20) e.mensagem = true
+  if (form.value.email.trim() && !isEmail(form.value.email)) e.email = true
+  errors.value = e
+  if (Object.keys(e).length === 0) {
+    const nova = addMensagem({
+      tipo:    form.value.tipo,
+      periodo: form.value.periodo.trim(),
+      corpo:   form.value.mensagem,
+      nome:    form.value.nome.trim() || null,
+      email:   form.value.email.trim() || null,
+    })
+    protocolo.value = nova.protocolo
+    emailEnviado.value = !!form.value.email.trim()
+    enviado.value = true
+  }
+}
+
+function resetForm() {
+  form.value = { tipo: '', periodo: '', mensagem: '', nome: '', email: '' }
+  charCount.value = 0
+  enviado.value = false
+  emailEnviado.value = false
+}
+</script>
+
 <template>
-  <div class="view-wrapper">
+  <div class="page">
     <Navbar />
 
-    <main class="ouvidoria-page">
-      <header class="hero">
-        <h1 class="hero-title">CAESI <span>Ouvidoria</span></h1>
-        <p class="hero-sub">Um canal seguro, direto e confidencial com a representação estudantil.</p>
-        
-        <div class="hero-actions">
-          <div class="field" style="margin-bottom: 0; min-width: 280px;">
-            <input type="text" placeholder="Digite seu nº de protocolo..." v-model="protocoloBusca" />
-          </div>
-          <button @click="consultarProtocolo" class="btn btn-outline">Consultar</button>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-logo">
+        <img src="/logo_caesi.png" alt="CAESI" style="width:100%;height:100%;object-fit:cover;display:block;">
+      </div>
+      <h1 class="hero-title">CAESI <span>Ouvidoria</span></h1>
+      <p class="hero-sub">
+        Fale com o Centro Acadêmico de Ciência da Computação da UFCG.<br>
+        Envie sugestões, reclamações e elogios de forma anônima.
+      </p>
+      <div class="hero-actions">
+        <a href="#enviar" class="btn btn-amarelo">Enviar mensagem →</a>
+        <RouterLink to="/ouvidoria/consulta" class="btn btn-outline btn-outline-creme">
+          Consultar protocolo →
+        </RouterLink>
+      </div>
+    </section>
+
+    <!-- Como funciona -->
+    <section class="home-section">
+      <div class="section-label">Ouvidoria</div>
+      <h2 class="section-title">Como <span>funciona</span></h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-number">1</span>
+          <span class="step-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+          </span>
+          <div class="step-title">Escreva sua mensagem</div>
+          <p class="step-desc">Preencha o formulário abaixo com o assunto, categoria e detalhes do que aconteceu.</p>
         </div>
-      </header>
+        <div class="step-card">
+          <span class="step-number">2</span>
+          <span class="step-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
+              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+            </svg>
+          </span>
+          <div class="step-title">O CAESI recebe</div>
+          <p class="step-desc">Nossa equipe lê e analisa cada mensagem com atenção. Você recebe um número de protocolo.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-number">3</span>
+          <span class="step-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </span>
+          <div class="step-title">Acompanhe o status</div>
+          <p class="step-desc">Use o número de protocolo para consultar o status e ver a resposta do CAESI a qualquer momento.</p>
+        </div>
+      </div>
+    </section>
 
-      <section class="home-section">
-        <h2 class="section-title">Como <span>funciona</span></h2>
-        <div class="steps-grid">
-          <div class="step-card">
-            <span class="step-number">1</span>
-            <div class="step-icon">
-              <img src="@/assets/icons/pencil.svg" alt="Escrever" />
-            </div>
-            <h3 class="step-title">Escreva sua mensagem</h3>
-            <p class="step-desc">Preencha o formulário abaixo de forma segura. Sua identidade é opcional.</p>
+    <!-- Formulário de envio -->
+    <section class="home-section" id="enviar" style="scroll-margin-top:80px;">
+      <div class="section-label">Envio direto</div>
+      <h2 class="section-title">Enviar <span>mensagem</span></h2>
+
+      <div class="paper">
+
+        <div v-if="enviado" class="anon-success">
+          <div class="check-circle">✓</div>
+          <h3 style="font-family:'Archivo Black',sans-serif;font-size:1.3rem;color:var(--roxo-escuro);margin-bottom:0.5rem;">
+            Ticket enviado!
+          </h3>
+          <p style="font-size:0.9rem;color:var(--cinza);margin-bottom:1.2rem;line-height:1.6;">
+            Guarde o protocolo abaixo para acompanhar o andamento e ver a resposta do CAESI.
+            <template v-if="emailEnviado"> O protocolo também será enviado para o seu e-mail.</template>
+          </p>
+          <div class="protocolo-box">
+            <div class="protocolo-label">Protocolo</div>
+            <div class="protocolo-value">{{ protocolo }}</div>
           </div>
-          
-          <div class="step-card">
-            <span class="step-number">2</span>
-            <div class="step-icon">
-              <img src="@/assets/icons/inbox.svg" alt="Recebimento" />
-            </div>
-            <h3 class="step-title">O CAESI recebe</h3>
-            <p class="step-desc">A mensagem é avaliada por nossa equipe com total sigilo.</p>
-          </div>
-          
-          <div class="step-card">
-            <span class="step-number">3</span>
-            <div class="step-icon">
-              <img src="@/assets/icons/check-circle.svg" alt="Acompanhar" />
-            </div>
-            <h3 class="step-title">Acompanhe o status</h3>
-            <p class="step-desc">Use o número de protocolo para consultar o andamento da sua solicitação.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
+            <RouterLink :to="`/ouvidoria/consulta?protocolo=${encodeURIComponent(protocolo)}`" class="btn btn-primary btn-sm">Consultar status →</RouterLink>
+            <button class="btn btn-outline btn-sm" @click="resetForm">Enviar outro ticket</button>
           </div>
         </div>
-      </section>
 
-      <section class="home-section">
-        <h2 class="section-title">Enviar <span>mensagem</span></h2>
-        <div class="cal-home-paper" style="background: var(--creme); border-radius: 2px; box-shadow: 4px 4px 0 var(--roxo-escuro);"> 
-          <form @submit.prevent="enviarMensagem">
-            
+        <div v-else-if="isAdmin" class="admin-no-msg">
+          <div>
+            <p class="admin-no-msg-title">Administradores não enviam tickets pela ouvidoria.</p>
+            <p class="admin-no-msg-sub">Use o painel para gerenciar os tickets recebidos.</p>
+          </div>
+          <RouterLink to="/admin/mensagens" class="btn btn-outline btn-sm">
+            Ir ao painel →
+          </RouterLink>
+        </div>
+
+        <template v-else>
+          <div class="alert-info">
+            A identificação é <strong style="color:var(--roxo-escuro);">opcional</strong>.
+            Após o envio você receberá um número de protocolo para acompanhar o status e a resposta do CAESI.
+          </div>
+
+          <form @submit.prevent="submit" novalidate>
             <div class="field">
-              <label>TIPO DE RELATO *</label>
-              <select v-model="form.tipo" required>
-                <option value="" disabled>Selecione o tipo de relato...</option>
-                <option value="denuncia">Denúncia</option>
-                <option value="sugestao">Sugestão de Melhoria</option>
-                <option value="duvida">Dúvida Geral</option>
-                <option value="infra">Problema de Infraestrutura</option>
+              <label>Tipo de relato *</label>
+              <select v-model="form.tipo" :class="{ invalid: errors.tipo }">
+                <option value="" disabled>Selecione o tipo de relato</option>
+                <option value="disciplina">Disciplina</option>
+                <option value="professores">Professores</option>
+                <option value="colegas">Colegas de curso</option>
+                <option value="infraestrutura">Infraestrutura</option>
+                <option value="ofertas">Ofertas e horários</option>
+                <option value="grupos">Grupos estudantis</option>
+                <option value="outros">Outros</option>
               </select>
+              <span class="error-msg" role="alert">Selecione o tipo de relato.</span>
             </div>
 
             <div class="field">
-              <label>PERÍODO EM QUE OCORREU *</label>
-              <select v-model="form.periodo" required>
-                <option value="" disabled>Selecione o período...</option>
-                <option value="2026.1">2026.1</option>
-                <option value="2025.2">2025.2</option>
-                <option value="2025.1">2025.1</option>
-                <option value="2024.2">2024.2</option>
-                <option value="anterior">Anterior a 2024.2</option>
-                <option value="nao_se_aplica">Não sei / Não se aplica</option>
-              </select>
+              <label>
+                Período em que ocorreu *
+                <span class="field-hint">(ex.: 2025.2)</span>
+              </label>
+              <input v-model="form.periodo" type="text" placeholder="Ex.: 2025.2" maxlength="20"
+                :class="{ invalid: errors.periodo }">
+              <span class="error-msg" role="alert">Informe o período em que o problema ocorreu.</span>
             </div>
 
             <div class="field">
-              <label>MENSAGEM * (mín. 20 caracteres)</label>
-              <textarea v-model="form.mensagem" minlength="20" placeholder="Descreva com detalhes o que aconteceu ou o que você sugere..." required></textarea>
-              <div class="char-counter">Mínimo de 20 caracteres</div>
+              <label>
+                Mensagem *
+                <span class="field-hint">(mín. 20 caracteres)</span>
+              </label>
+              <textarea
+                v-model="form.mensagem"
+                placeholder="Descreva com detalhes o que aconteceu ou o que você sugere…"
+                rows="5"
+                maxlength="2000"
+                :class="{ invalid: errors.mensagem }"
+                @input="onInput"
+              ></textarea>
+              <span class="error-msg" role="alert">
+                {{ form.mensagem.trim().length === 0 ? 'A mensagem não pode estar vazia.' : 'Mínimo 20 caracteres.' }}
+              </span>
+              <div class="char-counter" :class="{ warn: charCount > 1800 }">{{ charCount }} / 2000</div>
             </div>
 
             <div class="field-section">
-              <div class="admin-no-msg-title" style="margin-bottom: 8px;">Identificação (opcional)</div>
-              <p class="admin-no-msg-sub" style="margin-bottom: 1.2rem;">Se identificar, garantimos sigilo. Deixe em branco se quiser manter anonimato.</p>
-              
+              <p class="label-sm">Identificação <span class="field-hint" style="font-size:0.8rem;text-transform:none;letter-spacing:0;">(opcional)</span></p>
+              <p style="font-size:0.82rem;color:var(--cinza);margin-bottom:1rem;line-height:1.6;">
+                Se identificado, o protocolo será enviado ao seu e-mail e você será notificado sobre atualizações.
+              </p>
               <div class="ident-row">
                 <div class="field">
-                  <label>NOME</label>
-                  <input type="text" v-model="form.nome" placeholder="Seu nome completo" />
+                  <label>Nome</label>
+                  <input v-model="form.nome" type="text" placeholder="Seu nome completo" maxlength="100">
                 </div>
                 <div class="field">
-                  <label>E-MAIL</label>
-                  <input type="email" v-model="form.email" placeholder="seu@email.com" />
+                  <label>E-mail</label>
+                  <input v-model="form.email" type="email" placeholder="seu@email.com" :class="{ invalid: errors.email }">
+                  <span class="error-msg" role="alert">Informe um e-mail válido.</span>
                 </div>
               </div>
             </div>
 
-            <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
-              <button type="submit" class="btn btn-primary">Enviar relato →</button>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-amarelo">Enviar ticket →</button>
             </div>
           </form>
-        </div>
-      </section>
-    </main>
+        </template>
+      </div>
+    </section>
 
     <SiteFooter />
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import Navbar from '@/components/Navbar.vue'
-import SiteFooter from '@/components/SiteFooter.vue'
-
-const router = useRouter()
-const protocoloBusca = ref('')
-
-const form = ref({
-  tipo: '',
-  periodo: '',
-  mensagem: '',
-  nome: '',
-  email: ''
-})
-
-const consultarProtocolo = () => {
-  if (protocoloBusca.value.trim()) {
-    router.push({ name: 'ouvidoria-consulta', query: { p: protocoloBusca.value } })
-  }
-}
-
-const enviarMensagem = () => {
-  // Aqui vai a lógica de integração com sua store (mensagens.js) ou API
-  console.log('Enviando:', form.value)
-  alert('Mensagem enviada! Anote seu protocolo: ABC-123')
-}
-</script>
-
-<style scoped>
-/* Adicione aqui ajustes específicos, importando o forms.css se não for global */
-.ouvidoria-header { text-align: center; margin-bottom: 3rem; }
-.busca-protocolo { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
-.busca-protocolo input { padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #ccc; width: 300px; }
-/* ... (reaproveite as classes CSS do seu projeto) ... */
-</style>
