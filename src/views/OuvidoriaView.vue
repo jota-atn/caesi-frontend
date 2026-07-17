@@ -186,19 +186,9 @@ onMounted(() => {
         <p class="label-sm" style="margin-bottom:8px;">Mensagem enviada</p>
         <div class="msg-body">{{ resultado.corpo }}</div>
 
-        <template v-if="resultado.resposta">
-          <div class="alert-resposta" style="margin-top:1.5rem;">
-            <p class="label-sm" style="margin-bottom:10px;color:var(--roxo-escuro);">Resposta do CAESI</p>
-            <div style="font-size:0.93rem;line-height:1.7;color:var(--preto);white-space:pre-wrap;">{{ resultado.resposta }}</div>
-          </div>
-        </template>
-        <template v-else>
-          <div class="alert-info" style="margin-top:1.5rem;margin-bottom:0;">
-            <strong>Aguardando resposta.</strong>
-            A equipe do CAESI ainda não respondeu esta mensagem.
-            {{ resultado.status === 'pendente' ? 'Ela está na fila de atendimento.' : 'Está sendo analisada.' }}
-          </div>
-        </template>
+        <div v-if="resultado.status !== 'atendida'" class="alert-info" style="margin-top:1.5rem;margin-bottom:0;">
+          <strong>Em análise.</strong> Seu relato está na fila de atendimento do CAESI.
+        </div>
 
         <template v-if="resultado.complementos?.length">
           <hr class="divider" style="margin-top:1.5rem;">
@@ -366,7 +356,7 @@ onMounted(() => {
             <div class="field-section">
               <p class="label-sm">Identificação <span class="field-hint" style="font-size:0.8rem;text-transform:none;letter-spacing:0;">(opcional)</span></p>
               <p style="font-size:0.82rem;color:var(--cinza);margin-bottom:1rem;line-height:1.6;">
-                Se identificado, o protocolo será enviado ao seu e-mail e você será notificado sobre atualizações.
+                Se identificado, o CAESI sabe quem enviou o relato. De todo modo, use o número de protocolo pra acompanhar o status quando quiser.
               </p>
               <div class="ident-row">
                 <div class="field">
