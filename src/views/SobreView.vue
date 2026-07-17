@@ -15,7 +15,7 @@ import {
   descricaoGestao, saveDescricao, gestaoInfo, saveInfo, MESES,
   historicoGestoes, historicoVisivel, setHistoricoVisivel,
   arquivarGestaoAtual, removerGestaoHistorico, adicionarGestaoManual,
-  missaoTexto, saveMissao, contatoInfo, saveContato, periodoFormatado,
+  missaoTexto, saveMissao, missaoImagem, saveMissaoImagem, contatoInfo, saveContato, periodoFormatado,
   secoesCustom, addSecao, updateSecao, removeSecao, moverSecao,
 } from '../stores/equipe.js'
 import { CENTRO_PADRAO } from '../stores/mapa.js'
@@ -46,8 +46,21 @@ const editando = ref(isAdmin.value && route.query.editar === '1')
 
 // --- Missão e história ---
 const missaoEdit = ref(missaoTexto.value)
+const missaoImagemEdit = ref(missaoImagem.value)
+const fileMissaoRef = ref(null)
+
+async function onFotoMissao(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  missaoImagemEdit.value = await comprimirImagem(file)
+  e.target.value = ''
+}
+function removerFotoMissao() { missaoImagemEdit.value = '' }
+
 function salvarMissao() {
   saveMissao(missaoEdit.value.trim())
+  saveMissaoImagem(missaoImagemEdit.value)
   showToast('Missão atualizada.', 'success')
 }
 
@@ -320,36 +333,60 @@ function arquivar() {
 
 // --- Seções customizadas ---
 const mostraFormSecao = ref(false)
-const formSecao = ref({ titulo: '', conteudo: '' })
+const formSecao = ref({ titulo: '', conteudo: '', imagem: '' })
+const fileSecaoAddRef = ref(null)
 
 function toggleFormSecao() {
   mostraFormSecao.value = !mostraFormSecao.value
-  if (!mostraFormSecao.value) formSecao.value = { titulo: '', conteudo: '' }
+  if (!mostraFormSecao.value) formSecao.value = { titulo: '', conteudo: '', imagem: '' }
 }
+
+async function onFotoSecaoAdd(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  formSecao.value.imagem = await comprimirImagem(file)
+  e.target.value = ''
+}
+function removerFotoSecaoAdd() { formSecao.value.imagem = '' }
 
 function cadastrarSecao() {
   if (!formSecao.value.titulo.trim()) {
     showToast('Informe o título da seção.', 'error')
     return
   }
-  addSecao({ titulo: formSecao.value.titulo.trim(), conteudo: formSecao.value.conteudo.trim() })
-  formSecao.value = { titulo: '', conteudo: '' }
+  addSecao({
+    titulo: formSecao.value.titulo.trim(),
+    conteudo: formSecao.value.conteudo.trim(),
+    imagem: formSecao.value.imagem,
+  })
+  formSecao.value = { titulo: '', conteudo: '', imagem: '' }
   mostraFormSecao.value = false
   showToast('Seção adicionada.', 'success')
 }
 
 const editandoSecaoId = ref(null)
 const editFormSecao = ref(null)
+const fileSecaoEditRef = ref(null)
 
 function iniciarEdicaoSecao(secao) {
   editandoSecaoId.value = secao.id
-  editFormSecao.value = { ...secao }
+  editFormSecao.value = { imagem: '', ...secao }
 }
 
 function cancelarEdicaoSecao() {
   editandoSecaoId.value = null
   editFormSecao.value = null
 }
+
+async function onFotoSecaoEdit(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  editFormSecao.value.imagem = await comprimirImagem(file)
+  e.target.value = ''
+}
+function removerFotoSecaoEdit() { editFormSecao.value.imagem = '' }
 
 function salvarEdicaoSecao() {
   if (!editFormSecao.value.titulo.trim()) {
@@ -359,6 +396,7 @@ function salvarEdicaoSecao() {
   updateSecao(editandoSecaoId.value, {
     titulo: editFormSecao.value.titulo.trim(),
     conteudo: editFormSecao.value.conteudo.trim(),
+    imagem: editFormSecao.value.imagem,
   })
   showToast('Seção atualizada.', 'success')
   cancelarEdicaoSecao()
@@ -409,16 +447,31 @@ onBeforeUnmount(() => { mapaMini?.remove() })
 
       <div class="paper paper-mb-lg">
         <h2 class="paper-title">Nossa história e missão</h2>
-        <div class="sobre-missao-grid">
+        <div class="sobre-missao-grid" :class="{ 'sobre-missao-grid--sem-img': !editando && !missaoImagem }">
           <div v-if="!editando" class="sobre-missao-texto" v-html="missaoHtml"></div>
           <div v-else class="field" style="margin:0;">
             <textarea v-model="missaoEdit" rows="8" placeholder="Conte a história e a missão do CAESI…"></textarea>
             <p class="field-hint" style="margin-top:4px;">Suporta Markdown: **negrito**, *itálico*, listas, links…</p>
             <button class="btn btn-primary btn-sm" style="margin-top:0.6rem;" @click="salvarMissao">Salvar missão →</button>
           </div>
-          <div class="sobre-img-placeholder">
-            <span v-html="cameraIcon"></span>
-            <p>Foto histórica ou da sala do CAESI</p>
+
+          <!-- Foto: upload real (admin) -->
+          <div v-if="editando" class="sobre-img-edit">
+            <div v-if="missaoImagemEdit" class="sobre-img-preview">
+              <img :src="missaoImagemEdit" alt="" class="sobre-img-preview-img">
+              <button type="button" class="img-thumb-remove" @click="removerFotoMissao">×</button>
+            </div>
+            <div v-else class="sobre-img-placeholder">
+              <span v-html="cameraIcon"></span>
+              <p>Foto histórica ou da sala do CAESI</p>
+            </div>
+            <button type="button" class="btn-foto" style="margin-top:8px;" @click="fileMissaoRef.click()">
+              {{ missaoImagemEdit ? 'Trocar foto' : '+ Adicionar foto' }}
+            </button>
+            <input ref="fileMissaoRef" type="file" accept="image/*" style="display:none" @change="onFotoMissao">
+          </div>
+          <div v-else-if="missaoImagem" class="sobre-img-view">
+            <img :src="missaoImagem" alt="Foto da história do CAESI" class="sobre-img-view-img">
           </div>
         </div>
       </div>
@@ -784,7 +837,12 @@ onBeforeUnmount(() => { mapaMini?.remove() })
               <button class="icon-btn icon-btn--danger" title="Remover" @click="confirmarRemocaoSecao(s.id, s.titulo)" v-html="xIcon"></button>
             </div>
           </div>
-          <div class="sobre-missao-texto" v-html="descricaoHtml(s.conteudo)"></div>
+          <div class="sobre-missao-grid" :class="{ 'sobre-missao-grid--sem-img': !s.imagem }">
+            <div class="sobre-missao-texto" v-html="descricaoHtml(s.conteudo)"></div>
+            <div v-if="s.imagem" class="sobre-img-view">
+              <img :src="s.imagem" :alt="s.titulo" class="sobre-img-view-img">
+            </div>
+          </div>
         </template>
 
         <template v-else>
@@ -796,6 +854,17 @@ onBeforeUnmount(() => { mapaMini?.remove() })
           <div class="field">
             <label>Conteúdo <span class="field-hint">(Markdown)</span></label>
             <textarea v-model="editFormSecao.conteudo" rows="6"></textarea>
+          </div>
+          <div class="field">
+            <label>Foto <span class="field-hint">(opcional)</span></label>
+            <div v-if="editFormSecao.imagem" class="sobre-img-preview" style="max-width:260px;">
+              <img :src="editFormSecao.imagem" alt="" class="sobre-img-preview-img">
+              <button type="button" class="img-thumb-remove" @click="removerFotoSecaoEdit">×</button>
+            </div>
+            <button type="button" class="btn-foto" style="margin-top:8px;" @click="fileSecaoEditRef.click()">
+              {{ editFormSecao.imagem ? 'Trocar foto' : '+ Adicionar foto' }}
+            </button>
+            <input ref="fileSecaoEditRef" type="file" accept="image/*" style="display:none" @change="onFotoSecaoEdit">
           </div>
           <div class="btn-row">
             <button class="btn btn-primary btn-sm" @click="salvarEdicaoSecao">Salvar →</button>
@@ -818,6 +887,17 @@ onBeforeUnmount(() => { mapaMini?.remove() })
           <div class="field">
             <label>Conteúdo <span class="field-hint">(Markdown)</span></label>
             <textarea v-model="formSecao.conteudo" rows="6" placeholder="Escreva o conteúdo da seção…"></textarea>
+          </div>
+          <div class="field">
+            <label>Foto <span class="field-hint">(opcional)</span></label>
+            <div v-if="formSecao.imagem" class="sobre-img-preview" style="max-width:260px;">
+              <img :src="formSecao.imagem" alt="" class="sobre-img-preview-img">
+              <button type="button" class="img-thumb-remove" @click="removerFotoSecaoAdd">×</button>
+            </div>
+            <button type="button" class="btn-foto" style="margin-top:8px;" @click="fileSecaoAddRef.click()">
+              {{ formSecao.imagem ? 'Trocar foto' : '+ Adicionar foto' }}
+            </button>
+            <input ref="fileSecaoAddRef" type="file" accept="image/*" style="display:none" @change="onFotoSecaoAdd">
           </div>
           <div class="btn-row">
             <button class="btn btn-primary" @click="cadastrarSecao">Adicionar seção →</button>
@@ -907,6 +987,41 @@ onBeforeUnmount(() => { mapaMini?.remove() })
 }
 .sobre-img-placeholder :deep(svg) { width: 30px; height: 30px; stroke: currentColor; }
 .sobre-img-placeholder p { font-size: 0.8rem; max-width: 200px; }
+
+.sobre-missao-grid--sem-img { grid-template-columns: 1fr; }
+
+.sobre-img-edit { display: flex; flex-direction: column; }
+.sobre-img-preview { position: relative; }
+.sobre-img-preview-img,
+.sobre-img-view-img {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1.5px solid var(--creme-escuro);
+  display: block;
+}
+.sobre-img-view { display: flex; }
+
+.img-thumb-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--preto);
+  color: var(--branco);
+  border: none;
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 @media (max-width: 720px) {
   .sobre-missao-grid { grid-template-columns: 1fr; text-align: center; }

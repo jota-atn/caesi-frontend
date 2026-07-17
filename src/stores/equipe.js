@@ -5,9 +5,10 @@ const KEY_DESC     = 'caesi_gestao_descricao'
 const KEY_INFO     = 'caesi_gestao_info'
 const KEY_HIST     = 'caesi_gestoes_anteriores'
 const KEY_HIST_VIS = 'caesi_gestoes_visiveis'
-const KEY_MISSAO   = 'caesi_sobre_missao'
-const KEY_CONTATO  = 'caesi_sobre_contato'
-const KEY_SECOES   = 'caesi_sobre_secoes'
+const KEY_MISSAO     = 'caesi_sobre_missao'
+const KEY_MISSAO_IMG = 'caesi_sobre_missao_img'
+const KEY_CONTATO    = 'caesi_sobre_contato'
+const KEY_SECOES     = 'caesi_sobre_secoes'
 
 const MISSAO_DEFAULT = `O CAESI, Centro Acadêmico de Ciência da Computação, é a entidade estudantil
 que representa os alunos do curso de Ciência da Computação da UFCG. Nossa missão é defender
@@ -30,6 +31,7 @@ const _info      = ref({ ...INFO_DEFAULT, ...JSON.parse(localStorage.getItem(KEY
 const _historico = ref(JSON.parse(localStorage.getItem(KEY_HIST) || '[]'))
 const _histVis   = ref(localStorage.getItem(KEY_HIST_VIS) !== 'false')
 const _missao    = ref(localStorage.getItem(KEY_MISSAO) || MISSAO_DEFAULT)
+const _missaoImg = ref(localStorage.getItem(KEY_MISSAO_IMG) || '')
 const _contato   = ref({ ...CONTATO_DEFAULT, ...JSON.parse(localStorage.getItem(KEY_CONTATO) || '{}') })
 const _secoes    = ref(JSON.parse(localStorage.getItem(KEY_SECOES) || '[]'))
 
@@ -41,6 +43,7 @@ export const gestaoInfo         = computed(() => _info.value)
 export const historicoGestoes   = computed(() => _historico.value)
 export const historicoVisivel   = computed(() => _histVis.value)
 export const missaoTexto        = computed(() => _missao.value)
+export const missaoImagem       = computed(() => _missaoImg.value)
 export const contatoInfo        = computed(() => _contato.value)
 export const secoesCustom       = computed(() => _secoes.value)
 export const periodoFormatado  = computed(() => {
@@ -73,6 +76,11 @@ export function updateMembro(id, data) {
 export function saveMissao(texto) {
   localStorage.setItem(KEY_MISSAO, texto)
   _missao.value = texto
+}
+
+export function saveMissaoImagem(dataUrl) {
+  localStorage.setItem(KEY_MISSAO_IMG, dataUrl || '')
+  _missaoImg.value = dataUrl || ''
 }
 
 export function saveContato(dados) {
@@ -127,8 +135,8 @@ function persistSecoes(list) {
   _secoes.value = [...list]
 }
 
-export function addSecao({ titulo, conteudo }) {
-  const nova = { id: Date.now(), titulo, conteudo }
+export function addSecao({ titulo, conteudo, imagem = '' }) {
+  const nova = { id: Date.now(), titulo, conteudo, imagem }
   persistSecoes([..._secoes.value, nova])
   return nova
 }
