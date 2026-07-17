@@ -10,6 +10,11 @@ import { mensagens } from '../../stores/mensagens.js'
 import { admins } from '../../stores/equipe.js'
 import { formularios, inscricoes } from '../../stores/formularios.js'
 import { tasks } from '../../stores/tasks.js'
+import { publicacoes } from '../../stores/mural.js'
+import { eventos, proximosEventos } from '../../stores/calendario.js'
+import { estruturas } from '../../stores/mapa.js'
+import { editais, professores, laboratorios } from '../../stores/informacoes.js'
+import { artefatos } from '../../stores/portal.js'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
 
@@ -31,6 +36,8 @@ function formatValorCompacto(valor) {
 const tasksPendentes  = computed(() => tasks.value.filter(t => t.status === 'pendente').length)
 const tasksAndamento  = computed(() => tasks.value.filter(t => t.status === 'em-andamento').length)
 const tasksConcluidas = computed(() => tasks.value.filter(t => t.status === 'concluida').length)
+
+const totalInformacoes = computed(() => editais.value.length + professores.value.length + laboratorios.value.length + artefatos.value.length)
 
 const receitaTotal = computed(() => {
   return formularios.value
@@ -268,6 +275,80 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
             </div>
           </div>
           <RouterLink to="/admin/tasks" class="geral-row-link">Ver tasks →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Mural -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Mural</span>
+            <span class="geral-row-badge neutro">
+              {{ publicacoes.length }} publicaç{{ publicacoes.length === 1 ? 'ão' : 'ões' }}
+            </span>
+          </div>
+          <RouterLink to="/admin/mural" class="geral-row-link">Ver mural →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Calendário -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Calendário</span>
+            <span class="geral-row-badge" :class="proximosEventos.length > 0 ? 'ok' : 'neutro'">
+              {{ proximosEventos.length > 0 ? `${proximosEventos.length} próximo${proximosEventos.length > 1 ? 's' : ''}` : 'Nenhum evento futuro' }}
+            </span>
+          </div>
+          <div class="geral-row-stats">
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ eventos.length }}</span>
+              <span class="geral-mini-label">Total</span>
+            </div>
+          </div>
+          <RouterLink to="/admin/calendario" class="geral-row-link">Ver calendário →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Mapa -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Mapa</span>
+            <span class="geral-row-badge neutro">
+              {{ estruturas.length }} estrutura{{ estruturas.length === 1 ? '' : 's' }}
+            </span>
+          </div>
+          <RouterLink to="/admin/mapa" class="geral-row-link">Ver mapa →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Informações -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Informações</span>
+            <span class="geral-row-badge neutro">{{ totalInformacoes }} itens</span>
+          </div>
+          <div class="geral-row-stats">
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ editais.length }}</span>
+              <span class="geral-mini-label">Editais</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ professores.length }}</span>
+              <span class="geral-mini-label">Professores</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ laboratorios.length }}</span>
+              <span class="geral-mini-label">Laboratórios</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ artefatos.length }}</span>
+              <span class="geral-mini-label">Portal</span>
+            </div>
+          </div>
+          <RouterLink to="/admin/informacoes" class="geral-row-link">Ver informações →</RouterLink>
         </div>
 
         <div class="geral-divider" />
