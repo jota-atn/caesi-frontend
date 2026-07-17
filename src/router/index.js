@@ -7,6 +7,7 @@ const routes = [
   { path: '/estatuto',               component: () => import('../views/EstatutoView.vue') },
   { path: '/ouvidoria',              component: () => import('../views/OuvidoriaView.vue') },
   { path: '/ouvidoria/consulta',     component: () => import('../views/OuvidoriaConsultaView.vue') },
+  { path: '/mapa',                  component: () => import('../views/MapaView.vue') },
   { path: '/mural',                  component: () => import('../views/MuralView.vue') },
   { path: '/mural/:id',              component: () => import('../views/MuralDetalheView.vue') },
   { path: '/portal',                 component: () => import('../views/PortalView.vue') },

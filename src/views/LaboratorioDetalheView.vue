@@ -98,7 +98,7 @@ function onKey(e) {
             <a v-if="laboratorio.linkExterno" :href="laboratorio.linkExterno" target="_blank" rel="noopener" class="lab-contato-item">
               Site do laboratório →
             </a>
-            <RouterLink v-if="nomeEstrutura" :to="`/?estrutura=${laboratorio.estruturaId}#mapa`" class="lab-contato-item">
+            <RouterLink v-if="nomeEstrutura" :to="`/mapa?estrutura=${laboratorio.estruturaId}`" class="lab-contato-item">
               <span v-html="mapPinIcon" class="lab-contato-icon"></span> Ver localização →
             </RouterLink>
           </div>
