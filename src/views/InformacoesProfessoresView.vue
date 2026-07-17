@@ -53,7 +53,7 @@ const lista = computed(() => {
             <a v-if="p.googleAcademico" :href="p.googleAcademico" target="_blank" rel="noopener" class="diretorio-pill">Google Acadêmico</a>
             <a v-if="p.linkedin"        :href="p.linkedin"        target="_blank" rel="noopener" class="diretorio-pill">LinkedIn</a>
           </div>
-          <RouterLink v-if="p.estruturaId" :to="`/?estrutura=${p.estruturaId}#mapa`" class="diretorio-local">
+          <RouterLink v-if="p.estruturaId" :to="`/mapa?estrutura=${p.estruturaId}`" class="diretorio-local">
             <span v-html="mapPinIcon" class="diretorio-local-icon"></span> Ver localização →
           </RouterLink>
         </div>

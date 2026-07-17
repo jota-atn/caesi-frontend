@@ -7,9 +7,14 @@ import {
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement,
 } from 'chart.js'
 import { mensagens } from '../../stores/mensagens.js'
-import { admins } from '../../stores/equipe.js'
+import { membros } from '../../stores/equipe.js'
 import { formularios, inscricoes } from '../../stores/formularios.js'
 import { tasks } from '../../stores/tasks.js'
+import { publicacoes } from '../../stores/mural.js'
+import { eventos, proximosEventos } from '../../stores/calendario.js'
+import { estruturas } from '../../stores/mapa.js'
+import { editais, professores, laboratorios } from '../../stores/informacoes.js'
+import { artefatos } from '../../stores/portal.js'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement)
 
@@ -31,6 +36,8 @@ function formatValorCompacto(valor) {
 const tasksPendentes  = computed(() => tasks.value.filter(t => t.status === 'pendente').length)
 const tasksAndamento  = computed(() => tasks.value.filter(t => t.status === 'em-andamento').length)
 const tasksConcluidas = computed(() => tasks.value.filter(t => t.status === 'concluida').length)
+
+const totalInformacoes = computed(() => editais.value.length + professores.value.length + laboratorios.value.length + artefatos.value.length)
 
 const receitaTotal = computed(() => {
   return formularios.value
@@ -156,7 +163,7 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
       <!-- Gráficos de atividade -->
       <div v-if="temDados" class="painel-charts-grid">
         <div v-if="mensagens.length > 0" class="paper paper-sm">
-          <p class="label-sm">Mensagens por mês</p>
+          <p class="label-sm">Tickets por mês</p>
           <p v-if="tendenciaMensagens" class="painel-tendencia">
             {{ tendenciaMensagens.sobe ? '↑' : '↓' }} {{ tendenciaMensagens.pct }}% vs. mês ant.
           </p>
@@ -183,10 +190,10 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
 
       <div class="paper paper-flush">
 
-        <!-- Mensagens -->
+        <!-- Ouvidoria -->
         <div class="geral-row">
           <div class="geral-row-left">
-            <span class="geral-row-title">Mensagens</span>
+            <span class="geral-row-title">Ouvidoria</span>
             <span class="geral-row-badge" :class="pendentes > 0 ? 'alerta' : 'ok'">
               {{ pendentes > 0 ? `${pendentes} pendente${pendentes > 1 ? 's' : ''}` : 'Em dia' }}
             </span>
@@ -205,7 +212,7 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
               <span class="geral-mini-label">Atendidas</span>
             </div>
           </div>
-          <RouterLink to="/admin/mensagens" class="geral-row-link">Ver painel →</RouterLink>
+          <RouterLink to="/admin/ouvidoria" class="geral-row-link">Ver painel →</RouterLink>
         </div>
 
         <div class="geral-divider" />
@@ -272,21 +279,95 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
 
         <div class="geral-divider" />
 
+        <!-- Mural -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Mural</span>
+            <span class="geral-row-badge neutro">
+              {{ publicacoes.length }} publicaç{{ publicacoes.length === 1 ? 'ão' : 'ões' }}
+            </span>
+          </div>
+          <RouterLink to="/admin/mural" class="geral-row-link">Ver mural →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Calendário -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Calendário</span>
+            <span class="geral-row-badge" :class="proximosEventos.length > 0 ? 'ok' : 'neutro'">
+              {{ proximosEventos.length > 0 ? `${proximosEventos.length} próximo${proximosEventos.length > 1 ? 's' : ''}` : 'Nenhum evento futuro' }}
+            </span>
+          </div>
+          <div class="geral-row-stats">
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ eventos.length }}</span>
+              <span class="geral-mini-label">Total</span>
+            </div>
+          </div>
+          <RouterLink to="/admin/calendario" class="geral-row-link">Ver calendário →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Mapa -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Mapa</span>
+            <span class="geral-row-badge neutro">
+              {{ estruturas.length }} estrutura{{ estruturas.length === 1 ? '' : 's' }}
+            </span>
+          </div>
+          <RouterLink to="/admin/mapa" class="geral-row-link">Ver mapa →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
+        <!-- Informações -->
+        <div class="geral-row">
+          <div class="geral-row-left">
+            <span class="geral-row-title">Informações</span>
+            <span class="geral-row-badge neutro">{{ totalInformacoes }} itens</span>
+          </div>
+          <div class="geral-row-stats">
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ editais.length }}</span>
+              <span class="geral-mini-label">Editais</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ professores.length }}</span>
+              <span class="geral-mini-label">Professores</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ laboratorios.length }}</span>
+              <span class="geral-mini-label">Laboratórios</span>
+            </div>
+            <div class="geral-mini-stat">
+              <span class="geral-mini-num">{{ artefatos.length }}</span>
+              <span class="geral-mini-label">Portal</span>
+            </div>
+          </div>
+          <RouterLink to="/admin/informacoes" class="geral-row-link">Ver informações →</RouterLink>
+        </div>
+
+        <div class="geral-divider" />
+
         <!-- Equipe -->
         <div class="geral-row geral-row--equipe">
           <div class="geral-row-left">
             <span class="geral-row-title">Equipe</span>
           </div>
           <div class="geral-equipe-grid">
-            <div v-for="a in admins" :key="a.id" class="geral-equipe-chip">
+            <div v-for="a in membros" :key="a.id" class="geral-equipe-chip">
               <span class="geral-chip-dir">{{ a.periodo || '—' }}</span>
               <span class="geral-chip-nome" :class="{ vazio: !a.nome }">{{ a.nome || '—' }}</span>
             </div>
-            <div v-if="admins.length === 0" style="font-size:0.82rem;color:var(--cinza);">
-              Nenhum admin cadastrado.
+            <div v-if="membros.length === 0" style="font-size:0.82rem;color:var(--cinza);">
+              Nenhum membro cadastrado.
             </div>
           </div>
-          <RouterLink to="/admin/equipe" class="geral-row-link">Editar →</RouterLink>
+          <RouterLink to="/sobre?editar=1" class="geral-row-link">Editar →</RouterLink>
         </div>
 
       </div>

@@ -11,6 +11,7 @@ import { estruturas, CENTRO_PADRAO, addEstrutura, updateEstrutura, removeEstrutu
 import { useEscapeKey } from '../composables/useEscapeKey.js'
 import { showToast } from '../stores/toast.js'
 import crosshairIcon from '../assets/icons/crosshair.svg?raw'
+import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
@@ -114,7 +115,7 @@ onMounted(() => {
     zoomSnap: 0.25,
     zoomDelta: 0.5,
     wheelPxPerZoomLevel: 180,
-  }).setView([CENTRO_PADRAO.lat, CENTRO_PADRAO.lng], 16)
+  }).setView([CENTRO_PADRAO.lat, CENTRO_PADRAO.lng], 17)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
@@ -137,7 +138,7 @@ onMounted(() => {
 })
 
 function recentralizar() {
-  mapa?.setView([CENTRO_PADRAO.lat, CENTRO_PADRAO.lng], 16)
+  mapa?.setView([CENTRO_PADRAO.lat, CENTRO_PADRAO.lng], 17)
 }
 
 watch(estruturas, () => renderMapaMarkers())
@@ -159,32 +160,52 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
     <div class="section-label">Onde fica</div>
     <h2 class="section-title">Mapa do <span>campus</span></h2>
 
-    <div class="paper" style="padding:1.2rem;">
-      <input
-        v-model="buscaMapa" type="search" class="mapa-home-search"
-        placeholder="Buscar estrutura… (ex.: Bloco CP, auditório)"
-      >
-      <div v-if="resultadosBusca.length > 0" class="mapa-home-resultados">
-        <button
-          v-for="e in resultadosBusca" :key="e.id"
-          class="mapa-home-resultado-item"
-          @click="abrirEstrutura(e); buscaMapa = ''"
-        >{{ e.nome }}</button>
-      </div>
-      <div v-else-if="buscaMapa.trim()" class="mapa-home-resultados">
-        <span class="mapa-home-sem-resultado">Nenhuma estrutura encontrada.</span>
+    <div class="mapa-layout">
+      <div class="paper" style="padding:1.2rem;">
+        <input
+          v-model="buscaMapa" type="search" class="mapa-home-search"
+          placeholder="Buscar estrutura… (ex.: Bloco CP, auditório)"
+        >
+        <div v-if="resultadosBusca.length > 0" class="mapa-home-resultados">
+          <button
+            v-for="e in resultadosBusca" :key="e.id"
+            class="mapa-home-resultado-item"
+            @click="abrirEstrutura(e); buscaMapa = ''"
+          >{{ e.nome }}</button>
+        </div>
+        <div v-else-if="buscaMapa.trim()" class="mapa-home-resultados">
+          <span class="mapa-home-sem-resultado">Nenhuma estrutura encontrada.</span>
+        </div>
+
+        <div class="mapa-home-leaflet-wrap">
+          <div ref="mapaEl" class="mapa-home-leaflet" :class="{ 'mapa-home-leaflet--admin': isAdmin }"></div>
+          <button type="button" class="mapa-recentralizar" title="Recentralizar na UFCG" aria-label="Recentralizar na UFCG" @click="recentralizar">
+            <span v-html="crosshairIcon"></span>
+          </button>
+        </div>
+        <p style="font-size:0.78rem;color:var(--cinza);margin-top:0.8rem;">
+          <template v-if="isAdmin">Clique num ponto vazio pra adicionar uma estrutura, ou num pin pra ver/editar. Arraste um pin pra reposicionar.</template>
+          <template v-else>Clique num ponto do mapa pra ver os detalhes da estrutura.</template>
+        </p>
       </div>
 
-      <div class="mapa-home-leaflet-wrap">
-        <div ref="mapaEl" class="mapa-home-leaflet" :class="{ 'mapa-home-leaflet--admin': isAdmin }"></div>
-        <button type="button" class="mapa-recentralizar" title="Recentralizar na UFCG" aria-label="Recentralizar na UFCG" @click="recentralizar">
-          <span v-html="crosshairIcon"></span>
-        </button>
+      <div class="paper mapa-lista-paper">
+        <p class="label-sm" style="margin-bottom:0.6rem;">Estruturas ({{ estruturas.length }})</p>
+        <div class="mapa-lista">
+          <button
+            v-for="e in estruturas" :key="e.id"
+            class="mapa-item"
+            :class="{ 'mapa-item--ativo': estruturaModal?.id === e.id }"
+            @click="abrirEstrutura(e)"
+          >
+            <span class="mapa-item-icon" v-html="mapPinIcon"></span>
+            <span class="mapa-item-nome">{{ e.nome }}</span>
+          </button>
+        </div>
+        <div v-if="estruturas.length === 0" class="empty-state" style="padding:1.6rem 1rem;">
+          <p>Nenhuma estrutura cadastrada ainda.</p>
+        </div>
       </div>
-      <p style="font-size:0.78rem;color:var(--cinza);margin-top:0.8rem;">
-        <template v-if="isAdmin">Clique num ponto vazio pra adicionar uma estrutura, ou num pin pra ver/editar. Arraste um pin pra reposicionar.</template>
-        <template v-else>Clique num ponto do mapa pra ver os detalhes da estrutura.</template>
-      </p>
     </div>
   </section>
 

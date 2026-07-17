@@ -4,6 +4,7 @@
 @import './forms.css';
 
 @import './components/navbar.css';
+@import './components/admin-sidebar.css';
 @import './components/badges.css';
 @import './components/msg-card.css';
 @import './components/stats.css';

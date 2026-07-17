@@ -126,7 +126,7 @@ const barData = computed(() => {
   return {
     labels,
     datasets: [{
-      label: 'Mensagens',
+      label: 'Tickets',
       data: Object.values(meses),
       backgroundColor: 'rgba(107,79,187,0.75)',
       borderRadius: 4,
@@ -157,7 +157,7 @@ const barOptions = {
     <div class="page-content">
       <BackLink to="/admin/painel" style="margin-bottom:1.2rem;" />
       <div class="page-heading">
-        <h2>Painel de <span>Mensagens</span></h2>
+        <h2>Painel da <span>Ouvidoria</span></h2>
         <button class="btn btn-outline btn-sm" :disabled="mensagens.length === 0" @click="exportarCSV">
           ↓ Exportar CSV
         </button>
@@ -186,7 +186,7 @@ const barOptions = {
           </div>
         </div>
         <div class="paper paper-sm">
-          <p class="label-sm" style="margin-bottom:1rem;">Mensagens por mês</p>
+          <p class="label-sm" style="margin-bottom:1rem;">Tickets por mês</p>
           <div class="chart-wrap">
             <Bar :data="barData" :options="barOptions" />
           </div>
@@ -204,7 +204,7 @@ const barOptions = {
         v-for="m in mensagensPaginadas"
         :key="m.id"
         :mensagem="m"
-        :to="`/admin/mensagens/${m.id}`"
+        :to="`/admin/ouvidoria/${m.id}`"
       />
 
       <div v-if="mensagensFiltradas.length === 0" class="empty-state">

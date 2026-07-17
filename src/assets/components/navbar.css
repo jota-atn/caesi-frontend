@@ -10,6 +10,12 @@
   z-index: 100;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .navbar-brand {
   display: flex;
   align-items: center;
@@ -42,8 +48,16 @@
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--branco);
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
 }
 .navbar-title span { color: var(--amarelo); }
+.navbar-brand:hover .navbar-title {
+  color: var(--amarelo);
+  border-bottom-color: var(--amarelo);
+}
 
 .navbar-badge {
   position: relative;
@@ -156,55 +170,6 @@
   flex-shrink: 0;
 }
 
-.nav-dropdown { position: relative; }
-
-.nav-dropdown-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-.nav-dropdown-trigger svg { transition: transform 0.15s; flex-shrink: 0; }
-.nav-dropdown.open .nav-dropdown-trigger svg { transform: rotate(180deg); }
-.nav-dropdown.open .nav-dropdown-trigger { color: var(--amarelo); }
-
-.nav-dropdown-menu {
-  display: none;
-  flex-direction: column;
-  gap: 2px;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 12px;
-  padding: 6px;
-  min-width: 150px;
-  background: var(--roxo-escuro);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 4px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-  z-index: 300;
-}
-.nav-dropdown.open .nav-dropdown-menu { display: flex; }
-
-.nav-dropdown-item {
-  color: rgba(242,230,196,0.75);
-  font-family: 'Archivo Black', sans-serif;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-decoration: none;
-  padding: 8px 10px;
-  border-radius: 3px;
-  white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
-}
-.nav-dropdown-item:hover,
-.nav-dropdown-item.router-link-active {
-  background: rgba(255,255,255,0.1);
-  color: var(--amarelo);
-}
-
 .nav-link-btn {
   -webkit-appearance: none;
   appearance: none;
@@ -278,19 +243,6 @@
 
   /* Esconde dropdown e sino no mobile */
   .navbar-desktop-user { display: none; }
-
-  /* Dropdown "Conteúdo" vira lista expansível inline no mobile */
-  .nav-dropdown-menu {
-    position: static;
-    display: none;
-    margin-top: 4px;
-    margin-left: 10px;
-    padding: 0;
-    border: none;
-    box-shadow: none;
-    background: none;
-  }
-  .nav-dropdown.open .nav-dropdown-menu { display: flex; }
 
   /* Separador mobile */
   .nav-separator--mobile {

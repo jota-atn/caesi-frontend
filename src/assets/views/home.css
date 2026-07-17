@@ -501,6 +501,72 @@
 .mapa-home-resultado-item:hover { border-color: var(--roxo); background: rgba(80,64,160,0.06); }
 .mapa-home-sem-resultado { font-size: 0.85rem; color: var(--cinza); padding: 6px 2px; }
 
+.mapa-layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1.2rem;
+  align-items: stretch;
+}
+@media (max-width: 860px) {
+  .mapa-layout { grid-template-columns: 1fr; }
+}
+
+.mapa-lista-paper {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapa-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.mapa-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 2px;
+  border-left: 4px solid var(--roxo);
+  background: var(--branco);
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--roxo-escuro);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+}
+.mapa-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--roxo-escuro);
+}
+.mapa-item--ativo {
+  background: rgba(80,64,160,0.08);
+  border-left-color: var(--amarelo);
+  box-shadow: 4px 4px 0 var(--roxo-escuro);
+}
+
+.mapa-item-icon {
+  flex-shrink: 0;
+  display: flex;
+  color: var(--roxo-escuro);
+}
+.mapa-item-icon svg { width: 16px; height: 16px; }
+
+.mapa-item-nome {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  font-size: 0.87rem;
+  color: var(--preto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .mapa-home-leaflet-wrap { position: relative; }
 
 .mapa-home-leaflet {

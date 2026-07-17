@@ -1,53 +1,19 @@
 <script setup>
-import { ref } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import CalendarioSecao from '../components/CalendarioSecao.vue'
-import MapaSecao from '../components/MapaSecao.vue'
-import { addMensagem } from '../stores/mensagens.js'
-import { isAdmin } from '../stores/auth.js'
-import { isEmail } from '../utils/validation.js'
-
-const form = ref({ tipo: '', periodo: '', mensagem: '', nome: '', email: '' })
-const errors = ref({})
-const charCount = ref(0)
-const enviado = ref(false)
-const protocolo = ref('')
-const emailEnviado = ref(false)
-
-function onInput(e) {
-  charCount.value = e.target.value.length
-}
-
-function submit() {
-  const e = {}
-  if (!form.value.tipo)                       e.tipo = true
-  if (!form.value.periodo.trim())             e.periodo = true
-  if (form.value.mensagem.trim().length < 20) e.mensagem = true
-  if (form.value.email.trim() && !isEmail(form.value.email)) e.email = true
-  errors.value = e
-  if (Object.keys(e).length === 0) {
-    const nova = addMensagem({
-      tipo:    form.value.tipo,
-      periodo: form.value.periodo.trim(),
-      corpo:   form.value.mensagem,
-      nome:    form.value.nome.trim() || null,
-      email:   form.value.email.trim() || null,
-    })
-    protocolo.value = nova.protocolo
-    emailEnviado.value = !!form.value.email.trim()
-    enviado.value = true
-  }
-}
-
-function resetForm() {
-  form.value = { tipo: '', periodo: '', mensagem: '', nome: '', email: '' }
-  charCount.value = 0
-  enviado.value = false
-  emailEnviado.value = false
-}
+import calendarIcon from '../assets/icons/calendar.svg?raw'
+import mapPinIcon from '../assets/icons/map-pin.svg?raw'
+import instagramIcon from '../assets/icons/instagram.svg?raw'
+import bellIcon from '../assets/icons/bell.svg?raw'
+import bookOpenIcon from '../assets/icons/book-open.svg?raw'
+import messageIcon from '../assets/icons/message.svg?raw'
+import clipboardIcon from '../assets/icons/clipboard.svg?raw'
+import usersIcon from '../assets/icons/users.svg?raw'
+import mailIcon from '../assets/icons/mail.svg?raw'
 
 // ── Carrossel do Instagram (setas + arraste no clique) ───────
+import { ref } from 'vue'
 const instaScrollEl = ref(null)
 const instaDragging = ref(false)
 let instaStartX = 0
@@ -111,185 +77,133 @@ const posts = [
 
     <Navbar />
 
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-logo">
-        <img src="/logo_caesi.png" alt="CAESI" style="width:100%;height:100%;object-fit:cover;display:block;">
+    <!-- Introdução -->
+    <section class="home-hero-full">
+      <div class="hero">
+        <div class="hero-brand">
+          <div class="hero-logo">
+            <img src="/logo_caesi.png" alt="CAESI" style="width:100%;height:100%;object-fit:cover;display:block;">
+          </div>
+          <div class="hero-kicker">Centro Acadêmico · Ciência da Computação · UFCG</div>
+          <h1 class="hero-title">Bem-vindo ao <span>CAESI</span></h1>
+        </div>
+
+        <div class="hero-divider"></div>
+
+        <p class="hero-sub">
+          Criado para descomplicar a vida do estudante e dar transparência à
+          gestão, o portal do CAESI reúne mural, calendário, mapa do campus e
+          muito mais em um só lugar — incluindo uma <strong>Ouvidoria</strong>
+          direta via tickets pra qualquer demanda acadêmica.
+        </p>
+
+        <div class="steps-grid hero-steps">
+          <a href="#calendario" class="step-card">
+            <span class="step-icon" v-html="calendarIcon"></span>
+            <div class="step-title">Calendário</div>
+            <p class="step-desc">Fique por dentro dos eventos e prazos do curso, sempre atualizados.</p>
+          </a>
+          <a href="#contato" class="step-card">
+            <span class="step-icon" v-html="mailIcon"></span>
+            <div class="step-title">Fale com o CAESI</div>
+            <p class="step-desc">Sala, e-mail e grupos da comunidade — veja como nos encontrar.</p>
+          </a>
+          <a href="#instagram" class="step-card">
+            <span class="step-icon" v-html="instagramIcon"></span>
+            <div class="step-title">Instagram</div>
+            <p class="step-desc">Acompanhe avisos, fotos e novidades do dia a dia do CAESI.</p>
+          </a>
+        </div>
       </div>
-      <h1 class="hero-title">CAESI <span>Ouvidoria</span></h1>
-      <p class="hero-sub">
-        Fale com o Centro Acadêmico de Ciência da Computação da UFCG.<br>
-        Envie sugestões, reclamações e elogios de forma anônima.
-      </p>
-      <div class="hero-actions">
-        <a href="#enviar" class="btn btn-amarelo">Enviar mensagem →</a>
-        <RouterLink to="/ouvidoria/consulta" class="btn btn-outline btn-outline-creme">
-          Consultar protocolo →
+    </section>
+
+    <!-- Explore o site -->
+    <section class="home-section">
+      <div class="section-label">Explore o site</div>
+      <h2 class="section-title">Tudo o que o <span>CAESI</span> oferece</h2>
+
+      <div class="explore-list">
+        <RouterLink to="/mural" class="explore-item">
+          <div class="explore-icon explore-icon--roxo" v-html="bellIcon"></div>
+          <div class="explore-card">
+            <h3 class="explore-title">Fique por dentro de tudo</h3>
+            <p class="explore-desc">
+              Acompanhe editais de monitoria, vagas de estágio, convocações
+              para assembleias e comunicados oficiais da coordenação e do CAESI.
+            </p>
+            <span class="explore-cta">Acessar o Mural →</span>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/informacoes" class="explore-item">
+          <div class="explore-icon explore-icon--amarelo" v-html="bookOpenIcon"></div>
+          <div class="explore-card">
+            <h3 class="explore-title">Sobrevivendo à Computação</h3>
+            <p class="explore-desc">
+              Guias práticos sobre disciplinas, professores, ementas e tudo o
+              que você precisa saber para não ficar perdido no curso.
+            </p>
+            <span class="explore-cta">Ver Informações →</span>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/ouvidoria" class="explore-item">
+          <div class="explore-icon explore-icon--roxo" v-html="messageIcon"></div>
+          <div class="explore-card">
+            <h3 class="explore-title">Sua voz no CAESI</h3>
+            <p class="explore-desc">
+              Problema em disciplina, infraestrutura dos laboratórios ou uma
+              sugestão? Abra um ticket anônimo ou identificado com a gestão.
+            </p>
+            <span class="explore-cta">Falar com a Ouvidoria →</span>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/formularios" class="explore-item">
+          <div class="explore-icon explore-icon--amarelo" v-html="clipboardIcon"></div>
+          <div class="explore-card">
+            <h3 class="explore-title">Burocracia descomplicada</h3>
+            <p class="explore-desc">
+              Links rápidos para trancamento, aproveitamento de disciplinas,
+              reserva de salas e outras solicitações do departamento.
+            </p>
+            <span class="explore-cta">Ver Formulários →</span>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/sobre" class="explore-item">
+          <div class="explore-icon explore-icon--roxo" v-html="usersIcon"></div>
+          <div class="explore-card">
+            <h3 class="explore-title">Quem faz o CAESI acontecer</h3>
+            <p class="explore-desc">
+              A gestão atual, o histórico de chapas, nossa missão e o
+              estatuto do Centro Acadêmico — e como falar direto com a gente.
+            </p>
+            <span class="explore-cta">Ver Sobre Nós →</span>
+          </div>
+        </RouterLink>
+
+        <RouterLink to="/mapa" class="explore-item">
+          <div class="explore-icon explore-icon--amarelo" v-html="mapPinIcon"></div>
+          <div class="explore-card">
+            <h3 class="explore-title">Não se perca no campus</h3>
+            <p class="explore-desc">
+              Mapa interativo da UFCG com blocos, laboratórios e pontos de
+              referência — busque um local e trace sua rota até lá.
+            </p>
+            <span class="explore-cta">Ver Mapa do Campus →</span>
+          </div>
         </RouterLink>
       </div>
     </section>
 
-    <!-- Como funciona -->
-    <section class="home-section">
-      <div class="section-label">Ouvidoria</div>
-      <h2 class="section-title">Como <span>funciona</span></h2>
-      <div class="steps-grid">
-        <div class="step-card">
-          <span class="step-number">1</span>
-          <span class="step-icon">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-            </svg>
-          </span>
-          <div class="step-title">Escreva sua mensagem</div>
-          <p class="step-desc">Preencha o formulário abaixo com o assunto, categoria e detalhes do que aconteceu.</p>
-        </div>
-        <div class="step-card">
-          <span class="step-number">2</span>
-          <span class="step-icon">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
-              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
-            </svg>
-          </span>
-          <div class="step-title">O CAESI recebe</div>
-          <p class="step-desc">Nossa equipe lê e analisa cada mensagem com atenção. Você recebe um número de protocolo.</p>
-        </div>
-        <div class="step-card">
-          <span class="step-number">3</span>
-          <span class="step-icon">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          </span>
-          <div class="step-title">Acompanhe o status</div>
-          <p class="step-desc">Use o número de protocolo para consultar o status e ver a resposta do CAESI a qualquer momento.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Formulário de envio -->
-    <section class="home-section" id="enviar" style="scroll-margin-top:80px;">
-      <div class="section-label">Envio direto</div>
-      <h2 class="section-title">Enviar <span>mensagem</span></h2>
-
-      <div class="paper">
-
-        <div v-if="enviado" class="anon-success">
-          <div class="check-circle">✓</div>
-          <h3 style="font-family:'Archivo Black',sans-serif;font-size:1.3rem;color:var(--roxo-escuro);margin-bottom:0.5rem;">
-            Ticket enviado!
-          </h3>
-          <p style="font-size:0.9rem;color:var(--cinza);margin-bottom:1.2rem;line-height:1.6;">
-            Guarde o protocolo abaixo para acompanhar o andamento e ver a resposta do CAESI.
-            <template v-if="emailEnviado"> O protocolo também será enviado para o seu e-mail.</template>
-          </p>
-          <div class="protocolo-box">
-            <div class="protocolo-label">Protocolo</div>
-            <div class="protocolo-value">{{ protocolo }}</div>
-          </div>
-          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;">
-            <RouterLink :to="`/ouvidoria/consulta?protocolo=${encodeURIComponent(protocolo)}`" class="btn btn-primary btn-sm">Consultar status →</RouterLink>
-            <button class="btn btn-outline btn-sm" @click="resetForm">Enviar outro ticket</button>
-          </div>
-        </div>
-
-        <div v-else-if="isAdmin" class="admin-no-msg">
-          <div>
-            <p class="admin-no-msg-title">Administradores não enviam tickets pela ouvidoria.</p>
-            <p class="admin-no-msg-sub">Use o painel para gerenciar os tickets recebidos.</p>
-          </div>
-          <RouterLink to="/admin/mensagens" class="btn btn-outline btn-sm">
-            Ir ao painel →
-          </RouterLink>
-        </div>
-
-        <template v-else>
-          <div class="alert-info">
-            A identificação é <strong style="color:var(--roxo-escuro);">opcional</strong>.
-            Após o envio você receberá um número de protocolo para acompanhar o status e a resposta do CAESI.
-          </div>
-
-          <form @submit.prevent="submit" novalidate>
-            <div class="field">
-              <label>Tipo de relato *</label>
-              <select v-model="form.tipo" :class="{ invalid: errors.tipo }">
-                <option value="" disabled>Selecione o tipo de relato</option>
-                <option value="disciplina">Disciplina</option>
-                <option value="professores">Professores</option>
-                <option value="colegas">Colegas de curso</option>
-                <option value="infraestrutura">Infraestrutura</option>
-                <option value="ofertas">Ofertas e horários</option>
-                <option value="grupos">Grupos estudantis</option>
-                <option value="outros">Outros</option>
-              </select>
-              <span class="error-msg" role="alert">Selecione o tipo de relato.</span>
-            </div>
-
-            <div class="field">
-              <label>
-                Período em que ocorreu *
-                <span class="field-hint">(ex.: 2025.2)</span>
-              </label>
-              <input v-model="form.periodo" type="text" placeholder="Ex.: 2025.2" maxlength="20"
-                :class="{ invalid: errors.periodo }">
-              <span class="error-msg" role="alert">Informe o período em que o problema ocorreu.</span>
-            </div>
-
-            <div class="field">
-              <label>
-                Mensagem *
-                <span class="field-hint">(mín. 20 caracteres)</span>
-              </label>
-              <textarea
-                v-model="form.mensagem"
-                placeholder="Descreva com detalhes o que aconteceu ou o que você sugere…"
-                rows="5"
-                maxlength="2000"
-                :class="{ invalid: errors.mensagem }"
-                @input="onInput"
-              ></textarea>
-              <span class="error-msg" role="alert">
-                {{ form.mensagem.trim().length === 0 ? 'A mensagem não pode estar vazia.' : 'Mínimo 20 caracteres.' }}
-              </span>
-              <div class="char-counter" :class="{ warn: charCount > 1800 }">{{ charCount }} / 2000</div>
-            </div>
-
-            <div class="field-section">
-              <p class="label-sm">Identificação <span class="field-hint" style="font-size:0.8rem;text-transform:none;letter-spacing:0;">(opcional)</span></p>
-              <p style="font-size:0.82rem;color:var(--cinza);margin-bottom:1rem;line-height:1.6;">
-                Se identificado, o protocolo será enviado ao seu e-mail e você será notificado sobre atualizações.
-              </p>
-              <div class="ident-row">
-                <div class="field">
-                  <label>Nome</label>
-                  <input v-model="form.nome" type="text" placeholder="Seu nome completo" maxlength="100">
-                </div>
-                <div class="field">
-                  <label>E-mail</label>
-                  <input v-model="form.email" type="email" placeholder="seu@email.com" :class="{ invalid: errors.email }">
-                  <span class="error-msg" role="alert">Informe um e-mail válido.</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn-amarelo">Enviar ticket →</button>
-            </div>
-          </form>
-        </template>
-      </div>
-    </section>
-
     <!-- Calendário -->
-    <CalendarioSecao />
-
-    <!-- Mapa do campus -->
-    <MapaSecao />
+    <div id="calendario" style="scroll-margin-top: 80px;">
+      <CalendarioSecao />
+    </div>
 
     <!-- Instagram -->
-    <section class="home-section">
+    <section class="home-section" id="instagram" style="scroll-margin-top: 80px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:12px;">
         <div>
           <div class="section-label">Redes sociais</div>
@@ -332,7 +246,237 @@ const posts = [
       </div>
     </section>
 
-    <SiteFooter />
+    <!-- Contato -->
+    <section class="home-section" id="contato" style="scroll-margin-top: 80px;">
+      <div class="section-label">Contato</div>
+      <h2 class="section-title" style="margin-bottom:0.6rem;">Fale com o <span>CAESI</span></h2>
+      <p class="contato-sub">Dúvidas, parcerias ou só quer tomar um café? Veja como nos encontrar:</p>
 
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-icon" v-html="mapPinIcon"></span>
+          <div class="step-title">Dê uma passada lá!</div>
+          <p class="step-desc">
+            Nossa sala fica no Bloco CP. Sempre tem alguém da gestão por lá
+            pra trocar uma ideia ou ajudar com o que precisar.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-icon" v-html="mailIcon"></span>
+          <div class="step-title">Assuntos formais</div>
+          <p class="step-desc">
+            Para parcerias, convites institucionais e assuntos mais sérios,
+            manda um e-mail pra gente.
+          </p>
+          <a href="mailto:caesi@ccc.ufcg.edu.br" class="contato-cta">caesi@ccc.ufcg.edu.br</a>
+        </div>
+
+        <div class="step-card">
+          <span class="step-icon" v-html="messageIcon"></span>
+          <div class="step-title">Redes e grupos</div>
+          <p class="step-desc">
+            Faça parte dos nossos grupos de comunicação pra não perder
+            nenhum aviso de última hora.
+          </p>
+          <a href="#" class="contato-cta">Entrar na Comunidade →</a>
+        </div>
+      </div>
+    </section>
+
+    <SiteFooter />
   </div>
 </template>
+
+<style scoped>
+.home-hero-full {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-hero-full .hero {
+  max-width: 800px;
+  padding: 2rem;
+}
+
+.home-hero-full .hero-logo {
+  width: 180px;
+  height: 180px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.home-hero-full .hero-logo:hover {
+  transform: translateY(-4px);
+}
+
+.hero-brand .hero-title {
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.hero-brand .hero-title:hover {
+  transform: translateY(-4px);
+}
+
+.hero-kicker {
+  font-family: 'Archivo Black', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--amarelo);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-bottom: 1rem;
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.hero-kicker:hover {
+  transform: translateY(-4px);
+}
+
+.hero-divider {
+  width: 48px;
+  height: 4px;
+  background: var(--amarelo);
+  border-radius: 2px;
+  margin: 0 auto 1rem;
+}
+
+.home-hero-full .hero-sub {
+  color: rgba(242,230,196,0.8);
+  font-weight: 500;
+  margin-bottom: 2rem;
+  text-align: justify;
+}
+
+.home-hero-full .hero-sub strong {
+  color: var(--amarelo);
+}
+
+.hero-steps {
+  text-decoration: none;
+}
+.hero-steps .step-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.hero-steps .step-icon :deep(svg) {
+  width: 36px;
+  height: 36px;
+  stroke: currentColor;
+}
+
+@media (max-width: 640px) {
+  .home-hero-full .hero-logo { width: 116px; height: 116px; }
+  .hero-kicker { font-size: 0.68rem; letter-spacing: 0.1em; }
+}
+
+/* ── Explore o site ───────────────────────────────────────── */
+.explore-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.explore-item {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.explore-icon {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.explore-icon :deep(svg) {
+  width: 28px;
+  height: 28px;
+  stroke: currentColor;
+}
+.explore-icon--roxo    { background: var(--roxo-escuro); color: var(--amarelo); }
+.explore-icon--amarelo { background: var(--amarelo);      color: var(--preto); }
+
+.explore-item:hover .explore-icon {
+  transform: translateY(-4px);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+}
+
+.explore-card {
+  flex: 1;
+  min-width: 0;
+  background: var(--creme);
+  border-radius: 2px;
+  padding: 0.9rem 1.2rem;
+  box-shadow: 3px 3px 0 var(--roxo-escuro);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.explore-item:hover .explore-card {
+  transform: translateY(-2px);
+  box-shadow: 4px 5px 0 var(--roxo-escuro);
+}
+
+.explore-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--roxo-escuro);
+  margin-bottom: 0.3rem;
+}
+.explore-desc {
+  font-size: 0.86rem;
+  color: var(--preto);
+  opacity: 0.75;
+  line-height: 1.5;
+  margin-bottom: 0.4rem;
+}
+.explore-cta {
+  font-family: 'Archivo Black', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--roxo-escuro);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 640px) {
+  .explore-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  .explore-icon { width: 64px; height: 64px; }
+  .explore-icon :deep(svg) { width: 30px; height: 30px; }
+}
+
+/* ── Contato ──────────────────────────────────────────────── */
+.contato-sub {
+  font-size: 0.95rem;
+  color: rgba(242,230,196,0.8);
+  margin-bottom: 1.8rem;
+}
+
+.contato-cta {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-family: 'Archivo Black', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--roxo-escuro);
+  text-decoration: none;
+  word-break: break-word;
+}
+.contato-cta:hover {
+  text-decoration: underline;
+}
+</style>

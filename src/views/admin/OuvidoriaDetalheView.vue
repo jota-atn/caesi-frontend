@@ -5,7 +5,7 @@ import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
 import Badge from '../../components/Badge.vue'
 import Tag from '../../components/Tag.vue'
-import { mensagens, updateStatus, updateNota, updateResposta, deleteMensagem } from '../../stores/mensagens.js'
+import { mensagens, updateStatus, updateNota, deleteMensagem } from '../../stores/mensagens.js'
 import { showToast } from '../../stores/toast.js'
 
 const TIPO_LABEL = {
@@ -24,25 +24,17 @@ const router = useRouter()
 const id = Number(route.params.id)
 const mensagem = computed(() => mensagens.value.find(m => m.id === id))
 
-if (!mensagem.value) router.replace('/admin/mensagens')
+if (!mensagem.value) router.replace('/admin/ouvidoria')
 
 const status   = ref(mensagem.value?.status ?? 'pendente')
 const nota     = ref(mensagem.value?.nota ?? '')
-const resposta = ref(mensagem.value?.resposta ?? '')
-const notaSalva     = ref(false)
-const respostaSalva = ref(false)
-const emailAberto   = ref(false)
-const emailAssunto  = ref('')
-const emailCorpo    = ref('')
+const notaSalva = ref(false)
 
 const atendida = computed(() => status.value === 'atendida')
 
 function marcarAtendida() {
   status.value = 'atendida'
   updateStatus(id, 'atendida')
-  if (mensagem.value?.email) {
-    showToast(`E-mail de notificação enviado para ${mensagem.value.email}`, 'info')
-  }
 }
 
 function desfazer() {
@@ -56,30 +48,10 @@ function salvarNota() {
   setTimeout(() => { notaSalva.value = false }, 2000)
 }
 
-function salvarResposta() {
-  updateResposta(id, resposta.value.trim())
-  respostaSalva.value = true
-  setTimeout(() => { respostaSalva.value = false }, 2000)
-  if (resposta.value.trim() && mensagem.value?.email) {
-    showToast(`E-mail de notificação enviado para ${mensagem.value.email}`, 'info')
-  }
-}
-
-function enviarEmail() {
-  if (!emailAssunto.value.trim() || !emailCorpo.value.trim()) {
-    showToast('Preencha o assunto e a mensagem do e-mail.', 'error')
-    return
-  }
-  emailAberto.value = false
-  emailAssunto.value = ''
-  emailCorpo.value = ''
-  showToast('E-mail enviado!', 'success')
-}
-
 function confirmarExcluir() {
   if (confirm('Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.')) {
     deleteMensagem(id)
-    router.push('/admin/mensagens')
+    router.push('/admin/ouvidoria')
   }
 }
 </script>
@@ -92,7 +64,7 @@ function confirmarExcluir() {
     <Navbar />
 
     <div class="page-content">
-      <BackLink to="/admin/mensagens" label="Voltar ao painel" />
+      <BackLink to="/admin/ouvidoria" label="Voltar ao painel" />
 
       <div class="paper paper-mb">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
@@ -139,7 +111,7 @@ function confirmarExcluir() {
         </template>
       </div>
 
-      <div class="paper paper-mb">
+      <div class="paper paper-mb paper--meio">
         <div class="internal-note">
           <div class="internal-note-label">
             Anotação interna
@@ -158,64 +130,7 @@ function confirmarExcluir() {
         </div>
       </div>
 
-      <!-- Contato direto por e-mail -->
-      <div v-if="mensagem.email" class="paper paper-mb">
-        <p class="label-sm" style="margin-bottom:4px;">Contato direto</p>
-        <p style="font-size:0.76rem;color:var(--cinza);margin-bottom:1rem;">
-          Enviar e-mail para
-          <strong style="color:var(--preto);">{{ mensagem.nome ?? 'remetente' }}</strong>
-          — {{ mensagem.email }}
-        </p>
-
-        <button v-if="!emailAberto" class="btn btn-outline btn-sm" @click="emailAberto = true">
-          Enviar e-mail
-        </button>
-
-        <div v-else>
-          <div class="field" style="margin-bottom:0.8rem;">
-            <label class="label-sm">Assunto</label>
-            <input v-model="emailAssunto" type="text" placeholder="Ex.: Retorno sobre sua mensagem — {{ mensagem.protocolo }}">
-          </div>
-          <div class="field" style="margin-bottom:0.8rem;">
-            <label class="label-sm">Mensagem</label>
-            <textarea v-model="emailCorpo" rows="4" placeholder="Escreva o conteúdo do e-mail…"></textarea>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-amarelo btn-sm" @click="enviarEmail">Enviar</button>
-            <button class="btn btn-outline btn-sm" @click="emailAberto = false; emailAssunto = ''; emailCorpo = ''">Cancelar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Resposta pública -->
-      <div class="paper paper-mb">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem;flex-wrap:wrap;gap:8px;">
-          <div>
-            <p class="label-sm">Resposta pública</p>
-            <p style="font-size:0.76rem;color:var(--cinza);margin-top:2px;">
-              Visível ao remetente ao consultar o protocolo
-            </p>
-          </div>
-        </div>
-        <textarea
-          v-model="resposta"
-          placeholder="Escreva uma resposta para o remetente…"
-          rows="4"
-          class="internal-note textarea"
-          style="width:100%;padding:10px 12px;background:var(--branco);border:2px solid var(--creme-escuro);border-radius:2px;font-family:'Archivo',sans-serif;font-size:0.9rem;color:var(--preto);resize:vertical;outline:none;transition:border-color 0.2s;"
-          @focus="$event.target.style.borderColor='var(--roxo)'"
-          @blur="$event.target.style.borderColor='var(--creme-escuro)'"
-        ></textarea>
-        <div class="save-row">
-          <button
-            class="btn btn-outline btn-sm"
-            :style="respostaSalva ? 'background:var(--verde);color:white;border-color:var(--verde);' : ''"
-            @click="salvarResposta"
-          >{{ respostaSalva ? '✓ Salvo' : 'Salvar resposta' }}</button>
-        </div>
-      </div>
-
-      <div class="paper">
+      <div class="paper paper--fim">
         <h3 class="paper-subtitle">Ação do CAESI</h3>
 
         <div v-if="!atendida">

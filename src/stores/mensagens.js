@@ -35,16 +35,8 @@ export function updateNota(id, nota) {
   persist(_list.value.map(m => m.id === id ? { ...m, nota } : m))
 }
 
-export function updateResposta(id, resposta) {
-  persist(_list.value.map(m => m.id === id ? { ...m, resposta } : m))
-}
-
 export function deleteMensagem(id) {
   persist(_list.value.filter(m => m.id !== id))
-}
-
-export function marcarRespostaVista(id) {
-  persist(_list.value.map(m => m.id === id ? { ...m, respostaVista: true } : m))
 }
 
 export function addComplemento(id, texto) {

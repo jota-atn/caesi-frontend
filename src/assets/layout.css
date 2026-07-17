@@ -44,6 +44,41 @@
   );
 }
 
+/* ── Empilhamento de papers: rebarba só no topo do 1º e na base do último ──
+   .paper--meio: card do meio da pilha, sem rebarba nenhuma.
+   .paper--fim: último card da pilha, ganha rebarba na base também. */
+.paper--meio::before,
+.paper--fim::before {
+  content: none;
+}
+
+/* .paper--fim troca box-shadow por drop-shadow: precisa seguir o recorte
+   irregular do ::after (rebarba de baixo), o que box-shadow não acompanha. */
+.paper--fim {
+  box-shadow: none;
+  filter: drop-shadow(5px 5px 0 var(--roxo-escuro)) drop-shadow(0 8px 24px rgba(0,0,0,0.25));
+}
+
+.paper--fim::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: var(--creme);
+  transform: rotate(180deg);
+  clip-path: polygon(
+    0% 100%,
+    0% 12%, 4% 88%, 8% 8%, 12% 92%, 16% 4%,
+    20% 84%, 24% 10%, 28% 90%, 32% 6%, 36% 86%,
+    40% 14%, 44% 90%, 48% 4%, 52% 88%, 56% 14%,
+    60% 92%, 64% 6%, 68% 86%, 72% 8%, 76% 90%,
+    80% 4%, 84% 88%, 88% 10%, 92% 90%, 96% 6%,
+    100% 82%, 100% 100%
+  );
+}
+
 .deco-star {
   position: fixed;
   font-size: 1.4rem;

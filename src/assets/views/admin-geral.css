@@ -52,6 +52,7 @@
 }
 .geral-row-badge.ok    { background: rgba(78,170,119,0.15); color: #1a6640; }
 .geral-row-badge.alerta { background: rgba(217,85,85,0.12); color: var(--vermelho); }
+.geral-row-badge.neutro { background: rgba(80,64,160,0.1); color: var(--roxo-escuro); }
 
 .geral-row-stats {
   display: flex;
@@ -156,7 +157,7 @@
 
   .geral-divider { margin: 0 1.2rem; }
 
-  .geral-row-stats { gap: 1.2rem; }
+  .geral-row-stats { gap: 1.2rem; flex-wrap: wrap; row-gap: 0.8rem; }
 
   .geral-mini-num { font-size: 1.4rem; }
 
