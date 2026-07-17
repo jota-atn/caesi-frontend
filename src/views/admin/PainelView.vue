@@ -306,7 +306,7 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
               <span class="geral-mini-label">Total</span>
             </div>
           </div>
-          <RouterLink to="/admin/calendario" class="geral-row-link">Ver calendário →</RouterLink>
+          <RouterLink to="/#calendario" class="geral-row-link">Ver calendário →</RouterLink>
         </div>
 
         <div class="geral-divider" />
