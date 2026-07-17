@@ -1,25 +1,44 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import iconUrl from 'leaflet/dist/images/marker-icon.png'
+import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
+import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
 import { admins, descricaoGestao, gestaoInfo, periodoFormatado, historicoGestoes, historicoVisivel } from '../stores/equipe.js'
+import { CENTRO_PADRAO } from '../stores/mapa.js'
+
+delete L.Icon.Default.prototype._getIconUrl
+L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
 
 const expandido = ref(null)
 function toggleGestao(id) { expandido.value = expandido.value === id ? null : id }
 
-const equipeCarrosselEl = ref(null)
-function equipeScrollBy(dir) {
-  const el = equipeCarrosselEl.value
-  if (!el) return
-  const card = el.querySelector('.membro-card')
-  const passo = card ? card.offsetWidth + 16 : 200
-  el.scrollBy({ left: dir * passo, behavior: 'smooth' })
-}
-
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 import mailIcon from '../assets/icons/mail.svg?raw'
 import instagramIcon from '../assets/icons/instagram.svg?raw'
+import cameraIcon from '../assets/icons/camera.svg?raw'
+
+const mapaMiniEl = ref(null)
+let mapaMini = null
+
+onMounted(() => {
+  if (!mapaMiniEl.value) return
+  mapaMini = L.map(mapaMiniEl.value, {
+    zoomControl: false,
+    scrollWheelZoom: false,
+  }).setView([CENTRO_PADRAO.lat, CENTRO_PADRAO.lng], 17)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(mapaMini)
+  L.marker([CENTRO_PADRAO.lat, CENTRO_PADRAO.lng]).addTo(mapaMini)
+})
+
+onBeforeUnmount(() => { mapaMini?.remove() })
 </script>
 
 <template>
@@ -35,20 +54,28 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
       <h1 class="section-title">Sobre o <span>CAESI</span></h1>
 
       <div class="paper paper-mb-lg">
-        <h2 class="paper-title">Missão</h2>
-        <p style="font-size:0.95rem;color:var(--preto);line-height:1.75;margin-bottom:1.2rem;">
-          O CAESI, Centro Acadêmico de Ciência da Computação, é a entidade estudantil
-          que representa os alunos do curso de Ciência da Computação da UFCG. Nossa missão é defender
-          os direitos e interesses dos estudantes, promover a integração acadêmica e facilitar a comunicação
-          entre o corpo discente e a instituição.
-        </p>
-        <p style="font-size:0.95rem;color:var(--preto);line-height:1.75;">
-          A ouvidoria é um dos nossos canais mais importantes: um espaço para que qualquer aluno possa
-          relatar problemas, sugerir melhorias ou entrar em contato com o CAESI de forma segura, inclusive anônima.
-        </p>
+        <h2 class="paper-title">Nossa história e missão</h2>
+        <div class="sobre-missao-grid">
+          <div>
+            <p style="font-size:0.95rem;color:var(--preto);line-height:1.75;margin-bottom:1.2rem;">
+              O CAESI, Centro Acadêmico de Ciência da Computação, é a entidade estudantil
+              que representa os alunos do curso de Ciência da Computação da UFCG. Nossa missão é defender
+              os direitos e interesses dos estudantes, promover a integração acadêmica e facilitar a comunicação
+              entre o corpo discente e a instituição.
+            </p>
+            <p style="font-size:0.95rem;color:var(--preto);line-height:1.75;">
+              A ouvidoria é um dos nossos canais mais importantes: um espaço para que qualquer aluno possa
+              relatar problemas, sugerir melhorias ou entrar em contato com o CAESI de forma segura, inclusive anônima.
+            </p>
+          </div>
+          <div class="sobre-img-placeholder">
+            <span v-html="cameraIcon"></span>
+            <p>Foto histórica ou da sala do CAESI</p>
+          </div>
+        </div>
       </div>
 
-      <div class="paper paper-mb-lg">
+      <div class="paper paper-mb-lg paper--meio">
         <div class="gestao-header">
           <div>
             <h2 class="paper-title" style="margin-bottom:0;">Gestão atual</h2>
@@ -56,19 +83,17 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
           </div>
           <div v-if="periodoFormatado" class="chapa-periodo">{{ periodoFormatado }}</div>
         </div>
+
+        <div v-if="descricaoGestao" class="gestao-desc">
+          <p class="gestao-texto">{{ descricaoGestao }}</p>
+        </div>
+
+        <h3 class="equipe-titulo">Conheça a gente</h3>
+
         <div v-if="admins.length === 0" style="font-size:0.9rem;color:var(--cinza);padding:0.5rem 0;">
           Nenhum administrador cadastrado ainda.
         </div>
-        <div
-          v-else
-          ref="equipeCarrosselEl"
-          class="equipe-carrossel"
-          tabindex="0"
-          role="region"
-          aria-label="Carrossel de membros da gestão"
-          @keydown.left="equipeScrollBy(-1)"
-          @keydown.right="equipeScrollBy(1)"
-        >
+        <div v-else class="equipe-grid">
           <div v-for="a in admins" :key="a.id" class="membro-card">
             <div class="membro-avatar">
               <img v-if="a.foto" :src="a.foto" :alt="a.nome" class="membro-foto">
@@ -86,21 +111,16 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
             </div>
           </div>
         </div>
-
-        <div v-if="descricaoGestao" class="gestao-desc">
-          <div class="label-sm" style="margin-bottom:0.6rem;">Sobre a gestão</div>
-          <p class="gestao-texto">{{ descricaoGestao }}</p>
-        </div>
       </div>
 
-      <div v-if="historicoVisivel && historicoGestoes.length" class="paper paper-mb-lg">
+      <div v-if="historicoVisivel && historicoGestoes.length" class="paper paper-mb-lg paper--meio">
         <h2 class="paper-title" style="margin-bottom:1.2rem;">Gestões anteriores</h2>
         <div class="hist-lista">
           <div v-for="g in historicoGestoes" :key="g.id" class="hist-item">
             <button class="hist-header" @click="toggleGestao(g.id)">
               <div class="hist-header-info">
-                <span class="hist-chapa">{{ g.nomeChapa }}</span>
                 <span v-if="g.periodo" class="hist-periodo">{{ g.periodo }}</span>
+                <span class="hist-chapa">{{ g.periodo ? '—' : '' }} {{ g.nomeChapa }}</span>
               </div>
               <span class="hist-chevron" :class="{ aberto: expandido === g.id }">▾</span>
             </button>
@@ -122,22 +142,31 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
         </div>
       </div>
 
-      <div class="paper">
+      <div class="paper paper--fim">
         <h2 class="paper-title">Onde nos encontrar</h2>
-        <div style="display:flex;flex-direction:column;gap:0.75rem;">
-          <div style="display:flex;align-items:center;gap:10px;font-size:0.92rem;color:var(--preto);">
-            <span v-html="mapPinIcon" style="display:flex;flex-shrink:0;color:var(--roxo-escuro);width:17px;height:17px;"></span>
-            Sala do CAESI — Bloco CP, UFCG, Campina Grande – PB
+        <div class="sobre-contato-grid">
+          <div class="contato-info-lista">
+            <div class="contato-info-item">
+              <span class="contato-info-icon" v-html="mapPinIcon"></span>
+              <span class="contato-info-texto">Sala do CAESI — Bloco CP, UFCG, Campina Grande – PB</span>
+            </div>
+            <div class="contato-info-item">
+              <span class="contato-info-icon" v-html="mailIcon"></span>
+              <span class="contato-info-texto">
+                <a href="mailto:caesi@ccc.ufcg.edu.br" class="contato-info-link">caesi@ccc.ufcg.edu.br</a>
+              </span>
+            </div>
+            <div class="contato-info-item">
+              <span class="contato-info-icon" v-html="instagramIcon"></span>
+              <span class="contato-info-texto">
+                <a href="https://instagram.com/caesiufcg" target="_blank" rel="noopener" class="contato-info-link">@caesiufcg</a>
+                no Instagram
+              </span>
+            </div>
+            <RouterLink to="/mapa" class="sobre-mapa-link">Ver mapa completo do campus →</RouterLink>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:0.92rem;">
-            <span v-html="mailIcon" style="display:flex;flex-shrink:0;color:var(--roxo-escuro);width:17px;height:17px;"></span>
-            <a href="mailto:caesi@ccc.ufcg.edu.br"
-              style="color:var(--roxo-escuro);font-weight:600;text-decoration:none;">caesi@ccc.ufcg.edu.br</a>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:0.92rem;color:var(--preto);">
-            <span v-html="instagramIcon" style="display:flex;flex-shrink:0;color:var(--roxo-escuro);width:17px;height:17px;"></span>
-            <a href="https://instagram.com/caesiufcg" target="_blank" rel="noopener"
-              style="color:var(--roxo-escuro);font-weight:600;text-decoration:none;">@caesiufcg</a>&nbsp;no Instagram
+          <div class="sobre-mapa-embed">
+            <div ref="mapaMiniEl" class="sobre-mapa-leaflet"></div>
           </div>
         </div>
       </div>
@@ -148,17 +177,75 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
 </template>
 
 <style scoped>
-.equipe-carrossel {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 0.5rem;
+/* ── Empilhamento de papers: rebarba só no topo do 1º e na base do último ── */
+.paper--meio::before,
+.paper--fim::before {
+  content: none;
 }
-.equipe-carrossel::-webkit-scrollbar { height: 4px; }
-.equipe-carrossel::-webkit-scrollbar-track { background: var(--creme-escuro); border-radius: 2px; }
-.equipe-carrossel::-webkit-scrollbar-thumb { background: var(--roxo); border-radius: 2px; }
+
+/* .paper--fim troca box-shadow por drop-shadow: precisa seguir o recorte
+   irregular do ::after (rebarba de baixo), o que box-shadow não acompanha. */
+.paper--fim {
+  box-shadow: none;
+  filter: drop-shadow(5px 5px 0 var(--roxo-escuro)) drop-shadow(0 8px 24px rgba(0,0,0,0.25));
+}
+
+.paper--fim::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: var(--creme);
+  transform: rotate(180deg);
+  clip-path: polygon(
+    0% 100%,
+    0% 12%, 4% 88%, 8% 8%, 12% 92%, 16% 4%,
+    20% 84%, 24% 10%, 28% 90%, 32% 6%, 36% 86%,
+    40% 14%, 44% 90%, 48% 4%, 52% 88%, 56% 14%,
+    60% 92%, 64% 6%, 68% 86%, 72% 8%, 76% 90%,
+    80% 4%, 84% 88%, 88% 10%, 92% 90%, 96% 6%,
+    100% 82%, 100% 100%
+  );
+}
+
+/* ── Missão: texto + placeholder de imagem ────────────────── */
+.sobre-missao-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.sobre-img-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 180px;
+  background: rgba(80,64,160,0.04);
+  border: 2px dashed var(--creme-escuro);
+  border-radius: 2px;
+  color: var(--cinza);
+  text-align: center;
+  padding: 1.2rem;
+}
+.sobre-img-placeholder :deep(svg) { width: 30px; height: 30px; stroke: currentColor; }
+.sobre-img-placeholder p { font-size: 0.8rem; max-width: 200px; }
+
+@media (max-width: 720px) {
+  .sobre-missao-grid { grid-template-columns: 1fr; text-align: center; }
+}
+
+/* ── Equipe: grid responsivo (substitui o carrossel) ──────── */
+.equipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
 
 .membro-card {
   display: flex;
@@ -170,8 +257,13 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
   border-radius: 2px;
   padding: 1.2rem 0.8rem 1rem;
   gap: 0.35rem;
-  flex: 0 0 180px;
-  scroll-snap-align: start;
+  box-shadow: 2px 2px 0 var(--roxo-escuro);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.membro-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--roxo-escuro);
+  border-color: var(--roxo);
 }
 
 .membro-avatar {
@@ -291,9 +383,9 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
 }
 
 .gestao-desc {
-  margin-top: 1.6rem;
-  padding-top: 1.4rem;
-  border-top: 1.5px solid var(--creme-escuro);
+  margin-top: 1.2rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1.5px solid var(--creme-escuro);
 }
 
 .gestao-texto {
@@ -398,5 +490,94 @@ import instagramIcon from '../assets/icons/instagram.svg?raw'
   font-size: 1.1rem;
   color: var(--creme);
   line-height: 1;
+}
+
+.equipe-titulo {
+  font-family: 'Archivo Black', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--roxo-escuro);
+  margin: 1.2rem 0 0.8rem;
+}
+
+/* ── Contato: informações + mapa embed ────────────────────── */
+.sobre-contato-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.contato-info-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.contato-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.contato-info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  margin-top: 2px;
+  border-radius: 2px;
+  background: rgba(80,64,160,0.08);
+  color: var(--roxo-escuro);
+}
+.contato-info-icon :deep(svg) { width: 17px; height: 17px; }
+
+.contato-info-texto {
+  font-size: 0.92rem;
+  color: var(--preto);
+  line-height: 1.5;
+  padding-top: 6px;
+}
+
+.contato-info-link {
+  color: var(--roxo-escuro);
+  font-weight: 700;
+  text-decoration: none;
+}
+.contato-info-link:hover { text-decoration: underline; }
+
+.contato-info-lista .sobre-mapa-link {
+  margin-top: 0.4rem;
+  padding-top: 1rem;
+  border-top: 1.5px solid var(--creme-escuro);
+}
+
+.sobre-mapa-embed {
+  min-height: 200px;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1.5px solid var(--creme-escuro);
+}
+
+.sobre-mapa-leaflet {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+
+.sobre-mapa-link {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--roxo-escuro);
+  text-decoration: none;
+  margin-top: 0.3rem;
+}
+.sobre-mapa-link:hover { text-decoration: underline; }
+
+@media (max-width: 720px) {
+  .sobre-contato-grid { grid-template-columns: 1fr; }
+  .sobre-mapa-embed { min-height: 240px; }
 }
 </style>
