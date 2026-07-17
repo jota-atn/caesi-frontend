@@ -3,6 +3,9 @@ import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import CalendarioSecao from '../components/CalendarioSecao.vue'
 import MapaSecao from '../components/MapaSecao.vue'
+import calendarIcon from '../assets/icons/calendar.svg?raw'
+import mapPinIcon from '../assets/icons/map-pin.svg?raw'
+import instagramIcon from '../assets/icons/instagram.svg?raw'
 
 // ── Carrossel do Instagram (setas + arraste no clique) ───────
 import { ref } from 'vue'
@@ -88,11 +91,29 @@ const posts = [
           muito mais em um só lugar — incluindo uma <strong>Ouvidoria</strong>
           direta via tickets pra qualquer demanda acadêmica.
         </p>
+
+        <div class="steps-grid hero-steps">
+          <a href="#calendario" class="step-card">
+            <span class="step-icon" v-html="calendarIcon"></span>
+            <div class="step-title">Calendário</div>
+            <p class="step-desc">Fique por dentro dos eventos e prazos do curso, sempre atualizados.</p>
+          </a>
+          <a href="#mapa" class="step-card">
+            <span class="step-icon" v-html="mapPinIcon"></span>
+            <div class="step-title">Mapa do campus</div>
+            <p class="step-desc">Encontre salas, laboratórios e blocos sem se perder pela UFCG.</p>
+          </a>
+          <a href="#instagram" class="step-card">
+            <span class="step-icon" v-html="instagramIcon"></span>
+            <div class="step-title">Instagram</div>
+            <p class="step-desc">Acompanhe avisos, fotos e novidades do dia a dia do CAESI.</p>
+          </a>
+        </div>
       </div>
     </section>
 
     <!-- Instagram -->
-    <section class="home-section">
+    <section class="home-section" id="instagram" style="scroll-margin-top: 80px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:12px;">
         <div>
           <div class="section-label">Redes sociais</div>
@@ -141,7 +162,9 @@ const posts = [
     </div>
 
     <!-- Mapa do campus -->
-    <MapaSecao />
+    <div id="mapa" style="scroll-margin-top: 80px;">
+      <MapaSecao />
+    </div>
 
     <SiteFooter />
   </div>
@@ -212,6 +235,20 @@ const posts = [
 
 .home-hero-full .hero-sub strong {
   color: var(--amarelo);
+}
+
+.hero-steps {
+  text-decoration: none;
+}
+.hero-steps .step-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.hero-steps .step-icon :deep(svg) {
+  width: 36px;
+  height: 36px;
+  stroke: currentColor;
 }
 
 @media (max-width: 640px) {
