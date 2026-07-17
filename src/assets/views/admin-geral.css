@@ -1,5 +1,21 @@
 .painel-chart-wrap { height: 200px; }
 
+/* ── Painel: seções que agrupam cada semi-bento-grid ───────── */
+.painel-secao { margin-bottom: 2rem; }
+.painel-secao:last-child { margin-bottom: 0; }
+
+.painel-secao-titulo {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(242,230,196,0.7);
+  border-bottom: 1.5px solid rgba(242,230,196,0.25);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
 /* ── Painel: semi-bento grid ───────────────────────────────
    Só varia a largura da tile (wide = metade, narrow = um quarto);
    a altura é sempre intrínseca ao conteúdo, então tiles com gráfico

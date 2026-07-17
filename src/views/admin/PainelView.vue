@@ -167,225 +167,245 @@ const donutOptions = {
         <h2>Painel <span>Geral</span></h2>
       </div>
 
-      <div class="painel-bento">
+      <!-- ── Atendimento: canais de contato com o estudante ───── -->
+      <div class="painel-secao">
+        <p class="painel-secao-titulo">Atendimento</p>
+        <div class="painel-bento">
 
-        <!-- Ouvidoria -->
-        <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--roxo">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--roxo" v-html="inboxIcon"></span>
-            <div class="bento-header-text">
-              <span class="bento-title">Ouvidoria</span>
-              <span class="geral-row-badge" :class="pendentes > 0 ? 'alerta' : 'ok'">
-                {{ pendentes > 0 ? `${pendentes} pendente${pendentes > 1 ? 's' : ''}` : 'Em dia' }}
-              </span>
-            </div>
-          </div>
-          <div class="bento-body">
-            <div class="geral-row-stats">
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num">{{ totalMensagens }}</span>
-                <span class="geral-mini-label">Total</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--roxo);">{{ pendentes }}</span>
-                <span class="geral-mini-label">Pendentes</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--verde);">{{ atendidas }}</span>
-                <span class="geral-mini-label">Atendidas</span>
-              </div>
-            </div>
-            <template v-if="mensagens.length > 0">
-              <p v-if="tendenciaMensagens" class="painel-tendencia">
-                {{ tendenciaMensagens.sobe ? '↑' : '↓' }} {{ tendenciaMensagens.pct }}% vs. mês ant.
-              </p>
-              <div class="painel-chart-wrap">
-                <Bar :data="barMensagens" :options="barOptions" />
-              </div>
-            </template>
-          </div>
-          <RouterLink to="/admin/ouvidoria" class="bento-link">Ver painel →</RouterLink>
-        </div>
-
-        <!-- Formulários -->
-        <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--verde">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--verde" v-html="clipboardIcon"></span>
-            <div class="bento-header-text">
-              <span class="bento-title">Formulários</span>
-              <span class="geral-row-badge" :class="cancelamentosPendentes > 0 || compPendentes > 0 ? 'alerta' : 'ok'">
-                <template v-if="cancelamentosPendentes > 0">
-                  {{ cancelamentosPendentes }} cancel. pendente{{ cancelamentosPendentes > 1 ? 's' : '' }}
-                </template>
-                <template v-else-if="compPendentes > 0">
-                  {{ compPendentes }} comp. pendente{{ compPendentes > 1 ? 's' : '' }}
-                </template>
-                <template v-else>Em dia</template>
-              </span>
-            </div>
-          </div>
-          <div class="bento-body">
-            <div class="geral-row-stats">
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--verde);">{{ formsAbertos }}</span>
-                <span class="geral-mini-label">Abertos</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--cinza);">{{ formsEncerrados }}</span>
-                <span class="geral-mini-label">Encerrados</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--verde);font-size:1.1rem;line-height:1.2;">
-                  {{ formatValorCompacto(receitaTotal) }}
+          <!-- Ouvidoria -->
+          <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--roxo">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--roxo" v-html="inboxIcon"></span>
+              <div class="bento-header-text">
+                <span class="bento-title">Ouvidoria</span>
+                <span class="geral-row-badge" :class="pendentes > 0 ? 'alerta' : 'ok'">
+                  {{ pendentes > 0 ? `${pendentes} pendente${pendentes > 1 ? 's' : ''}` : 'Em dia' }}
                 </span>
-                <span class="geral-mini-label">Receita confirmada</span>
               </div>
             </div>
-            <template v-if="inscricoes.length > 0">
-              <p v-if="tendenciaInscricoes" class="painel-tendencia">
-                {{ tendenciaInscricoes.sobe ? '↑' : '↓' }} {{ tendenciaInscricoes.pct }}% vs. mês ant.
-              </p>
-              <div class="painel-chart-wrap">
-                <Bar :data="barInscricoes" :options="barOptions" />
+            <div class="bento-body">
+              <div class="geral-row-stats">
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num">{{ totalMensagens }}</span>
+                  <span class="geral-mini-label">Total</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--roxo);">{{ pendentes }}</span>
+                  <span class="geral-mini-label">Pendentes</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--verde);">{{ atendidas }}</span>
+                  <span class="geral-mini-label">Atendidas</span>
+                </div>
               </div>
-            </template>
+              <template v-if="mensagens.length > 0">
+                <p v-if="tendenciaMensagens" class="painel-tendencia">
+                  {{ tendenciaMensagens.sobe ? '↑' : '↓' }} {{ tendenciaMensagens.pct }}% vs. mês ant.
+                </p>
+                <div class="painel-chart-wrap">
+                  <Bar :data="barMensagens" :options="barOptions" />
+                </div>
+              </template>
+            </div>
+            <RouterLink to="/admin/ouvidoria" class="bento-link">Ver painel →</RouterLink>
           </div>
-          <RouterLink to="/admin/formularios" class="bento-link">Ver formulários →</RouterLink>
-        </div>
 
-        <!-- Inscrições por status (só aparece quando há dado real) -->
-        <div v-if="inscricoes.length > 0" class="paper paper-sm bento-tile bento-tile--wide bento-tile--kraft">
-          <p class="label-sm" style="margin-bottom:0.9rem;">Inscrições por status</p>
-          <div class="painel-chart-wrap">
-            <Doughnut :data="donutInscricoes" :options="donutOptions" />
+          <!-- Formulários -->
+          <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--verde">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--verde" v-html="clipboardIcon"></span>
+              <div class="bento-header-text">
+                <span class="bento-title">Formulários</span>
+                <span class="geral-row-badge" :class="cancelamentosPendentes > 0 || compPendentes > 0 ? 'alerta' : 'ok'">
+                  <template v-if="cancelamentosPendentes > 0">
+                    {{ cancelamentosPendentes }} cancel. pendente{{ cancelamentosPendentes > 1 ? 's' : '' }}
+                  </template>
+                  <template v-else-if="compPendentes > 0">
+                    {{ compPendentes }} comp. pendente{{ compPendentes > 1 ? 's' : '' }}
+                  </template>
+                  <template v-else>Em dia</template>
+                </span>
+              </div>
+            </div>
+            <div class="bento-body">
+              <div class="geral-row-stats">
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--verde);">{{ formsAbertos }}</span>
+                  <span class="geral-mini-label">Abertos</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--cinza);">{{ formsEncerrados }}</span>
+                  <span class="geral-mini-label">Encerrados</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--verde);font-size:1.1rem;line-height:1.2;">
+                    {{ formatValorCompacto(receitaTotal) }}
+                  </span>
+                  <span class="geral-mini-label">Receita confirmada</span>
+                </div>
+              </div>
+              <template v-if="inscricoes.length > 0">
+                <p v-if="tendenciaInscricoes" class="painel-tendencia">
+                  {{ tendenciaInscricoes.sobe ? '↑' : '↓' }} {{ tendenciaInscricoes.pct }}% vs. mês ant.
+                </p>
+                <div class="painel-chart-wrap">
+                  <Bar :data="barInscricoes" :options="barOptions" />
+                </div>
+              </template>
+            </div>
+            <RouterLink to="/admin/formularios" class="bento-link">Ver formulários →</RouterLink>
           </div>
-        </div>
 
-        <!-- Tasks -->
-        <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--amarelo">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--amarelo" v-html="checkCircleIcon"></span>
-            <div class="bento-header-text">
-              <span class="bento-title">Tasks</span>
-              <span class="geral-row-badge ok">
-                {{ tasksAndamento > 0 ? `${tasksAndamento} em andamento` : 'Nenhuma em andamento' }}
+          <!-- Inscrições por status (só aparece quando há dado real) -->
+          <div v-if="inscricoes.length > 0" class="paper paper-sm bento-tile bento-tile--wide bento-tile--kraft">
+            <p class="label-sm" style="margin-bottom:0.9rem;">Inscrições por status</p>
+            <div class="painel-chart-wrap">
+              <Doughnut :data="donutInscricoes" :options="donutOptions" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Conteúdo do site: módulos públicos ───────────────── -->
+      <div class="painel-secao">
+        <p class="painel-secao-titulo">Conteúdo do site</p>
+        <div class="painel-bento">
+
+          <!-- Informações -->
+          <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--roxo-escuro">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--roxo-escuro" v-html="bookOpenIcon"></span>
+              <div class="bento-header-text">
+                <span class="bento-title">Informações</span>
+                <span class="geral-row-badge neutro">{{ totalInformacoes }} itens</span>
+              </div>
+            </div>
+            <div class="bento-body">
+              <div class="geral-row-stats">
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num">{{ editais.length }}</span>
+                  <span class="geral-mini-label">Editais</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num">{{ professores.length }}</span>
+                  <span class="geral-mini-label">Professores</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num">{{ laboratorios.length }}</span>
+                  <span class="geral-mini-label">Laboratórios</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num">{{ artefatos.length }}</span>
+                  <span class="geral-mini-label">Portal</span>
+                </div>
+              </div>
+            </div>
+            <RouterLink to="/admin/portal" class="bento-link">Ver Portal →</RouterLink>
+          </div>
+
+          <!-- Mural -->
+          <div class="paper paper-sm bento-tile bento-tile--verde">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--verde" v-html="bellIcon"></span>
+              <span class="bento-title">Mural</span>
+            </div>
+            <div class="bento-stat-solo">
+              <span class="geral-mini-num">{{ publicacoes.length }}</span>
+              <span class="geral-mini-label">publicaç{{ publicacoes.length === 1 ? 'ão' : 'ões' }}</span>
+            </div>
+            <RouterLink to="/mural" class="bento-link">Ver mural →</RouterLink>
+          </div>
+
+          <!-- Calendário -->
+          <div class="paper paper-sm bento-tile bento-tile--roxo">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--roxo" v-html="calendarIcon"></span>
+              <span class="bento-title">Calendário</span>
+            </div>
+            <div class="bento-stat-solo">
+              <span class="geral-mini-num">{{ eventos.length }}</span>
+              <span class="geral-mini-label">
+                {{ proximosEventos.length > 0 ? `${proximosEventos.length} próximo${proximosEventos.length > 1 ? 's' : ''}` : 'nenhum próximo' }}
               </span>
             </div>
+            <RouterLink to="/#calendario" class="bento-link">Ver calendário →</RouterLink>
           </div>
-          <div class="bento-body">
-            <div class="geral-row-stats">
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--cinza);">{{ tasksPendentes }}</span>
-                <span class="geral-mini-label">Pendentes</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--roxo);">{{ tasksAndamento }}</span>
-                <span class="geral-mini-label">Em andamento</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num" style="color:var(--verde);">{{ tasksConcluidas }}</span>
-                <span class="geral-mini-label">Concluídas</span>
+
+          <!-- Mapa -->
+          <div class="paper paper-sm bento-tile bento-tile--amarelo">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--amarelo" v-html="mapPinIcon"></span>
+              <span class="bento-title">Mapa</span>
+            </div>
+            <div class="bento-stat-solo">
+              <span class="geral-mini-num">{{ estruturas.length }}</span>
+              <span class="geral-mini-label">estrutura{{ estruturas.length === 1 ? '' : 's' }}</span>
+            </div>
+            <RouterLink to="/mapa" class="bento-link">Ver mapa →</RouterLink>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Gestão interna: organização do próprio CAESI ─────── -->
+      <div class="painel-secao">
+        <p class="painel-secao-titulo">Gestão interna</p>
+        <div class="painel-bento">
+
+          <!-- Tasks -->
+          <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--amarelo">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--amarelo" v-html="checkCircleIcon"></span>
+              <div class="bento-header-text">
+                <span class="bento-title">Tasks</span>
+                <span class="geral-row-badge ok">
+                  {{ tasksAndamento > 0 ? `${tasksAndamento} em andamento` : 'Nenhuma em andamento' }}
+                </span>
               </div>
             </div>
-          </div>
-          <RouterLink to="/admin/tasks" class="bento-link">Ver tasks →</RouterLink>
-        </div>
-
-        <!-- Informações -->
-        <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--roxo-escuro">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--roxo-escuro" v-html="bookOpenIcon"></span>
-            <div class="bento-header-text">
-              <span class="bento-title">Informações</span>
-              <span class="geral-row-badge neutro">{{ totalInformacoes }} itens</span>
-            </div>
-          </div>
-          <div class="bento-body">
-            <div class="geral-row-stats">
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num">{{ editais.length }}</span>
-                <span class="geral-mini-label">Editais</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num">{{ professores.length }}</span>
-                <span class="geral-mini-label">Professores</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num">{{ laboratorios.length }}</span>
-                <span class="geral-mini-label">Laboratórios</span>
-              </div>
-              <div class="geral-mini-stat">
-                <span class="geral-mini-num">{{ artefatos.length }}</span>
-                <span class="geral-mini-label">Portal</span>
+            <div class="bento-body">
+              <div class="geral-row-stats">
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--cinza);">{{ tasksPendentes }}</span>
+                  <span class="geral-mini-label">Pendentes</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--roxo);">{{ tasksAndamento }}</span>
+                  <span class="geral-mini-label">Em andamento</span>
+                </div>
+                <div class="geral-mini-stat">
+                  <span class="geral-mini-num" style="color:var(--verde);">{{ tasksConcluidas }}</span>
+                  <span class="geral-mini-label">Concluídas</span>
+                </div>
               </div>
             </div>
+            <RouterLink to="/admin/tasks" class="bento-link">Ver tasks →</RouterLink>
           </div>
-          <RouterLink to="/admin/portal" class="bento-link">Ver Portal →</RouterLink>
-        </div>
 
-        <!-- Equipe -->
-        <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--vermelho">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--vermelho" v-html="usersIcon"></span>
-            <div class="bento-header-text">
-              <span class="bento-title">Equipe</span>
-            </div>
-          </div>
-          <div class="bento-body">
-            <div class="geral-equipe-grid">
-              <div v-for="a in membros" :key="a.id" class="geral-equipe-chip">
-                <span class="geral-chip-dir">{{ a.periodo || '—' }}</span>
-                <span class="geral-chip-nome" :class="{ vazio: !a.nome }">{{ a.nome || '—' }}</span>
-              </div>
-              <div v-if="membros.length === 0" style="font-size:0.82rem;color:var(--cinza);">
-                Nenhum membro cadastrado.
+          <!-- Equipe -->
+          <div class="paper paper-sm bento-tile bento-tile--wide bento-tile--vermelho">
+            <div class="bento-header">
+              <span class="bento-icon bento-icon--vermelho" v-html="usersIcon"></span>
+              <div class="bento-header-text">
+                <span class="bento-title">Equipe</span>
               </div>
             </div>
+            <div class="bento-body">
+              <div class="geral-equipe-grid">
+                <div v-for="a in membros" :key="a.id" class="geral-equipe-chip">
+                  <span class="geral-chip-dir">{{ a.periodo || '—' }}</span>
+                  <span class="geral-chip-nome" :class="{ vazio: !a.nome }">{{ a.nome || '—' }}</span>
+                </div>
+                <div v-if="membros.length === 0" style="font-size:0.82rem;color:var(--cinza);">
+                  Nenhum membro cadastrado.
+                </div>
+              </div>
+            </div>
+            <RouterLink to="/sobre?editar=1" class="bento-link">Editar →</RouterLink>
           </div>
-          <RouterLink to="/sobre?editar=1" class="bento-link">Editar →</RouterLink>
-        </div>
 
-        <!-- Mural -->
-        <div class="paper paper-sm bento-tile bento-tile--verde">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--verde" v-html="bellIcon"></span>
-            <span class="bento-title">Mural</span>
-          </div>
-          <div class="bento-stat-solo">
-            <span class="geral-mini-num">{{ publicacoes.length }}</span>
-            <span class="geral-mini-label">publicaç{{ publicacoes.length === 1 ? 'ão' : 'ões' }}</span>
-          </div>
-          <RouterLink to="/mural" class="bento-link">Ver mural →</RouterLink>
         </div>
-
-        <!-- Calendário -->
-        <div class="paper paper-sm bento-tile bento-tile--roxo">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--roxo" v-html="calendarIcon"></span>
-            <span class="bento-title">Calendário</span>
-          </div>
-          <div class="bento-stat-solo">
-            <span class="geral-mini-num">{{ eventos.length }}</span>
-            <span class="geral-mini-label">
-              {{ proximosEventos.length > 0 ? `${proximosEventos.length} próximo${proximosEventos.length > 1 ? 's' : ''}` : 'nenhum próximo' }}
-            </span>
-          </div>
-          <RouterLink to="/#calendario" class="bento-link">Ver calendário →</RouterLink>
-        </div>
-
-        <!-- Mapa -->
-        <div class="paper paper-sm bento-tile bento-tile--amarelo">
-          <div class="bento-header">
-            <span class="bento-icon bento-icon--amarelo" v-html="mapPinIcon"></span>
-            <span class="bento-title">Mapa</span>
-          </div>
-          <div class="bento-stat-solo">
-            <span class="geral-mini-num">{{ estruturas.length }}</span>
-            <span class="geral-mini-label">estrutura{{ estruturas.length === 1 ? '' : 's' }}</span>
-          </div>
-          <RouterLink to="/mapa" class="bento-link">Ver mapa →</RouterLink>
-        </div>
-
       </div>
     </div>
   </div>
