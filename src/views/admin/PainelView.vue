@@ -7,7 +7,7 @@ import {
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement,
 } from 'chart.js'
 import { mensagens } from '../../stores/mensagens.js'
-import { admins } from '../../stores/equipe.js'
+import { membros } from '../../stores/equipe.js'
 import { formularios, inscricoes } from '../../stores/formularios.js'
 import { tasks } from '../../stores/tasks.js'
 import { publicacoes } from '../../stores/mural.js'
@@ -359,12 +359,12 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
             <span class="geral-row-title">Equipe</span>
           </div>
           <div class="geral-equipe-grid">
-            <div v-for="a in admins" :key="a.id" class="geral-equipe-chip">
+            <div v-for="a in membros" :key="a.id" class="geral-equipe-chip">
               <span class="geral-chip-dir">{{ a.periodo || '—' }}</span>
               <span class="geral-chip-nome" :class="{ vazio: !a.nome }">{{ a.nome || '—' }}</span>
             </div>
-            <div v-if="admins.length === 0" style="font-size:0.82rem;color:var(--cinza);">
-              Nenhum admin cadastrado.
+            <div v-if="membros.length === 0" style="font-size:0.82rem;color:var(--cinza);">
+              Nenhum membro cadastrado.
             </div>
           </div>
           <RouterLink to="/admin/equipe" class="geral-row-link">Editar →</RouterLink>

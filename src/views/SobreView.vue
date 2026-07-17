@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
@@ -8,8 +8,12 @@ import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
-import { admins, descricaoGestao, gestaoInfo, periodoFormatado, historicoGestoes, historicoVisivel } from '../stores/equipe.js'
+import { membros, descricaoGestao, gestaoInfo, periodoFormatado, historicoGestoes, historicoVisivel, missaoTexto, contatoInfo } from '../stores/equipe.js'
 import { CENTRO_PADRAO } from '../stores/mapa.js'
+import { markdownParaHtmlSeguro } from '../utils/markdown.js'
+
+const missaoHtml = computed(() => markdownParaHtmlSeguro(missaoTexto.value))
+function descricaoHtml(texto) { return markdownParaHtmlSeguro(texto) }
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
@@ -56,18 +60,7 @@ onBeforeUnmount(() => { mapaMini?.remove() })
       <div class="paper paper-mb-lg">
         <h2 class="paper-title">Nossa história e missão</h2>
         <div class="sobre-missao-grid">
-          <div>
-            <p style="font-size:0.95rem;color:var(--preto);line-height:1.75;margin-bottom:1.2rem;">
-              O CAESI, Centro Acadêmico de Ciência da Computação, é a entidade estudantil
-              que representa os alunos do curso de Ciência da Computação da UFCG. Nossa missão é defender
-              os direitos e interesses dos estudantes, promover a integração acadêmica e facilitar a comunicação
-              entre o corpo discente e a instituição.
-            </p>
-            <p style="font-size:0.95rem;color:var(--preto);line-height:1.75;">
-              A ouvidoria é um dos nossos canais mais importantes: um espaço para que qualquer aluno possa
-              relatar problemas, sugerir melhorias ou entrar em contato com o CAESI de forma segura, inclusive anônima.
-            </p>
-          </div>
+          <div class="sobre-missao-texto" v-html="missaoHtml"></div>
           <div class="sobre-img-placeholder">
             <span v-html="cameraIcon"></span>
             <p>Foto histórica ou da sala do CAESI</p>
@@ -90,11 +83,11 @@ onBeforeUnmount(() => { mapaMini?.remove() })
 
         <h3 class="equipe-titulo">Conheça a gente</h3>
 
-        <div v-if="admins.length === 0" style="font-size:0.9rem;color:var(--cinza);padding:0.5rem 0;">
-          Nenhum administrador cadastrado ainda.
+        <div v-if="membros.length === 0" style="font-size:0.9rem;color:var(--cinza);padding:0.5rem 0;">
+          Nenhum membro cadastrado ainda.
         </div>
         <div v-else class="equipe-grid">
-          <div v-for="a in admins" :key="a.id" class="membro-card">
+          <div v-for="a in membros" :key="a.id" class="membro-card">
             <div class="membro-avatar">
               <img v-if="a.foto" :src="a.foto" :alt="a.nome" class="membro-foto">
               <span v-else class="membro-inicial">{{ a.nome?.[0]?.toUpperCase() || '?' }}</span>
@@ -103,7 +96,7 @@ onBeforeUnmount(() => { mapaMini?.remove() })
             <div v-if="a.diretoria" class="membro-periodo">{{ a.diretoria }}</div>
             <div v-else-if="a.periodo" class="membro-periodo">{{ a.periodo }}</div>
             <div v-if="a.email" class="membro-email">{{ a.email }}</div>
-            <div v-if="a.descricao" class="membro-desc">{{ a.descricao }}</div>
+            <div v-if="a.descricao" class="membro-desc" v-html="descricaoHtml(a.descricao)"></div>
             <div v-if="a.linkedin || a.git || a.lattes" class="membro-links">
               <a v-if="a.linkedin" :href="a.linkedin" target="_blank" rel="noopener" class="membro-link">LinkedIn</a>
               <a v-if="a.git"      :href="a.git"      target="_blank" rel="noopener" class="membro-link">GitHub</a>
@@ -148,18 +141,18 @@ onBeforeUnmount(() => { mapaMini?.remove() })
           <div class="contato-info-lista">
             <div class="contato-info-item">
               <span class="contato-info-icon" v-html="mapPinIcon"></span>
-              <span class="contato-info-texto">Sala do CAESI — Bloco CP, UFCG, Campina Grande – PB</span>
+              <span class="contato-info-texto">{{ contatoInfo.endereco }}</span>
             </div>
             <div class="contato-info-item">
               <span class="contato-info-icon" v-html="mailIcon"></span>
               <span class="contato-info-texto">
-                <a href="mailto:caesi@ccc.ufcg.edu.br" class="contato-info-link">caesi@ccc.ufcg.edu.br</a>
+                <a :href="`mailto:${contatoInfo.email}`" class="contato-info-link">{{ contatoInfo.email }}</a>
               </span>
             </div>
             <div class="contato-info-item">
               <span class="contato-info-icon" v-html="instagramIcon"></span>
               <span class="contato-info-texto">
-                <a href="https://instagram.com/caesiufcg" target="_blank" rel="noopener" class="contato-info-link">@caesiufcg</a>
+                <a :href="`https://instagram.com/${contatoInfo.instagram}`" target="_blank" rel="noopener" class="contato-info-link">@{{ contatoInfo.instagram }}</a>
                 no Instagram
               </span>
             </div>
@@ -217,6 +210,13 @@ onBeforeUnmount(() => { mapaMini?.remove() })
   gap: 1.5rem;
   align-items: stretch;
 }
+
+.sobre-missao-texto { font-size: 0.95rem; color: var(--preto); line-height: 1.75; }
+.sobre-missao-texto :deep(p) { margin: 0 0 1.2rem; }
+.sobre-missao-texto :deep(p:last-child) { margin-bottom: 0; }
+.sobre-missao-texto :deep(a) { color: var(--roxo-escuro); font-weight: 600; }
+.sobre-missao-texto :deep(ul),
+.sobre-missao-texto :deep(ol) { margin: 0 0 1.2rem; padding-left: 1.4rem; }
 
 .sobre-img-placeholder {
   display: flex;
@@ -329,6 +329,8 @@ onBeforeUnmount(() => { mapaMini?.remove() })
   margin-top: 6px;
   text-align: center;
 }
+.membro-desc :deep(p) { margin: 0 0 6px; }
+.membro-desc :deep(p:last-child) { margin-bottom: 0; }
 
 .membro-links {
   display: flex;

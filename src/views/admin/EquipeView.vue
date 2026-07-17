@@ -3,15 +3,34 @@ import { ref } from 'vue'
 import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
 import {
-  admins, addAdmin, removeAdmin, updateAdmin,
+  membros, addMembro, removeMembro, updateMembro,
   descricaoGestao, saveDescricao, gestaoInfo, saveInfo, MESES,
   historicoGestoes, historicoVisivel, setHistoricoVisivel,
   arquivarGestaoAtual, removerGestaoHistorico, adicionarGestaoManual,
+  missaoTexto, saveMissao, contatoInfo, saveContato,
 } from '../../stores/equipe.js'
 import { showToast } from '../../stores/toast.js'
 import { isEmail, isUrl, isValidImageFile } from '../../utils/validation.js'
 import pencilIcon from '../../assets/icons/pencil.svg?raw'
 import xIcon     from '../../assets/icons/x.svg?raw'
+
+// --- Missão e história ---
+const missao = ref(missaoTexto.value)
+function salvarMissao() {
+  saveMissao(missao.value.trim())
+  showToast('Missão atualizada.', 'success')
+}
+
+// --- Contato ---
+const contato = ref({ ...contatoInfo.value })
+function salvarContato() {
+  saveContato({
+    endereco:  contato.value.endereco.trim(),
+    email:     contato.value.email.trim(),
+    instagram: contato.value.instagram.trim().replace(/^@/, ''),
+  })
+  showToast('Contato atualizado.', 'success')
+}
 
 // --- Informações da gestão ---
 const info     = ref({ ...gestaoInfo.value })
@@ -94,19 +113,19 @@ function salvarEdicao() {
   if (validarUrlOpcional(editForm.value.lattes))   e.lattes   = true
   errorsEdit.value = e
   if (Object.keys(e).length) return
-  updateAdmin(editandoId.value, { ...editForm.value })
-  showToast('Admin atualizado.', 'success')
+  updateMembro(editandoId.value, { ...editForm.value })
+  showToast('Membro atualizado.', 'success')
   cancelarEdicao()
 }
 
 function confirmarRemocao(id, nome) {
   if (confirm(`Remover "${nome}" da equipe?`)) {
     if (editandoId.value === id) cancelarEdicao()
-    removeAdmin(id)
+    removeMembro(id)
   }
 }
 
-// --- Adicionar novo admin ---
+// --- Adicionar novo membro ---
 const mostraFormAdd = ref(false)
 const formAdd = ref({ nome: '', email: '', diretoria: '', periodo: '', foto: '', descricao: '', linkedin: '', git: '', lattes: '' })
 const errorsAdd  = ref({})
@@ -132,7 +151,7 @@ async function onFotoAdd(e) {
 
 function removerFotoAdd() { formAdd.value.foto = '' }
 
-function cadastrarAdmin() {
+function cadastrarMembro() {
   const e = {}
   if (!formAdd.value.nome.trim())  e.nome  = true
   if (!isEmail(formAdd.value.email)) e.email = true
@@ -141,8 +160,8 @@ function cadastrarAdmin() {
   if (validarUrlOpcional(formAdd.value.lattes))   e.lattes   = true
   errorsAdd.value = e
   if (Object.keys(e).length) return
-  addAdmin({ ...formAdd.value })
-  showToast(`Senha gerada e enviada para ${formAdd.value.email}`, 'success')
+  addMembro({ ...formAdd.value })
+  showToast('Membro cadastrado.', 'success')
   resetFormAdd()
   mostraFormAdd.value = false
 }
@@ -234,6 +253,17 @@ function comprimirImagem(file) {
         <h2>Gestão da <span>Equipe</span></h2>
       </div>
 
+      <!-- Missão e história -->
+      <div class="paper paper-mb">
+        <p class="secao-sep" style="margin-top:0;">Missão e história</p>
+        <div class="field">
+          <label for="missao-texto">Texto exibido em "Nossa história e missão"</label>
+          <textarea id="missao-texto" v-model="missao" rows="6" placeholder="Conte a história e a missão do CAESI…"></textarea>
+          <p class="field-hint" style="margin-top:4px;">Suporta Markdown: **negrito**, *itálico*, listas, links…</p>
+        </div>
+        <button class="btn btn-primary" @click="salvarMissao">Salvar missão →</button>
+      </div>
+
       <!-- Informações da gestão -->
       <div class="paper paper-mb">
         <p class="secao-sep">Informações da gestão</p>
@@ -282,19 +312,19 @@ function comprimirImagem(file) {
         <button class="btn btn-primary" @click="salvarInfo">Salvar informações →</button>
       </div>
 
-      <!-- Header de administradores -->
+      <!-- Header de membros -->
       <div class="admins-header">
-        <p class="label-sm" style="font-size:0.78rem;">Administradores</p>
+        <p class="label-sm" style="font-size:0.78rem;">Membros</p>
         <button class="btn btn-outline btn-sm" @click="toggleFormAdd">
-          {{ mostraFormAdd ? 'Cancelar' : '+ Adicionar admin' }}
+          {{ mostraFormAdd ? 'Cancelar' : '+ Adicionar membro' }}
         </button>
       </div>
 
       <!-- Formulário de adição -->
       <div v-if="mostraFormAdd" class="paper paper-mb add-form-box">
-        <p class="secao-sep">Novo administrador</p>
+        <p class="secao-sep">Novo membro</p>
         <p style="font-size:0.82rem;color:var(--cinza);margin-bottom:1.2rem;line-height:1.6;">
-          Uma senha aleatória será gerada e enviada ao e-mail do administrador no primeiro acesso.
+          Esse membro aparece na página Sobre — ele não tem acesso ao painel administrativo.
         </p>
 
         <div class="admin-form-grid">
@@ -306,7 +336,7 @@ function comprimirImagem(file) {
           </div>
           <div class="field">
             <label>E-mail *</label>
-            <input v-model="formAdd.email" type="email" placeholder="admin@email.com"
+            <input v-model="formAdd.email" type="email" placeholder="membro@email.com"
               :class="{ invalid: errorsAdd.email }">
             <span class="error-msg">Informe um e-mail válido.</span>
           </div>
@@ -360,18 +390,18 @@ function comprimirImagem(file) {
         </div>
 
         <div class="btn-row" style="margin-top:0.4rem;">
-          <button class="btn btn-primary" @click="cadastrarAdmin">Cadastrar admin →</button>
+          <button class="btn btn-primary" @click="cadastrarMembro">Cadastrar membro →</button>
           <button class="btn btn-outline btn-sm" @click="toggleFormAdd">Cancelar</button>
         </div>
       </div>
 
-      <!-- Lista de admins -->
-      <div v-if="admins.length === 0 && !mostraFormAdd" class="empty-state">
-        <p>Nenhum administrador cadastrado ainda.</p>
-        <span>Clique em "+ Adicionar admin" para começar.</span>
+      <!-- Lista de membros -->
+      <div v-if="membros.length === 0 && !mostraFormAdd" class="empty-state">
+        <p>Nenhum membro cadastrado ainda.</p>
+        <span>Clique em "+ Adicionar membro" para começar.</span>
       </div>
 
-      <div v-for="admin in admins" :key="admin.id" class="paper paper-mb admin-card">
+      <div v-for="admin in membros" :key="admin.id" class="paper paper-mb admin-card">
 
         <!-- Modo visualização -->
         <template v-if="editandoId !== admin.id">
@@ -400,7 +430,7 @@ function comprimirImagem(file) {
 
         <!-- Modo edição -->
         <template v-else>
-          <p class="secao-sep" style="margin-top:0;">Editar administrador</p>
+          <p class="secao-sep" style="margin-top:0;">Editar membro</p>
 
           <div class="admin-form-grid">
             <div class="field">
@@ -560,6 +590,26 @@ function comprimirImagem(file) {
         <p v-else-if="!confirmandoArquivar && !mostraFormManual" style="font-size:0.85rem;color:var(--cinza);margin-top:1rem;">
           Nenhuma gestão arquivada ainda.
         </p>
+      </div>
+
+      <!-- Contato -->
+      <div class="paper" style="margin-top:1.2rem;">
+        <p class="secao-sep" style="margin-top:0;">Onde nos encontrar</p>
+        <div class="admin-form-grid">
+          <div class="field">
+            <label for="contato-endereco">Endereço</label>
+            <input id="contato-endereco" v-model="contato.endereco" type="text" placeholder="Ex.: Sala do CAESI — Bloco CP, UFCG">
+          </div>
+          <div class="field">
+            <label for="contato-email">E-mail</label>
+            <input id="contato-email" v-model="contato.email" type="email" placeholder="caesi@ccc.ufcg.edu.br">
+          </div>
+          <div class="field">
+            <label for="contato-instagram">Instagram <span class="field-hint">(sem @)</span></label>
+            <input id="contato-instagram" v-model="contato.instagram" type="text" placeholder="caesiufcg">
+          </div>
+        </div>
+        <button class="btn btn-primary" @click="salvarContato">Salvar contato →</button>
       </div>
 
     </div>
