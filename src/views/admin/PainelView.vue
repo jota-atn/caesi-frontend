@@ -348,7 +348,7 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
               <span class="geral-mini-label">Portal</span>
             </div>
           </div>
-          <RouterLink to="/admin/informacoes" class="geral-row-link">Ver informações →</RouterLink>
+          <RouterLink to="/admin/portal" class="geral-row-link">Ver Portal →</RouterLink>
         </div>
 
         <div class="geral-divider" />
