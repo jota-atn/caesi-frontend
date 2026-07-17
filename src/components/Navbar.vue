@@ -51,7 +51,7 @@ function ariaCurrent(path) {
 
 <template>
   <nav class="navbar">
-    <RouterLink to="/" class="navbar-brand">
+    <RouterLink :to="isAdmin ? '/admin/painel' : '/'" class="navbar-brand">
       <div class="logo-circle">
         <img src="/logo_caesi.png" alt="CAESI" class="logo-img">
       </div>
