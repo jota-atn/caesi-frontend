@@ -319,7 +319,7 @@ const temDados = computed(() => mensagens.value.length > 0 || inscricoes.value.l
               {{ estruturas.length }} estrutura{{ estruturas.length === 1 ? '' : 's' }}
             </span>
           </div>
-          <RouterLink to="/admin/mapa" class="geral-row-link">Ver mapa →</RouterLink>
+          <RouterLink to="/mapa" class="geral-row-link">Ver mapa →</RouterLink>
         </div>
 
         <div class="geral-divider" />

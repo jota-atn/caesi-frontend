@@ -10,8 +10,30 @@ import { isAdmin } from '../stores/auth.js'
 import { estruturas, CENTRO_PADRAO, addEstrutura, updateEstrutura, removeEstrutura } from '../stores/mapa.js'
 import { useEscapeKey } from '../composables/useEscapeKey.js'
 import { showToast } from '../stores/toast.js'
+import { isValidImageFile } from '../utils/validation.js'
 import crosshairIcon from '../assets/icons/crosshair.svg?raw'
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
+
+function comprimirImagem(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader()
+    reader.onload = ev => {
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 900
+        let w = img.width, h = img.height
+        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX }
+        else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
+        const canvas = document.createElement('canvas')
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.src = ev.target.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
@@ -25,9 +47,33 @@ const buscaMapa = ref('')
 const estruturaModal = ref(null)
 const imagemAtivaIdx = ref(0)
 const estruturaModoEdicao = ref(false)
-const estruturaEditForm = ref({ nome: '', descricao: '' })
+const estruturaEditForm = ref({ nome: '', descricao: '', imagens: [] })
 const novaEstruturaModal = ref(null) // { lat, lng } quando admin está criando
-const novaEstruturaForm = ref({ nome: '', descricao: '' })
+const novaEstruturaForm = ref({ nome: '', descricao: '', imagens: [] })
+const fileNovaRef = ref(null)
+const fileEditRef = ref(null)
+
+async function onImagensNova(e) {
+  let invalido = false
+  for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
+    novaEstruturaForm.value.imagens.push(await comprimirImagem(file))
+  }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
+  e.target.value = ''
+}
+function removerImagemNova(i) { novaEstruturaForm.value.imagens.splice(i, 1) }
+
+async function onImagensEdit(e) {
+  let invalido = false
+  for (const file of e.target.files) {
+    if (!isValidImageFile(file)) { invalido = true; continue }
+    estruturaEditForm.value.imagens.push(await comprimirImagem(file))
+  }
+  if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
+  e.target.value = ''
+}
+function removerImagemEdit(i) { estruturaEditForm.value.imagens.splice(i, 1) }
 
 const resultadosBusca = computed(() => {
   const t = buscaMapa.value.toLowerCase().trim()
@@ -52,18 +98,25 @@ function fecharModal() { estruturaModal.value = null; estruturaModoEdicao.value 
 
 // ── Admin: editar/excluir estrutura ──────────────────────
 function iniciarEdicaoEstrutura() {
-  estruturaEditForm.value = { nome: estruturaModal.value.nome, descricao: estruturaModal.value.descricao ?? '' }
+  estruturaEditForm.value = {
+    nome: estruturaModal.value.nome,
+    descricao: estruturaModal.value.descricao ?? '',
+    imagens: [...(estruturaModal.value.imagens ?? [])],
+  }
   estruturaModoEdicao.value = true
 }
 function cancelarEdicaoEstrutura() { estruturaModoEdicao.value = false }
 
 function salvarEdicaoEstrutura() {
   if (!estruturaEditForm.value.nome.trim()) { showToast('Informe o nome da estrutura.', 'error'); return }
-  updateEstrutura(estruturaModal.value.id, {
+  const dados = {
     nome: estruturaEditForm.value.nome.trim(),
     descricao: estruturaEditForm.value.descricao.trim(),
-  })
-  estruturaModal.value = { ...estruturaModal.value, nome: estruturaEditForm.value.nome.trim(), descricao: estruturaEditForm.value.descricao.trim() }
+    imagens: [...estruturaEditForm.value.imagens],
+  }
+  updateEstrutura(estruturaModal.value.id, dados)
+  estruturaModal.value = { ...estruturaModal.value, ...dados }
+  imagemAtivaIdx.value = 0
   estruturaModoEdicao.value = false
   showToast('Estrutura atualizada.', 'success')
 }
@@ -86,6 +139,7 @@ function salvarNovaEstrutura() {
     descricao: novaEstruturaForm.value.descricao.trim(),
     lat: novaEstruturaModal.value.lat,
     lng: novaEstruturaModal.value.lng,
+    imagens: [...novaEstruturaForm.value.imagens],
   })
   showToast('Estrutura adicionada ao mapa.', 'success')
   novaEstruturaModal.value = null
@@ -124,7 +178,7 @@ onMounted(() => {
 
   if (isAdmin.value) {
     mapa.on('click', (ev) => {
-      novaEstruturaForm.value = { nome: '', descricao: '' }
+      novaEstruturaForm.value = { nome: '', descricao: '', imagens: [] }
       novaEstruturaModal.value = { lat: arredonda(ev.latlng.lat), lng: arredonda(ev.latlng.lng) }
     })
   }
@@ -255,6 +309,17 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
               <label>Descrição</label>
               <textarea v-model="estruturaEditForm.descricao" rows="3"></textarea>
             </div>
+            <div class="field">
+              <label>Imagens <span class="field-hint">(opcional)</span></label>
+              <button type="button" class="btn-foto" @click="fileEditRef.click()">+ Adicionar imagens</button>
+              <input ref="fileEditRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensEdit">
+              <div v-if="estruturaEditForm.imagens.length > 0" class="imagens-preview">
+                <div v-for="(img, i) in estruturaEditForm.imagens" :key="i" class="img-thumb-wrap">
+                  <img :src="img" class="img-thumb" :alt="`Imagem ${i+1}`">
+                  <button type="button" class="img-thumb-remove" @click="removerImagemEdit(i)">×</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="modal-actions">
             <button class="btn btn-outline btn-sm" @click="cancelarEdicaoEstrutura">Cancelar</button>
@@ -279,6 +344,17 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
             <label>Descrição <span class="field-hint">(opcional)</span></label>
             <textarea v-model="novaEstruturaForm.descricao" rows="3" placeholder="O que tem aqui…"></textarea>
           </div>
+          <div class="field">
+            <label>Imagens <span class="field-hint">(opcional)</span></label>
+            <button type="button" class="btn-foto" @click="fileNovaRef.click()">+ Adicionar imagens</button>
+            <input ref="fileNovaRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensNova">
+            <div v-if="novaEstruturaForm.imagens.length > 0" class="imagens-preview">
+              <div v-for="(img, i) in novaEstruturaForm.imagens" :key="i" class="img-thumb-wrap">
+                <img :src="img" class="img-thumb" :alt="`Imagem ${i+1}`">
+                <button type="button" class="img-thumb-remove" @click="removerImagemNova(i)">×</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="modal-actions">
           <button class="btn btn-outline btn-sm" @click="fecharNovaEstruturaModal">Cancelar</button>
@@ -288,3 +364,57 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
     </div>
   </Teleport>
 </template>
+
+<style scoped>
+.btn-foto {
+  padding: 7px 14px;
+  background: var(--branco);
+  border: 2px dashed var(--roxo);
+  border-radius: 2px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.84rem;
+  color: var(--roxo-escuro);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-foto:hover { background: rgba(80,64,160,0.07); }
+
+.imagens-preview {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.img-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.img-thumb {
+  width: 74px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1.5px solid var(--creme-escuro);
+  display: block;
+}
+
+.img-thumb-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--preto);
+  color: var(--branco);
+  border: none;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

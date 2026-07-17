@@ -29,7 +29,6 @@ const routes = [
   { path: '/admin/tasks',            component: () => import('../views/admin/TasksView.vue'),               meta: { admin: true } },
   { path: '/admin/mural',           component: () => import('../views/admin/MuralView.vue'),               meta: { admin: true } },
   { path: '/admin/portal',          component: () => import('../views/admin/PortalView.vue'),               meta: { admin: true } },
-  { path: '/admin/mapa',            component: () => import('../views/admin/MapaView.vue'),                 meta: { admin: true } },
   { path: '/admin/informacoes',                  component: () => import('../views/admin/InformacoesView.vue'),               meta: { admin: true } },
   { path: '/admin/informacoes/editais',          component: () => import('../views/admin/InformacoesEditaisView.vue'),        meta: { admin: true } },
   { path: '/admin/informacoes/tamburetei',       component: () => import('../views/admin/InformacoesTamburereiView.vue'),     meta: { admin: true } },
