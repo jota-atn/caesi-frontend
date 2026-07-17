@@ -130,6 +130,7 @@ onUnmounted(() => document.removeEventListener('click', onClickFora))
         <RouterLink to="/admin/formularios" class="nav-link" :aria-current="ariaCurrent('/admin/formularios')" @click="fecharTudo">Formulários</RouterLink>
         <RouterLink to="/admin/tasks"       class="nav-link" :aria-current="ariaCurrent('/admin/tasks')"       @click="fecharTudo">Tasks</RouterLink>
         <RouterLink to="/admin/equipe"      class="nav-link" :aria-current="ariaCurrent('/admin/equipe')"      @click="fecharTudo">Equipe</RouterLink>
+        <RouterLink to="/sobre"             class="nav-link" :aria-current="ariaCurrent('/sobre')"             @click="fecharTudo">Sobre</RouterLink>
 
         <div class="nav-dropdown" :class="{ open: conteudoOpen }" ref="dropdownRef" @keydown="onDropdownKeydown">
           <button type="button" ref="triggerRef" class="nav-link nav-dropdown-trigger" :class="{ 'router-link-active': conteudoAtivo }"
@@ -151,6 +152,8 @@ onUnmounted(() => document.removeEventListener('click', onClickFora))
 
       <!-- Público -->
       <template v-else>
+        <RouterLink to="/sobre"       class="nav-link" :aria-current="ariaCurrent('/sobre')"       @click="menuOpen = false">Sobre</RouterLink>
+        <RouterLink to="/ouvidoria"   class="nav-link" :aria-current="ariaCurrent('/ouvidoria')"   @click="menuOpen = false">Ouvidoria</RouterLink>
         <RouterLink to="/mural"       class="nav-link" :aria-current="ariaCurrent('/mural')"       @click="menuOpen = false">Mural</RouterLink>
         <RouterLink to="/informacoes" class="nav-link" :aria-current="ariaCurrent('/informacoes')" @click="menuOpen = false">Informações</RouterLink>
         <RouterLink to="/formularios" class="nav-link" :aria-current="ariaCurrent('/formularios')" @click="menuOpen = false">Formulários</RouterLink>
