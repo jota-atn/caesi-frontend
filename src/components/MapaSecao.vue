@@ -44,14 +44,20 @@ let mapa = null
 const mapaMarkers = new Map()
 
 const buscaMapa = ref('')
+
+// ── Público: modal de visualização (não-admin) ───────────
 const estruturaModal = ref(null)
 const imagemAtivaIdx = ref(0)
-const estruturaModoEdicao = ref(false)
+
+// ── Admin: painel lateral de edição (substitui modal) ────
+const selecionadoId = ref(null) // id da estrutura em edição no painel lateral
+const pendingPoint  = ref(null) // { lat, lng } de um clique em ponto vazio, aguardando "Nova estrutura"
 const estruturaEditForm = ref({ nome: '', descricao: '', imagens: [] })
-const novaEstruturaModal = ref(null) // { lat, lng } quando admin está criando
 const novaEstruturaForm = ref({ nome: '', descricao: '', imagens: [] })
 const fileNovaRef = ref(null)
 const fileEditRef = ref(null)
+
+const estruturaSelecionada = computed(() => estruturas.value.find(e => e.id === selecionadoId.value) ?? null)
 
 async function onImagensNova(e) {
   let invalido = false
@@ -88,61 +94,63 @@ function rotaUrl(e) {
 function arredonda(n) { return Math.round(n * 1e6) / 1e6 }
 
 function abrirEstrutura(e) {
-  estruturaModal.value = e
-  imagemAtivaIdx.value = 0
-  estruturaModoEdicao.value = false
+  if (isAdmin.value) {
+    pendingPoint.value = null
+    selecionadoId.value = e.id
+    estruturaEditForm.value = {
+      nome: e.nome,
+      descricao: e.descricao ?? '',
+      imagens: [...(e.imagens ?? [])],
+    }
+  } else {
+    estruturaModal.value = e
+    imagemAtivaIdx.value = 0
+  }
   if (mapa) mapa.flyTo([e.lat, e.lng], 18, { duration: 0.6 })
 }
 
-function fecharModal() { estruturaModal.value = null; estruturaModoEdicao.value = false }
+function fecharModal() { estruturaModal.value = null }
 
-// ── Admin: editar/excluir estrutura ──────────────────────
-function iniciarEdicaoEstrutura() {
-  estruturaEditForm.value = {
-    nome: estruturaModal.value.nome,
-    descricao: estruturaModal.value.descricao ?? '',
-    imagens: [...(estruturaModal.value.imagens ?? [])],
-  }
-  estruturaModoEdicao.value = true
+// ── Admin: painel lateral — editar/excluir estrutura ─────
+function cancelarSelecao() {
+  selecionadoId.value = null
+  pendingPoint.value = null
 }
-function cancelarEdicaoEstrutura() { estruturaModoEdicao.value = false }
 
 function salvarEdicaoEstrutura() {
+  if (!selecionadoId.value) return
   if (!estruturaEditForm.value.nome.trim()) { showToast('Informe o nome da estrutura.', 'error'); return }
-  const dados = {
+  updateEstrutura(selecionadoId.value, {
     nome: estruturaEditForm.value.nome.trim(),
     descricao: estruturaEditForm.value.descricao.trim(),
     imagens: [...estruturaEditForm.value.imagens],
-  }
-  updateEstrutura(estruturaModal.value.id, dados)
-  estruturaModal.value = { ...estruturaModal.value, ...dados }
-  imagemAtivaIdx.value = 0
-  estruturaModoEdicao.value = false
+  })
   showToast('Estrutura atualizada.', 'success')
 }
 
 function excluirEstrutura() {
-  if (!confirm(`Remover "${estruturaModal.value.nome}" do mapa?`)) return
-  removeEstrutura(estruturaModal.value.id)
+  if (!estruturaSelecionada.value) return
+  if (!confirm(`Remover "${estruturaSelecionada.value.nome}" do mapa?`)) return
+  removeEstrutura(selecionadoId.value)
   showToast('Estrutura removida.', 'info')
-  fecharModal()
+  cancelarSelecao()
 }
 
-// ── Admin: criar estrutura clicando num ponto vazio ──────
-function fecharNovaEstruturaModal() { novaEstruturaModal.value = null }
-
+// ── Admin: painel lateral — criar estrutura clicando num ponto vazio ──
 function salvarNovaEstrutura() {
-  if (!novaEstruturaModal.value) return
+  if (!pendingPoint.value) return
   if (!novaEstruturaForm.value.nome.trim()) { showToast('Informe o nome da estrutura.', 'error'); return }
-  addEstrutura({
+  const nova = addEstrutura({
     nome: novaEstruturaForm.value.nome.trim(),
     descricao: novaEstruturaForm.value.descricao.trim(),
-    lat: novaEstruturaModal.value.lat,
-    lng: novaEstruturaModal.value.lng,
+    lat: pendingPoint.value.lat,
+    lng: pendingPoint.value.lng,
     imagens: [...novaEstruturaForm.value.imagens],
   })
   showToast('Estrutura adicionada ao mapa.', 'success')
-  novaEstruturaModal.value = null
+  pendingPoint.value = null
+  // Segue direto pro modo de edição da estrutura recém-criada.
+  if (nova?.id) abrirEstrutura(nova)
 }
 
 function renderMapaMarkers() {
@@ -178,8 +186,9 @@ onMounted(() => {
 
   if (isAdmin.value) {
     mapa.on('click', (ev) => {
+      selecionadoId.value = null
       novaEstruturaForm.value = { nome: '', descricao: '', imagens: [] }
-      novaEstruturaModal.value = { lat: arredonda(ev.latlng.lat), lng: arredonda(ev.latlng.lng) }
+      pendingPoint.value = { lat: arredonda(ev.latlng.lat), lng: arredonda(ev.latlng.lng) }
     })
   }
 
@@ -199,10 +208,10 @@ watch(estruturas, () => renderMapaMarkers())
 
 onBeforeUnmount(() => { mapa?.remove() })
 
-// ── Modais: fechar com Esc e travar o scroll enquanto algum estiver aberto ──
-useEscapeKey(() => { fecharModal(); fecharNovaEstruturaModal() })
+// ── Modal público: fechar com Esc e travar o scroll enquanto estiver aberto ──
+useEscapeKey(() => { fecharModal(); cancelarSelecao() })
 
-const algumModalAberto = computed(() => !!estruturaModal.value || !!novaEstruturaModal.value)
+const algumModalAberto = computed(() => !!estruturaModal.value)
 watch(algumModalAberto, (aberto) => {
   document.body.style.overflow = aberto ? 'hidden' : ''
 })
@@ -238,104 +247,15 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
           </button>
         </div>
         <p style="font-size:0.78rem;color:var(--cinza);margin-top:0.8rem;">
-          <template v-if="isAdmin">Clique num ponto vazio pra adicionar uma estrutura, ou num pin pra ver/editar. Arraste um pin pra reposicionar.</template>
+          <template v-if="isAdmin">Clique num ponto vazio pra adicionar uma estrutura — o formulário aparece ao lado. Clique num pin pra editar. Arraste um pin pra reposicionar.</template>
           <template v-else>Clique num ponto do mapa pra ver os detalhes da estrutura.</template>
         </p>
       </div>
 
       <div class="paper mapa-lista-paper">
-        <p class="label-sm" style="margin-bottom:0.6rem;">Estruturas ({{ estruturas.length }})</p>
-        <div class="mapa-lista">
-          <button
-            v-for="e in estruturas" :key="e.id"
-            class="mapa-item"
-            :class="{ 'mapa-item--ativo': estruturaModal?.id === e.id }"
-            @click="abrirEstrutura(e)"
-          >
-            <span class="mapa-item-icon" v-html="mapPinIcon"></span>
-            <span class="mapa-item-nome">{{ e.nome }}</span>
-          </button>
-        </div>
-        <div v-if="estruturas.length === 0" class="empty-state" style="padding:1.6rem 1rem;">
-          <p>Nenhuma estrutura cadastrada ainda.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Modal: detalhe/edição da estrutura -->
-  <Teleport to="body">
-    <div v-if="estruturaModal" class="modal-overlay" @click.self="fecharModal">
-      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-estrutura-title" v-focus-trap>
-        <template v-if="!estruturaModoEdicao">
-          <div class="modal-title" id="modal-estrutura-title">{{ estruturaModal.nome }}</div>
-          <div class="modal-body">
-            <div v-if="estruturaModal.imagens?.length" class="mapa-modal-galeria">
-              <img :src="estruturaModal.imagens[imagemAtivaIdx]" :alt="estruturaModal.nome" class="mapa-modal-hero">
-              <div v-if="estruturaModal.imagens.length > 1" class="mapa-modal-thumbs">
-                <button
-                  v-for="(img, i) in estruturaModal.imagens" :key="i"
-                  class="mapa-modal-thumb-btn"
-                  :class="{ 'mapa-modal-thumb-btn--ativo': i === imagemAtivaIdx }"
-                  @click="imagemAtivaIdx = i"
-                >
-                  <img :src="img" :alt="`Imagem ${i + 1}`" class="mapa-modal-thumb-img">
-                </button>
-              </div>
-            </div>
-            <p v-if="estruturaModal.descricao">{{ estruturaModal.descricao }}</p>
-            <p v-else style="color:var(--cinza);font-style:italic;">Sem descrição cadastrada.</p>
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-outline btn-sm" @click="fecharModal">Fechar</button>
-            <template v-if="isAdmin">
-              <button class="btn btn-outline btn-sm" @click="iniciarEdicaoEstrutura">Editar</button>
-              <button class="btn btn-danger btn-sm" @click="excluirEstrutura">Excluir</button>
-            </template>
-            <a :href="rotaUrl(estruturaModal)" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
-              Ver rota →
-            </a>
-          </div>
-        </template>
-
-        <template v-else>
-          <div class="modal-title">Editar estrutura</div>
-          <div class="modal-body">
-            <div class="field">
-              <label>Nome *</label>
-              <input v-model="estruturaEditForm.nome" type="text" maxlength="80">
-            </div>
-            <div class="field">
-              <label>Descrição</label>
-              <textarea v-model="estruturaEditForm.descricao" rows="3"></textarea>
-            </div>
-            <div class="field">
-              <label>Imagens <span class="field-hint">(opcional)</span></label>
-              <button type="button" class="btn-foto" @click="fileEditRef.click()">+ Adicionar imagens</button>
-              <input ref="fileEditRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensEdit">
-              <div v-if="estruturaEditForm.imagens.length > 0" class="imagens-preview">
-                <div v-for="(img, i) in estruturaEditForm.imagens" :key="i" class="img-thumb-wrap">
-                  <img :src="img" class="img-thumb" :alt="`Imagem ${i+1}`">
-                  <button type="button" class="img-thumb-remove" @click="removerImagemEdit(i)">×</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button class="btn btn-outline btn-sm" @click="cancelarEdicaoEstrutura">Cancelar</button>
-            <button class="btn btn-primary btn-sm" @click="salvarEdicaoEstrutura">Salvar →</button>
-          </div>
-        </template>
-      </div>
-    </div>
-  </Teleport>
-
-  <!-- Modal: nova estrutura (admin) -->
-  <Teleport to="body">
-    <div v-if="novaEstruturaModal" class="modal-overlay" @click.self="fecharNovaEstruturaModal">
-      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-nova-estrutura-title" v-focus-trap>
-        <div class="modal-title" id="modal-nova-estrutura-title">Nova estrutura</div>
-        <div class="modal-body">
+        <!-- Admin: form de nova estrutura (clicou num ponto vazio) -->
+        <template v-if="isAdmin && pendingPoint">
+          <p class="label-sm" style="margin-bottom:0.9rem;">Nova estrutura</p>
           <div class="field">
             <label>Nome *</label>
             <input v-model="novaEstruturaForm.nome" type="text" maxlength="80" placeholder="Ex.: Bloco CP">
@@ -355,10 +275,90 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
               </div>
             </div>
           </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" @click="salvarNovaEstrutura">Salvar →</button>
+            <button class="btn btn-outline btn-sm" @click="cancelarSelecao">Cancelar</button>
+          </div>
+        </template>
+
+        <!-- Admin: form de edição da estrutura selecionada -->
+        <template v-else-if="isAdmin && estruturaSelecionada">
+          <p class="label-sm" style="margin-bottom:0.9rem;">Editar estrutura</p>
+          <div class="field">
+            <label>Nome *</label>
+            <input v-model="estruturaEditForm.nome" type="text" maxlength="80">
+          </div>
+          <div class="field">
+            <label>Descrição</label>
+            <textarea v-model="estruturaEditForm.descricao" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label>Imagens <span class="field-hint">(opcional)</span></label>
+            <button type="button" class="btn-foto" @click="fileEditRef.click()">+ Adicionar imagens</button>
+            <input ref="fileEditRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensEdit">
+            <div v-if="estruturaEditForm.imagens.length > 0" class="imagens-preview">
+              <div v-for="(img, i) in estruturaEditForm.imagens" :key="i" class="img-thumb-wrap">
+                <img :src="img" class="img-thumb" :alt="`Imagem ${i+1}`">
+                <button type="button" class="img-thumb-remove" @click="removerImagemEdit(i)">×</button>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" @click="salvarEdicaoEstrutura">Salvar →</button>
+            <button class="btn btn-outline btn-sm" @click="cancelarSelecao">Fechar</button>
+            <button class="btn btn-danger btn-sm" @click="excluirEstrutura">Excluir</button>
+          </div>
+        </template>
+
+        <!-- Lista de estruturas -->
+        <template v-else>
+          <p class="label-sm" style="margin-bottom:0.6rem;">Estruturas ({{ estruturas.length }})</p>
+          <div class="mapa-lista">
+            <button
+              v-for="e in estruturas" :key="e.id"
+              class="mapa-item"
+              :class="{ 'mapa-item--ativo': (isAdmin ? selecionadoId : estruturaModal?.id) === e.id }"
+              @click="abrirEstrutura(e)"
+            >
+              <span class="mapa-item-icon" v-html="mapPinIcon"></span>
+              <span class="mapa-item-nome">{{ e.nome }}</span>
+            </button>
+          </div>
+          <div v-if="estruturas.length === 0" class="empty-state" style="padding:1.6rem 1rem;">
+            <p>Nenhuma estrutura cadastrada ainda.</p>
+          </div>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal: detalhe da estrutura (público — admin edita no painel lateral) -->
+  <Teleport to="body">
+    <div v-if="estruturaModal" class="modal-overlay" @click.self="fecharModal">
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-estrutura-title" v-focus-trap>
+        <div class="modal-title" id="modal-estrutura-title">{{ estruturaModal.nome }}</div>
+        <div class="modal-body">
+          <div v-if="estruturaModal.imagens?.length" class="mapa-modal-galeria">
+            <img :src="estruturaModal.imagens[imagemAtivaIdx]" :alt="estruturaModal.nome" class="mapa-modal-hero">
+            <div v-if="estruturaModal.imagens.length > 1" class="mapa-modal-thumbs">
+              <button
+                v-for="(img, i) in estruturaModal.imagens" :key="i"
+                class="mapa-modal-thumb-btn"
+                :class="{ 'mapa-modal-thumb-btn--ativo': i === imagemAtivaIdx }"
+                @click="imagemAtivaIdx = i"
+              >
+                <img :src="img" :alt="`Imagem ${i + 1}`" class="mapa-modal-thumb-img">
+              </button>
+            </div>
+          </div>
+          <p v-if="estruturaModal.descricao">{{ estruturaModal.descricao }}</p>
+          <p v-else style="color:var(--cinza);font-style:italic;">Sem descrição cadastrada.</p>
         </div>
         <div class="modal-actions">
-          <button class="btn btn-outline btn-sm" @click="fecharNovaEstruturaModal">Cancelar</button>
-          <button class="btn btn-primary btn-sm" @click="salvarNovaEstrutura">Salvar →</button>
+          <button class="btn btn-outline btn-sm" @click="fecharModal">Fechar</button>
+          <a :href="rotaUrl(estruturaModal)" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+            Ver rota →
+          </a>
         </div>
       </div>
     </div>
