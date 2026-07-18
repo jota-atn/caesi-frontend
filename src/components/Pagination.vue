@@ -1,12 +1,17 @@
-<script setup>
-const props = defineProps({
-  page:       { type: Number, required: true },
-  totalPages: { type: Number, required: true },
-})
-defineEmits(['prev', 'next', 'goto'])
+<script setup lang="ts">
+const props = defineProps<{
+  page: number
+  totalPages: number
+}>()
 
-function visiblePages() {
-  const pages = []
+defineEmits<{
+  prev: []
+  next: []
+  goto: [page: number]
+}>()
+
+function visiblePages(): (number | '...')[] {
+  const pages: (number | '...')[] = []
   for (let i = 1; i <= props.totalPages; i++) {
     if (i === 1 || i === props.totalPages || Math.abs(i - props.page) <= 1) {
       pages.push(i)

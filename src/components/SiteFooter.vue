@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 import mailIcon from '../assets/icons/mail.svg?raw'
 import instagramIcon from '../assets/icons/instagram.svg?raw'

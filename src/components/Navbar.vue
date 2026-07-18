@@ -1,18 +1,27 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAdmin, logout } from '../stores/auth.ts'
 import { cobrinhaZerada } from '../stores/conquistas.ts'
 import awardIcon from '../assets/icons/award.svg?raw'
 
+interface Confete {
+  id: number
+  cor: string
+  dx: number
+  dy: number
+  rot: number
+  atraso: number
+}
+
 const menuOpen = ref(false)
 
 const CORES_CONFETE = ['roxo', 'roxo-escuro', 'vermelho', 'verde', 'creme']
-const confetes = ref([])
+const confetes = ref<Confete[]>([])
 let proximoIdConfete = 1
 
 function explodirConfete() {
-  const novos = Array.from({ length: 14 }, () => {
+  const novos: Confete[] = Array.from({ length: 14 }, () => {
     const angulo = Math.random() * 360
     const distancia = 30 + Math.random() * 26
     return {
@@ -39,7 +48,7 @@ function handleLogout() {
   router.push('/')
 }
 
-function ariaCurrent(path) {
+function ariaCurrent(path: string) {
   return route.path === path || route.path.startsWith(path + '/') ? 'page' : undefined
 }
 </script>
