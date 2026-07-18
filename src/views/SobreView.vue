@@ -18,7 +18,7 @@ import {
   missaoTexto, saveMissao, missaoImagem, saveMissaoImagem, contatoInfo, saveContato, periodoFormatado,
   secoesCustom, addSecao, updateSecao, removeSecao, moverSecao,
 } from '../stores/equipe.js'
-import { CENTRO_PADRAO } from '../stores/mapa.js'
+import { CENTRO_PADRAO } from '../stores/mapa.ts'
 import { markdownParaHtmlSeguro } from '../utils/markdown.js'
 import { isAdmin } from '../stores/auth.js'
 import { showToast } from '../stores/toast.ts'

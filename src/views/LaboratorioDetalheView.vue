@@ -8,7 +8,7 @@ import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
 import { laboratorios } from '../stores/informacoes.js'
-import { estruturas } from '../stores/mapa.js'
+import { estruturas } from '../stores/mapa.ts'
 
 const route = useRoute()
 
