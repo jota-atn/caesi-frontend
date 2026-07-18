@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
@@ -7,6 +7,7 @@ import { useEscapeKey } from '../../composables/useEscapeKey.ts'
 import {
   tasks, criarTask, editarTask, excluirTask, atualizarStatus,
   membros, addMembro, removeMembro,
+  type Task, type Membro, type StatusTask, type PrioridadeTask, type CategoriaTask,
 } from '../../stores/tasks.ts'
 import pencilIcon   from '../../assets/icons/pencil.svg?raw'
 import xIcon        from '../../assets/icons/x.svg?raw'
@@ -19,13 +20,13 @@ import calendarIcon from '../../assets/icons/calendar.svg?raw'
 // ── Membros ───────────────────────────────────────────────
 const adicionandoMembro = ref(false)
 const novoMembroNome    = ref('')
-const confirmarRmMembro = ref(null)
+const confirmarRmMembro = ref<Membro | null>(null)
 
-function nomeMembro(id) {
+function nomeMembro(id: string) {
   return membros.value.find(m => m.id === id)?.nome ?? '?'
 }
 
-function iniciaisNome(nome) {
+function iniciaisNome(nome: string) {
   return nome.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2)
 }
 
@@ -40,15 +41,16 @@ function adicionarMembro() {
   showToast('Membro adicionado.', 'success')
 }
 
-function confirmarRemover(m) { confirmarRmMembro.value = m }
+function confirmarRemover(m: Membro) { confirmarRmMembro.value = m }
 
 function removerConfirmado() {
+  if (!confirmarRmMembro.value) return
   removeMembro(confirmarRmMembro.value.id)
   showToast(`${confirmarRmMembro.value.nome} removido.`, 'info')
   confirmarRmMembro.value = null
 }
 
-async function copiarLink(token) {
+async function copiarLink(token: string) {
   const url = `${window.location.origin}/workspace/${token}`
   try {
     await navigator.clipboard.writeText(url)
@@ -81,11 +83,9 @@ const tasksFiltradas = computed(() => {
   return lista
 })
 
-function sortTasks(lista) {
-  return lista.slice().sort((a, b) => {
-    const ord = { alta: 0, media: 1, baixa: 2 }
-    return ord[a.prioridade] - ord[b.prioridade]
-  })
+function sortTasks(lista: Task[]) {
+  const ord: Record<PrioridadeTask, number> = { alta: 0, media: 1, baixa: 2 }
+  return lista.slice().sort((a, b) => ord[a.prioridade] - ord[b.prioridade])
 }
 
 const kanbanCols = computed(() => ({
@@ -102,21 +102,25 @@ const contagem = computed(() => ({
 }))
 
 // ── Mover status ──────────────────────────────────────────
-const NEXT_STATUS = { pendente: 'em-andamento', 'em-andamento': 'concluida', concluida: 'em-andamento' }
-const NEXT_LABEL  = { pendente: '→ Iniciar', 'em-andamento': '→ Concluir', concluida: '↩ Reabrir' }
+const NEXT_STATUS: Record<StatusTask, StatusTask> = { pendente: 'em-andamento', 'em-andamento': 'concluida', concluida: 'em-andamento' }
+const NEXT_LABEL: Record<StatusTask, string>       = { pendente: '→ Iniciar', 'em-andamento': '→ Concluir', concluida: '↩ Reabrir' }
 
-function moverStatus(task) {
+function moverStatus(task: Task) {
   atualizarStatus(task.id, NEXT_STATUS[task.status])
 }
 
 // ── Modal: criar / editar ─────────────────────────────────
 const modalForm  = ref(false)
-const editandoId = ref(null)
+const editandoId = ref<string | null>(null)
 
-const form = ref({
-  titulo: '', descricao: '', prioridade: 'media',
-  prazo: '', categoria: 'gestao', alocados: [], selecionavel: false,
-})
+function formVazio() {
+  return {
+    titulo: '', descricao: '', prioridade: 'media' as PrioridadeTask,
+    prazo: '', categoria: 'gestao' as CategoriaTask, alocados: [] as string[], selecionavel: false,
+  }
+}
+
+const form = ref(formVazio())
 
 const editandoTask = computed(() =>
   editandoId.value ? tasks.value.find(t => t.id === editandoId.value) : null
@@ -127,16 +131,16 @@ const anotacoesDoTask = computed(() => {
   if (!t?.anotacoes) return []
   return Object.entries(t.anotacoes)
     .map(([membroId, a]) => ({ nome: nomeMembro(membroId), ...a }))
-    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
 })
 
 function abrirCriar() {
   editandoId.value = null
-  form.value = { titulo: '', descricao: '', prioridade: 'media', prazo: '', categoria: 'gestao', alocados: [], selecionavel: false }
+  form.value = formVazio()
   modalForm.value = true
 }
 
-function abrirEditar(task) {
+function abrirEditar(task: Task) {
   editandoId.value = task.id
   form.value = {
     titulo:       task.titulo,
@@ -150,7 +154,7 @@ function abrirEditar(task) {
   modalForm.value = true
 }
 
-function toggleAlocado(id) {
+function toggleAlocado(id: string) {
   const idx = form.value.alocados.indexOf(id)
   if (idx === -1) form.value.alocados.push(id)
   else form.value.alocados.splice(idx, 1)
@@ -169,43 +173,43 @@ function salvarTask() {
 }
 
 // ── Modal: confirmar exclusão ─────────────────────────────
-const modalExcluir = ref(null)
+const modalExcluir = ref<Task | null>(null)
 
-function confirmarExcluir(task) { modalExcluir.value = task }
+function confirmarExcluir(task: Task) { modalExcluir.value = task }
 
 function excluirConfirmado() {
+  if (!modalExcluir.value) return
   excluirTask(modalExcluir.value.id)
   showToast('Task excluída.', 'info')
   modalExcluir.value = null
 }
 
 // ── Helpers visuais ───────────────────────────────────────
-const labelPrioridade = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }
-const labelCategoria  = { gestao: 'Gestão', formularios: 'Formulários', ouvidoria: 'Ouvidoria' }
-const labelStatus     = { pendente: 'Pendente', 'em-andamento': 'Em andamento', concluida: 'Concluída' }
+const labelPrioridade: Record<string, string> = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }
+const labelCategoria: Record<string, string>  = { gestao: 'Gestão', formularios: 'Formulários', ouvidoria: 'Ouvidoria' }
 
-function prazoFormatado(prazo) {
+function prazoFormatado(prazo: string) {
   const [ano, mes, dia] = prazo.split('-')
   return `${dia}/${mes}/${ano}`
 }
 
-function prazoAlerta(prazo) {
+function prazoAlerta(prazo: string) {
   if (!prazo) return null
   const hoje = new Date(); hoje.setHours(0,0,0,0)
   const d    = new Date(prazo + 'T00:00:00')
-  const diff = (d - hoje) / 86400000
+  const diff = (d.getTime() - hoje.getTime()) / 86400000
   return diff < 0 ? 'vencida' : diff <= 3 ? 'proxima' : null
 }
 
-function totalAnotacoes(task) {
+function totalAnotacoes(task: Task) {
   return Object.keys(task.anotacoes || {}).length
 }
 
-function tasksPorMembro(id) {
+function tasksPorMembro(id: string) {
   return tasks.value.filter(t => t.alocados.includes(id)).length
 }
 
-function formatDate(iso) {
+function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
