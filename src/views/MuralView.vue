@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { marked } from 'marked'
 import Navbar from '../components/Navbar.vue'
@@ -8,12 +8,12 @@ import Pagination from '../components/Pagination.vue'
 import { usePagination } from '../composables/usePagination.ts'
 import { usePersistedFilter } from '../composables/usePersistedFilter.ts'
 import { useEscapeKey } from '../composables/useEscapeKey.ts'
-import { publicacoes, addPublicacao, updatePublicacao, deletePublicacao } from '../stores/mural.ts'
+import { publicacoes, addPublicacao, updatePublicacao, deletePublicacao, type Publicacao } from '../stores/mural.ts'
 import { isAdmin } from '../stores/auth.ts'
 import { showToast } from '../stores/toast.ts'
 import { isValidImageFile } from '../utils/validation.ts'
 
-function comprimirImagem(file) {
+function comprimirImagem(file: File): Promise<string> {
   return new Promise(resolve => {
     const reader = new FileReader()
     reader.onload = ev => {
@@ -25,34 +25,35 @@ function comprimirImagem(file) {
         else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
         const canvas = document.createElement('canvas')
         canvas.width = w; canvas.height = h
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
         resolve(canvas.toDataURL('image/jpeg', 0.82))
       }
-      img.src = ev.target.result
+      img.src = ev.target!.result as string
     }
     reader.readAsDataURL(file)
   })
 }
 
-function validarTitulo(titulo)     { return titulo.trim().length < 3     ? 'Título obrigatório (mín. 3 caracteres).'     : '' }
-function validarMensagem(mensagem) { return mensagem.trim().length < 10 ? 'Mensagem obrigatória (mín. 10 caracteres).' : '' }
+function validarTitulo(titulo: string)     { return titulo.trim().length < 3     ? 'Título obrigatório (mín. 3 caracteres).'     : '' }
+function validarMensagem(mensagem: string) { return mensagem.trim().length < 10 ? 'Mensagem obrigatória (mín. 10 caracteres).' : '' }
 
 // ── Admin: publicar nova ──────────────────────────────────
 const mostrarForm = ref(false)
-const fileAddRef  = ref(null)
-const formAdd = reactive({ titulo: '', tipo: '', mensagem: '', imagens: [] })
+const fileAddRef  = ref<HTMLInputElement | null>(null)
+const formAdd = reactive({ titulo: '', tipo: '', mensagem: '', imagens: [] as string[] })
 const erros   = reactive({ titulo: '', mensagem: '' })
 
-async function onImagensAdd(e) {
+async function onImagensAdd(e: Event) {
   let invalido = false
-  for (const file of e.target.files) {
+  const files = (e.target as HTMLInputElement).files
+  for (const file of files ?? []) {
     if (!isValidImageFile(file)) { invalido = true; continue }
     formAdd.imagens.push(await comprimirImagem(file))
   }
   if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
-  e.target.value = ''
+  ;(e.target as HTMLInputElement).value = ''
 }
-function removerImagemAdd(i) { formAdd.imagens.splice(i, 1) }
+function removerImagemAdd(i: number) { formAdd.imagens.splice(i, 1) }
 
 function publicar() {
   erros.titulo   = validarTitulo(formAdd.titulo)
@@ -71,12 +72,12 @@ function cancelarAdd() {
 }
 
 // ── Admin: editar/excluir publicação (via modal) ──────────
-const editModal  = ref(null)
-const fileEditRef = ref(null)
-const formEdit  = reactive({ titulo: '', tipo: '', mensagem: '', imagens: [] })
+const editModal  = ref<Publicacao | null>(null)
+const fileEditRef = ref<HTMLInputElement | null>(null)
+const formEdit  = reactive({ titulo: '', tipo: '', mensagem: '', imagens: [] as string[] })
 const errosEdit = reactive({ titulo: '', mensagem: '' })
 
-function abrirEdit(p) {
+function abrirEdit(p: Publicacao) {
   errosEdit.titulo = errosEdit.mensagem = ''
   Object.assign(formEdit, {
     titulo:   p.titulo,
@@ -88,21 +89,23 @@ function abrirEdit(p) {
 }
 function fecharEdit() { editModal.value = null }
 
-async function onImagensEdit(e) {
+async function onImagensEdit(e: Event) {
   let invalido = false
-  for (const file of e.target.files) {
+  const files = (e.target as HTMLInputElement).files
+  for (const file of files ?? []) {
     if (!isValidImageFile(file)) { invalido = true; continue }
     formEdit.imagens.push(await comprimirImagem(file))
   }
   if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
-  e.target.value = ''
+  ;(e.target as HTMLInputElement).value = ''
 }
-function removerImagemEdit(i) { formEdit.imagens.splice(i, 1) }
+function removerImagemEdit(i: number) { formEdit.imagens.splice(i, 1) }
 
 function salvarEdit() {
   errosEdit.titulo   = validarTitulo(formEdit.titulo)
   errosEdit.mensagem = validarMensagem(formEdit.mensagem)
   if (errosEdit.titulo || errosEdit.mensagem) return
+  if (!editModal.value) return
   updatePublicacao(editModal.value.id, {
     titulo:   formEdit.titulo.trim(),
     tipo:     formEdit.tipo.trim(),
@@ -113,7 +116,7 @@ function salvarEdit() {
   showToast('Publicação atualizada.', 'success')
 }
 
-function excluir(p) {
+function excluir(p: Publicacao) {
   if (!confirm(`Remover "${p.titulo}" do mural?`)) return
   deletePublicacao(p.id)
   showToast('Publicação removida.', 'info')
@@ -150,7 +153,7 @@ const lista = computed(() => {
 
 const { page, totalPages, paginated, next, prev, goTo } = usePagination(lista, 12)
 
-function textoPlano(md) {
+function textoPlano(md: string) {
   const html = String(marked.parse(md || ''))
   return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
 }
@@ -195,7 +198,7 @@ function textoPlano(md) {
 
         <div class="field">
           <label class="label">Imagens</label>
-          <button type="button" class="btn-foto" @click="fileAddRef.click()">+ Adicionar imagens</button>
+          <button type="button" class="btn-foto" @click="fileAddRef?.click()">+ Adicionar imagens</button>
           <input ref="fileAddRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensAdd">
           <div v-if="formAdd.imagens.length > 0" class="imagens-preview">
             <div v-for="(img, i) in formAdd.imagens" :key="i" class="img-thumb-wrap">
@@ -304,7 +307,7 @@ function textoPlano(md) {
             </div>
             <div class="field">
               <label>Imagens</label>
-              <button type="button" class="btn-foto" @click="fileEditRef.click()">+ Adicionar imagens</button>
+              <button type="button" class="btn-foto" @click="fileEditRef?.click()">+ Adicionar imagens</button>
               <input ref="fileEditRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensEdit">
               <div v-if="formEdit.imagens.length > 0" class="imagens-preview">
                 <div v-for="(img, i) in formEdit.imagens" :key="i" class="img-thumb-wrap">
