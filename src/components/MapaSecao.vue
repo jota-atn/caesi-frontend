@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import L from 'leaflet'
@@ -7,14 +7,14 @@ import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import { isAdmin } from '../stores/auth.ts'
-import { estruturas, CENTRO_PADRAO, addEstrutura, updateEstrutura, removeEstrutura } from '../stores/mapa.ts'
+import { estruturas, CENTRO_PADRAO, addEstrutura, updateEstrutura, removeEstrutura, type Estrutura } from '../stores/mapa.ts'
 import { useEscapeKey } from '../composables/useEscapeKey.ts'
 import { showToast } from '../stores/toast.ts'
 import { isValidImageFile } from '../utils/validation.ts'
 import crosshairIcon from '../assets/icons/crosshair.svg?raw'
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
 
-function comprimirImagem(file) {
+function comprimirImagem(file: File): Promise<string> {
   return new Promise(resolve => {
     const reader = new FileReader()
     reader.onload = ev => {
@@ -26,60 +26,73 @@ function comprimirImagem(file) {
         else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
         const canvas = document.createElement('canvas')
         canvas.width = w; canvas.height = h
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
         resolve(canvas.toDataURL('image/jpeg', 0.82))
       }
-      img.src = ev.target.result
+      img.src = ev.target!.result as string
     }
     reader.readAsDataURL(file)
   })
 }
 
-delete L.Icon.Default.prototype._getIconUrl
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
 
+interface EstruturaFormRascunho {
+  nome: string
+  descricao: string
+  imagens: string[]
+}
+
+interface PendingPoint {
+  lat: number
+  lng: number
+}
+
 const route = useRoute()
-const mapaEl = ref(null)
-let mapa = null
-const mapaMarkers = new Map()
+const mapaEl = ref<HTMLElement | null>(null)
+let mapa: L.Map | null = null
+const mapaMarkers = new Map<number, L.Marker>()
 
 const buscaMapa = ref('')
 
 // ── Público: modal de visualização (não-admin) ───────────
-const estruturaModal = ref(null)
+const estruturaModal = ref<Estrutura | null>(null)
 const imagemAtivaIdx = ref(0)
 
 // ── Admin: painel lateral de edição (substitui modal) ────
-const selecionadoId = ref(null) // id da estrutura em edição no painel lateral
-const pendingPoint  = ref(null) // { lat, lng } de um clique em ponto vazio, aguardando "Nova estrutura"
-const estruturaEditForm = ref({ nome: '', descricao: '', imagens: [] })
-const novaEstruturaForm = ref({ nome: '', descricao: '', imagens: [] })
-const fileNovaRef = ref(null)
-const fileEditRef = ref(null)
+const selecionadoId = ref<number | null>(null) // id da estrutura em edição no painel lateral
+const pendingPoint  = ref<PendingPoint | null>(null) // ponto vazio clicado, aguardando "Nova estrutura"
+const estruturaEditForm = ref<EstruturaFormRascunho>({ nome: '', descricao: '', imagens: [] })
+const novaEstruturaForm = ref<EstruturaFormRascunho>({ nome: '', descricao: '', imagens: [] })
+const fileNovaRef = ref<HTMLInputElement | null>(null)
+const fileEditRef = ref<HTMLInputElement | null>(null)
 
 const estruturaSelecionada = computed(() => estruturas.value.find(e => e.id === selecionadoId.value) ?? null)
 
-async function onImagensNova(e) {
+async function onImagensNova(e: Event) {
   let invalido = false
-  for (const file of e.target.files) {
+  const files = (e.target as HTMLInputElement).files
+  for (const file of files ?? []) {
     if (!isValidImageFile(file)) { invalido = true; continue }
     novaEstruturaForm.value.imagens.push(await comprimirImagem(file))
   }
   if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
-  e.target.value = ''
+  ;(e.target as HTMLInputElement).value = ''
 }
-function removerImagemNova(i) { novaEstruturaForm.value.imagens.splice(i, 1) }
+function removerImagemNova(i: number) { novaEstruturaForm.value.imagens.splice(i, 1) }
 
-async function onImagensEdit(e) {
+async function onImagensEdit(e: Event) {
   let invalido = false
-  for (const file of e.target.files) {
+  const files = (e.target as HTMLInputElement).files
+  for (const file of files ?? []) {
     if (!isValidImageFile(file)) { invalido = true; continue }
     estruturaEditForm.value.imagens.push(await comprimirImagem(file))
   }
   if (invalido) showToast('Alguns arquivos foram ignorados (precisam ser imagens de até 8MB).', 'error')
-  e.target.value = ''
+  ;(e.target as HTMLInputElement).value = ''
 }
-function removerImagemEdit(i) { estruturaEditForm.value.imagens.splice(i, 1) }
+function removerImagemEdit(i: number) { estruturaEditForm.value.imagens.splice(i, 1) }
 
 const resultadosBusca = computed(() => {
   const t = buscaMapa.value.toLowerCase().trim()
@@ -87,13 +100,13 @@ const resultadosBusca = computed(() => {
   return estruturas.value.filter(e => e.nome.toLowerCase().includes(t))
 })
 
-function rotaUrl(e) {
+function rotaUrl(e: Estrutura) {
   return `https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}`
 }
 
-function arredonda(n) { return Math.round(n * 1e6) / 1e6 }
+function arredonda(n: number) { return Math.round(n * 1e6) / 1e6 }
 
-function abrirEstrutura(e) {
+function abrirEstrutura(e: Estrutura) {
   if (isAdmin.value) {
     pendingPoint.value = null
     selecionadoId.value = e.id
@@ -131,7 +144,7 @@ function salvarEdicaoEstrutura() {
 function excluirEstrutura() {
   if (!estruturaSelecionada.value) return
   if (!confirm(`Remover "${estruturaSelecionada.value.nome}" do mapa?`)) return
-  removeEstrutura(selecionadoId.value)
+  removeEstrutura(selecionadoId.value!)
   showToast('Estrutura removida.', 'info')
   cancelarSelecao()
 }
@@ -185,7 +198,7 @@ onMounted(() => {
   renderMapaMarkers()
 
   if (isAdmin.value) {
-    mapa.on('click', (ev) => {
+    mapa.on('click', (ev: L.LeafletMouseEvent) => {
       selecionadoId.value = null
       novaEstruturaForm.value = { nome: '', descricao: '', imagens: [] }
       pendingPoint.value = { lat: arredonda(ev.latlng.lat), lng: arredonda(ev.latlng.lng) }
@@ -266,7 +279,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
           </div>
           <div class="field">
             <label>Imagens <span class="field-hint">(opcional)</span></label>
-            <button type="button" class="btn-foto" @click="fileNovaRef.click()">+ Adicionar imagens</button>
+            <button type="button" class="btn-foto" @click="fileNovaRef?.click()">+ Adicionar imagens</button>
             <input ref="fileNovaRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensNova">
             <div v-if="novaEstruturaForm.imagens.length > 0" class="imagens-preview">
               <div v-for="(img, i) in novaEstruturaForm.imagens" :key="i" class="img-thumb-wrap">
@@ -294,7 +307,7 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
           </div>
           <div class="field">
             <label>Imagens <span class="field-hint">(opcional)</span></label>
-            <button type="button" class="btn-foto" @click="fileEditRef.click()">+ Adicionar imagens</button>
+            <button type="button" class="btn-foto" @click="fileEditRef?.click()">+ Adicionar imagens</button>
             <input ref="fileEditRef" type="file" accept="image/*" multiple style="display:none" @change="onImagensEdit">
             <div v-if="estruturaEditForm.imagens.length > 0" class="imagens-preview">
               <div v-for="(img, i) in estruturaEditForm.imagens" :key="i" class="img-thumb-wrap">
