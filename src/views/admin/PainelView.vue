@@ -9,7 +9,7 @@ import {
 import { mensagens } from '../../stores/mensagens.ts'
 import { membros } from '../../stores/equipe.js'
 import { formularios, inscricoes } from '../../stores/formularios.js'
-import { tasks } from '../../stores/tasks.js'
+import { tasks } from '../../stores/tasks.ts'
 import { publicacoes } from '../../stores/mural.ts'
 import { eventos, proximosEventos } from '../../stores/calendario.ts'
 import { estruturas } from '../../stores/mapa.ts'

@@ -7,7 +7,7 @@ import { useEscapeKey } from '../../composables/useEscapeKey.js'
 import {
   tasks, criarTask, editarTask, excluirTask, atualizarStatus,
   membros, addMembro, removeMembro,
-} from '../../stores/tasks.js'
+} from '../../stores/tasks.ts'
 import pencilIcon   from '../../assets/icons/pencil.svg?raw'
 import xIcon        from '../../assets/icons/x.svg?raw'
 import messageIcon  from '../../assets/icons/message.svg?raw'

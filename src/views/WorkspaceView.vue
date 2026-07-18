@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { tasks, membros, atualizarStatus, salvarAnotacao, autoAlocar } from '../stores/tasks.js'
+import { tasks, membros, atualizarStatus, salvarAnotacao, autoAlocar } from '../stores/tasks.ts'
 import { showToast } from '../stores/toast.ts'
 import lockIcon      from '../assets/icons/lock.svg?raw'
 import clipboardIcon from '../assets/icons/clipboard.svg?raw'
