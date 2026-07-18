@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import CalendarioSecao from '../components/CalendarioSecao.vue'
@@ -14,16 +14,16 @@ import mailIcon from '../assets/icons/mail.svg?raw'
 
 // ── Carrossel do Instagram (setas + arraste no clique) ───────
 import { ref } from 'vue'
-const instaScrollEl = ref(null)
+const instaScrollEl = ref<HTMLElement | null>(null)
 const instaDragging = ref(false)
 let instaStartX = 0
 let instaScrollStart = 0
 let instaMoved = false
 
-function instaScrollBy(dir) {
+function instaScrollBy(dir: number) {
   const el = instaScrollEl.value
   if (!el) return
-  const card = el.querySelector('.insta-card')
+  const card = el.querySelector<HTMLElement>('.insta-card')
   const passo = card ? card.offsetWidth + 16 : 260
   const maxScroll = el.scrollWidth - el.clientWidth
 
@@ -39,15 +39,15 @@ function instaScrollBy(dir) {
   el.scrollBy({ left: dir * passo, behavior: 'smooth' })
 }
 
-function instaDragStart(e) {
+function instaDragStart(e: MouseEvent) {
   if (!instaScrollEl.value) return
   instaDragging.value = true
   instaMoved = false
   instaStartX = e.pageX
   instaScrollStart = instaScrollEl.value.scrollLeft
 }
-function instaDragMove(e) {
-  if (!instaDragging.value) return
+function instaDragMove(e: MouseEvent) {
+  if (!instaDragging.value || !instaScrollEl.value) return
   const dx = e.pageX - instaStartX
   if (Math.abs(dx) > 4) instaMoved = true
   instaScrollEl.value.scrollLeft = instaScrollStart - dx
@@ -55,7 +55,7 @@ function instaDragMove(e) {
 function instaDragEnd() {
   instaDragging.value = false
 }
-function instaClickGuard(e) {
+function instaClickGuard(e: MouseEvent) {
   if (instaMoved) { e.preventDefault(); instaMoved = false }
 }
 
