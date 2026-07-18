@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import clipboardIcon from '../assets/icons/clipboard.svg?raw'
 import usersIcon     from '../assets/icons/users.svg?raw'
 import userIcon      from '../assets/icons/user.svg?raw'
@@ -25,6 +26,7 @@ const secoes = computed(() => [
 
 const busca = ref('')
 const termo = computed(() => busca.value.trim().toLowerCase())
+const tituloSemResultado = computed(() => `Nenhum resultado para "${busca.value.trim()}".`)
 
 const resultados = computed(() => {
   if (termo.value.length < 2) return []
@@ -68,9 +70,7 @@ const resultados = computed(() => {
       >
 
       <template v-if="termo.length >= 2">
-        <div v-if="resultados.length === 0" class="empty-state">
-          <p>Nenhum resultado para "{{ busca.trim() }}".</p>
-        </div>
+        <EmptyState v-if="resultados.length === 0" :title="tituloSemResultado" />
         <div v-else class="busca-resultados">
           <RouterLink v-for="(r, i) in resultados" :key="i" :to="r.to" class="busca-resultado-item">
             <span class="busca-resultado-tipo">{{ r.tipo }}</span>
@@ -103,12 +103,6 @@ const resultados = computed(() => {
   outline: none; transition: border-color 0.2s;
 }
 .mural-search:focus { border-color: var(--roxo); }
-
-.empty-state {
-  background: var(--creme); border: 2px solid var(--creme-escuro); border-radius: 2px;
-  padding: 3rem 2rem; text-align: center; box-shadow: 5px 5px 0 var(--roxo-escuro); margin-bottom: 1.4rem;
-}
-.empty-state p { font-size: 1rem; font-weight: 600; color: var(--preto); }
 
 .busca-resultados { display: flex; flex-direction: column; gap: 0.6rem; }
 

@@ -8,6 +8,7 @@ import paperclipIcon  from '../assets/icons/paperclip.svg?raw'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import Lightbox from '../components/Lightbox.vue'
 import { publicacoes } from '../stores/mural.ts'
 
@@ -43,10 +44,7 @@ const lightboxIdx = ref<number | null>(null)
 
     <div v-if="!publicacao" class="page-content">
       <BackLink to="/mural" style="margin-bottom:1.4rem;" />
-      <div class="empty-state">
-        <p>Publicação não encontrada.</p>
-        <span>Ela pode ter sido removida.</span>
-      </div>
+      <EmptyState title="Publicação não encontrada." subtitle="Ela pode ter sido removida." />
     </div>
 
     <template v-else>
@@ -479,16 +477,4 @@ const lightboxIdx = ref<number | null>(null)
   color: var(--cinza);
 }
 .pub-anexo-icon :deep(svg) { width: 15px; height: 15px; }
-
-/* ── Empty ────────────────────────────────────────── */
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-}
-.empty-state p    { font-size: 1rem; font-weight: 600; color: var(--preto); margin-bottom: 0.4rem; }
-.empty-state span { font-size: 0.85rem; color: var(--cinza); }
 </style>

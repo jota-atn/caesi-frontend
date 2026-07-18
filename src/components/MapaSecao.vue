@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Modal from './Modal.vue'
+import EmptyState from './EmptyState.vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
@@ -318,10 +319,12 @@ onBeforeUnmount(() => { document.body.style.overflow = '' })
               <span class="mapa-item-nome">{{ e.nome }}</span>
             </button>
           </div>
-          <div v-if="estruturas.length === 0" class="empty-state" style="padding:1.6rem 1rem;">
-            <p>Nenhuma estrutura cadastrada ainda.</p>
-            <span v-if="isAdmin">Clique no mapa para adicionar a estrutura.</span>
-          </div>
+          <EmptyState
+            v-if="estruturas.length === 0"
+            title="Nenhuma estrutura cadastrada ainda."
+            :subtitle="isAdmin ? 'Clique no mapa para adicionar a estrutura.' : undefined"
+            style="padding:1.6rem 1rem;"
+          />
         </template>
       </div>
     </div>

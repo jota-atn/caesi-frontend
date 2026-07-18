@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import paperclipIcon from '../assets/icons/paperclip.svg?raw'
 import { editais, addEdital, updateEdital, deleteEdital, type Edital } from '../stores/informacoes.ts'
 import { isAdmin } from '../stores/auth.ts'
@@ -158,9 +159,10 @@ function excluir(e: Edital) {
 
       <input v-model="busca" type="search" class="mural-search" placeholder="Buscar edital…" style="margin-bottom:1.2rem;">
 
-      <div v-if="lista.length === 0" class="empty-state">
-        <p>{{ editais.length === 0 ? 'Nenhum edital publicado ainda.' : 'Nenhum edital encontrado.' }}</p>
-      </div>
+      <EmptyState
+        v-if="lista.length === 0"
+        :title="editais.length === 0 ? 'Nenhum edital publicado ainda.' : 'Nenhum edital encontrado.'"
+      />
 
       <div class="evento-lista">
         <div v-for="e in lista" :key="e.id">
@@ -277,17 +279,6 @@ function excluir(e: Edital) {
 }
 .editais-anexo-icon { display: flex; align-items: center; }
 .editais-anexo-icon :deep(svg) { width: 14px; height: 14px; }
-
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-  margin-bottom: 1.4rem;
-}
-.empty-state p { font-size: 1rem; font-weight: 600; color: var(--preto); }
 
 /* ── Admin: form, edição inline e ações ───────────────────── */
 .evento-card--edit { cursor: default; }

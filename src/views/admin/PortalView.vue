@@ -2,6 +2,7 @@
 import { ref, reactive, computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
+import EmptyState from '../../components/EmptyState.vue'
 import { artefatos, addArtefato, updateArtefato, deleteArtefato, type Artefato } from '../../stores/portal.ts'
 import { showToast } from '../../stores/toast.ts'
 import paperclipIcon from '../../assets/icons/paperclip.svg?raw'
@@ -185,9 +186,10 @@ const lista = computed(() => {
       </div>
 
       <!-- Lista vazia -->
-      <div v-if="lista.length === 0" class="empty-state">
-        <p>{{ artefatos.length === 0 ? 'Nenhum artefato cadastrado ainda.' : 'Nenhum artefato encontrado.' }}</p>
-      </div>
+      <EmptyState
+        v-if="lista.length === 0"
+        :title="artefatos.length === 0 ? 'Nenhum artefato cadastrado ainda.' : 'Nenhum artefato encontrado.'"
+      />
 
       <!-- Cards -->
       <div v-for="a in lista" :key="a.id" class="pub-card">
@@ -372,14 +374,4 @@ const lista = computed(() => {
 
 .textarea { min-height: 120px; resize: vertical; max-height: 500px; }
 .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 0.8rem; }
-
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-}
-.empty-state p { font-size: 1rem; font-weight: 600; color: var(--preto); }
 </style>

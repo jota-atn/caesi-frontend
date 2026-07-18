@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
 import Modal from '../../components/Modal.vue'
+import EmptyState from '../../components/EmptyState.vue'
 import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados, aprovarCancelamento, recusarCancelamento, type Inscricao, type StatusComprovante } from '../../stores/formularios.ts'
 import { showToast } from '../../stores/toast.ts'
 import { useEscapeKey } from '../../composables/useEscapeKey.ts'
@@ -458,12 +459,8 @@ function excluirFormulario() {
           <button class="filter-btn" :class="{ active: filtroInsc === 'cancelamento' }" @click="filtroInsc = 'cancelamento'">Cancelamento</button>
         </div>
 
-        <div v-if="inscricoesDaForm.length === 0" class="empty-state" style="padding:1.5rem 0;">
-          <p>Nenhuma inscrição recebida ainda.</p>
-        </div>
-        <div v-else-if="inscricoesFiltradas.length === 0" class="empty-state" style="padding:1.5rem 0;">
-          <p>Nenhum resultado para este filtro.</p>
-        </div>
+        <EmptyState v-if="inscricoesDaForm.length === 0" title="Nenhuma inscrição recebida ainda." style="padding:1.5rem 0;" />
+        <EmptyState v-else-if="inscricoesFiltradas.length === 0" title="Nenhum resultado para este filtro." style="padding:1.5rem 0;" />
 
         <div
           v-for="inscricao in inscricoesPaginadas"

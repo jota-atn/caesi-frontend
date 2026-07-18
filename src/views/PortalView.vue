@@ -3,6 +3,7 @@ import { computed, watch } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import Pagination from '../components/Pagination.vue'
 import { usePagination } from '../composables/usePagination.ts'
 import { usePersistedFilter } from '../composables/usePersistedFilter.ts'
@@ -76,10 +77,11 @@ function formatData(data: string | null | undefined) {
       </div>
 
       <!-- Lista vazia -->
-      <div v-if="lista.length === 0" class="empty-state">
-        <p>{{ artefatos.length === 0 ? 'Nenhum artefato publicado ainda.' : 'Nenhum artefato encontrado.' }}</p>
-        <span v-if="artefatos.length > 0">Tente outro filtro ou termo de busca.</span>
-      </div>
+      <EmptyState
+        v-if="lista.length === 0"
+        :title="artefatos.length === 0 ? 'Nenhum artefato publicado ainda.' : 'Nenhum artefato encontrado.'"
+        :subtitle="artefatos.length > 0 ? 'Tente outro filtro ou termo de busca.' : undefined"
+      />
 
       <!-- Grid -->
       <div class="portal-grid">
@@ -221,16 +223,4 @@ function formatData(data: string | null | undefined) {
   font-family: 'Archivo Black', sans-serif;
   color: var(--verde);
 }
-
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-  margin-bottom: 1.4rem;
-}
-.empty-state p   { font-size: 1rem; font-weight: 600; color: var(--preto); margin-bottom: 0.4rem; }
-.empty-state span { font-size: 0.85rem; color: var(--cinza); }
 </style>

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import Modal from '../components/Modal.vue'
 import { laboratorios, addLaboratorio, updateLaboratorio, deleteLaboratorio, type Laboratorio } from '../stores/informacoes.ts'
 import { estruturas } from '../stores/mapa.ts'
@@ -250,9 +251,10 @@ useEscapeKey(() => fecharEdit())
 
       <input v-model="busca" type="search" class="mural-search" placeholder="Buscar laboratório…" style="margin-bottom:1.2rem;">
 
-      <div v-if="lista.length === 0" class="empty-state">
-        <p>{{ laboratorios.length === 0 ? 'Nenhum laboratório cadastrado ainda.' : 'Nenhum laboratório encontrado.' }}</p>
-      </div>
+      <EmptyState
+        v-if="lista.length === 0"
+        :title="laboratorios.length === 0 ? 'Nenhum laboratório cadastrado ainda.' : 'Nenhum laboratório encontrado.'"
+      />
 
       <div class="lab-grid">
         <RouterLink v-for="l in lista" :key="l.id" :to="`/informacoes/laboratorios/${l.id}`" class="lab-card">
@@ -406,12 +408,6 @@ useEscapeKey(() => fecharEdit())
 }
 .diretorio-local-icon { display: flex; align-items: center; }
 .diretorio-local-icon :deep(svg) { width: 13px; height: 13px; }
-
-.empty-state {
-  background: var(--creme); border: 2px solid var(--creme-escuro); border-radius: 2px;
-  padding: 3rem 2rem; text-align: center; box-shadow: 5px 5px 0 var(--roxo-escuro); margin-bottom: 1.4rem;
-}
-.empty-state p { font-size: 1rem; font-weight: 600; color: var(--preto); }
 
 /* ── Admin: form, modal de edição e ações ─────────────────── */
 .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 0.8rem; }

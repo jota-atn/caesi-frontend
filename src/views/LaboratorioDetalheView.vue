@@ -7,6 +7,7 @@ import mailIcon     from '../assets/icons/mail.svg?raw'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import Lightbox from '../components/Lightbox.vue'
 import { laboratorios } from '../stores/informacoes.ts'
 import { estruturas } from '../stores/mapa.ts'
@@ -38,10 +39,7 @@ const lightboxIdx = ref<number | null>(null)
 
     <div v-if="!laboratorio" class="page-content">
       <BackLink to="/informacoes/laboratorios" style="margin-bottom:1.4rem;" />
-      <div class="empty-state">
-        <p>Laboratório não encontrado.</p>
-        <span>Ele pode ter sido removido.</span>
-      </div>
+      <EmptyState title="Laboratório não encontrado." subtitle="Ele pode ter sido removido." />
     </div>
 
     <template v-else>
@@ -307,15 +305,4 @@ const lightboxIdx = ref<number | null>(null)
   text-transform: uppercase;
 }
 
-/* ── Empty ────────────────────────────────────────── */
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-}
-.empty-state p    { font-size: 1rem; font-weight: 600; color: var(--preto); margin-bottom: 0.4rem; }
-.empty-state span { font-size: 0.85rem; color: var(--cinza); }
 </style>

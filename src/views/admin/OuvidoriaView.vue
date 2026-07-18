@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
+import EmptyState from '../../components/EmptyState.vue'
 import MsgCard from '../../components/MsgCard.vue'
 import Pagination from '../../components/Pagination.vue'
 import { usePagination } from '../../composables/usePagination.ts'
@@ -206,34 +207,15 @@ const barOptions = {
         :to="`/admin/ouvidoria/${m.id}`"
       />
 
-      <div v-if="mensagensFiltradas.length === 0" class="empty-state">
-        <p>{{ mensagens.length === 0 ? 'Nenhuma mensagem recebida ainda.' : 'Nenhuma mensagem encontrada.' }}</p>
-        <span v-if="mensagens.length > 0" style="font-size:0.85rem;">Tente outro filtro ou termo de busca.</span>
-      </div>
+      <EmptyState
+        v-if="mensagensFiltradas.length === 0"
+        :title="mensagens.length === 0 ? 'Nenhuma mensagem recebida ainda.' : 'Nenhuma mensagem encontrada.'"
+        :subtitle="mensagens.length > 0 ? 'Tente outro filtro ou termo de busca.' : undefined"
+        style="margin-top:14px;"
+      />
 
       <Pagination :page="page" :totalPages="totalPages" @prev="prev" @next="next" @goto="goTo" />
     </div>
   </div>
 </template>
 
-<style scoped>
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  margin-top: 14px;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-}
-.empty-state p {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--preto);
-  margin-bottom: 0.4rem;
-}
-.empty-state span {
-  font-size: 0.85rem;
-  color: var(--cinza);
-}
-</style>

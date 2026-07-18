@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
+import EmptyState from '../../components/EmptyState.vue'
 import { formularios, inscricoes, addFormulario, type TipoFormulario, type TipoCampo } from '../../stores/formularios.ts'
 import { usePersistedFilter } from '../../composables/usePersistedFilter.ts'
 import { showToast } from '../../stores/toast.ts'
@@ -361,10 +362,11 @@ function submitNovoForm() {
         </div>
       </RouterLink>
 
-      <div v-if="formulariosFiltrados.length === 0" class="empty-state">
-        <p>{{ formularios.length === 0 ? 'Nenhum formulário criado ainda.' : 'Nenhum formulário encontrado.' }}</p>
-        <span v-if="formularios.length === 0" style="font-size:0.85rem;">Use o botão acima para criar o primeiro.</span>
-      </div>
+      <EmptyState
+        v-if="formulariosFiltrados.length === 0"
+        :title="formularios.length === 0 ? 'Nenhum formulário criado ainda.' : 'Nenhum formulário encontrado.'"
+        :subtitle="formularios.length === 0 ? 'Use o botão acima para criar o primeiro.' : undefined"
+      />
     </div>
   </div>
 </template>

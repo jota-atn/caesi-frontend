@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import { formularios, inscricoes, type Formulario } from '../stores/formularios.ts'
 import { usePersistedFilter } from '../composables/usePersistedFilter.ts'
 
@@ -141,9 +142,10 @@ const formulariosFiltrados = computed(() =>
         </div>
       </RouterLink>
 
-      <div v-if="formulariosFiltrados.length === 0" class="empty-state">
-        <p>{{ formularios.length === 0 ? 'Nenhum formulário disponível ainda.' : 'Nenhum resultado para este filtro.' }}</p>
-      </div>
+      <EmptyState
+        v-if="formulariosFiltrados.length === 0"
+        :title="formularios.length === 0 ? 'Nenhum formulário disponível ainda.' : 'Nenhum resultado para este filtro.'"
+      />
     </div>
 
     <SiteFooter />

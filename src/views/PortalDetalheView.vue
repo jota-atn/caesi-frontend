@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
+import EmptyState from '../components/EmptyState.vue'
 import paperclipIcon from '../assets/icons/paperclip.svg?raw'
 import { artefatos } from '../stores/portal.ts'
 
@@ -30,10 +31,7 @@ function formatData(data: string | null | undefined) {
     <div class="page-content">
       <BackLink to="/portal" />
 
-      <div v-if="!artefato" class="empty-state">
-        <p>Artefato não encontrado.</p>
-        <span>Ele pode ter sido removido.</span>
-      </div>
+      <EmptyState v-if="!artefato" title="Artefato não encontrado." subtitle="Ele pode ter sido removido." />
 
       <template v-else>
         <div class="paper paper-mb">
@@ -121,15 +119,4 @@ function formatData(data: string | null | undefined) {
 }
 .portal-historico-resumo { font-size: 0.9rem; color: var(--preto); font-weight: 600; }
 .portal-historico-data { font-size: 0.78rem; color: var(--cinza); margin-top: 2px; }
-
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-}
-.empty-state p    { font-size: 1rem; font-weight: 600; color: var(--preto); margin-bottom: 0.4rem; }
-.empty-state span { font-size: 0.85rem; color: var(--cinza); }
 </style>

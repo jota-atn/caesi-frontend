@@ -6,6 +6,7 @@ import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
 import Pagination from '../components/Pagination.vue'
 import Modal from '../components/Modal.vue'
+import EmptyState from '../components/EmptyState.vue'
 import { usePagination } from '../composables/usePagination.ts'
 import { usePersistedFilter } from '../composables/usePersistedFilter.ts'
 import { useEscapeKey } from '../composables/useEscapeKey.ts'
@@ -218,10 +219,11 @@ function textoPlano(md: string) {
       </div>
 
       <!-- Lista vazia -->
-      <div v-if="lista.length === 0" class="empty-state">
-        <p>{{ publicacoes.length === 0 ? 'Nenhuma publicação ainda.' : 'Nenhuma publicação encontrada.' }}</p>
-        <span v-if="publicacoes.length > 0">Tente outro filtro ou termo de busca.</span>
-      </div>
+      <EmptyState
+        v-if="lista.length === 0"
+        :title="publicacoes.length === 0 ? 'Nenhuma publicação ainda.' : 'Nenhuma publicação encontrada.'"
+        :subtitle="publicacoes.length > 0 ? 'Tente outro filtro ou termo de busca.' : undefined"
+      />
 
       <!-- Grid -->
       <div class="mural-grid">
@@ -489,18 +491,6 @@ function textoPlano(md: string) {
   font-family: 'Archivo Black', sans-serif;
   color: var(--roxo-escuro);
 }
-
-.empty-state {
-  background: var(--creme);
-  border: 2px solid var(--creme-escuro);
-  border-radius: 2px;
-  padding: 3rem 2rem;
-  text-align: center;
-  box-shadow: 5px 5px 0 var(--roxo-escuro);
-  margin-bottom: 1.4rem;
-}
-.empty-state p   { font-size: 1rem; font-weight: 600; color: var(--preto); margin-bottom: 0.4rem; }
-.empty-state span { font-size: 0.85rem; color: var(--cinza); }
 
 /* ── Admin: form e ações ──────────────────────────────────── */
 .textarea { min-height: 160px; resize: vertical; max-height: 500px; }
