@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Navbar from '../../components/Navbar.vue'
 import BackLink from '../../components/BackLink.vue'
-import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados, aprovarCancelamento, recusarCancelamento } from '../../stores/formularios.ts'
+import { formularios, inscricoes, updateStatusComprovante, updateFormulario, deleteFormulario, emitirCertificados, aprovarCancelamento, recusarCancelamento, type Inscricao, type StatusComprovante } from '../../stores/formularios.ts'
 import { showToast } from '../../stores/toast.ts'
 import { useEscapeKey } from '../../composables/useEscapeKey.ts'
 import { usePagination } from '../../composables/usePagination.ts'
@@ -41,8 +41,8 @@ const inscricoesFiltradas = computed(() =>
     const t = buscaInsc.value.toLowerCase().trim()
     if (t) {
       const d = dadosInscrito(i)
-      const nome = (d?.nome ?? i.respostas?.nome ?? i.userEmail).toLowerCase()
-      if (!nome.includes(t) && !i.userEmail.toLowerCase().includes(t) && !(d?.matricula ?? '').toLowerCase().includes(t)) return false
+      const nome = String(d?.nome ?? i.respostas?.nome ?? i.userEmail).toLowerCase()
+      if (!nome.includes(t) && !(i.userEmail ?? '').toLowerCase().includes(t) && !String(d?.matricula ?? '').toLowerCase().includes(t)) return false
     }
     return true
   })
@@ -50,21 +50,23 @@ const inscricoesFiltradas = computed(() =>
 
 const { page: inscPage, totalPages: inscTotalPages, paginated: inscricoesPaginadas, next: inscNext, prev: inscPrev, goTo: inscGoTo } = usePagination(inscricoesFiltradas, 10)
 
-function _qtd(i) {
-  return formulario.value.tipo === 'venda' ? (Number(i.respostas?.__quantidade) || 1) : 1
+function _qtd(i: Inscricao) {
+  return formulario.value?.tipo === 'venda' ? (Number(i.respostas?.__quantidade) || 1) : 1
 }
 
 const receitaConfirmada = computed(() => {
-  if (!formulario.value?.pago) return null
+  const form = formulario.value
+  if (!form?.pago) return null
   return inscricoesDaForm.value
-    .filter(i => ['validado', 'arquivado'].includes(i.comprovante?.status))
-    .reduce((soma, i) => soma + formulario.value.valor * _qtd(i), 0)
+    .filter(i => (['validado', 'arquivado'] as const).includes(i.comprovante?.status as 'validado' | 'arquivado'))
+    .reduce((soma, i) => soma + (form.valor ?? 0) * _qtd(i), 0)
 })
 
 const receitaEsperada = computed(() => {
-  if (!formulario.value?.pago) return null
+  const form = formulario.value
+  if (!form?.pago) return null
   return inscricoesDaForm.value
-    .reduce((soma, i) => soma + formulario.value.valor * _qtd(i), 0)
+    .reduce((soma, i) => soma + (form.valor ?? 0) * _qtd(i), 0)
 })
 
 const receitaPendente = computed(() => {
@@ -73,62 +75,64 @@ const receitaPendente = computed(() => {
 })
 
 const TIPOS_EVENTO = ['evento-com-certificado', 'evento-sem-certificado']
-const ehTipoEvento = computed(() => TIPOS_EVENTO.includes(formulario.value?.tipo))
+const ehTipoEvento = computed(() => TIPOS_EVENTO.includes(formulario.value?.tipo ?? ''))
 
-const TIPO_LABEL = {
+const TIPO_LABEL: Record<string, string> = {
   'evento-com-certificado': 'Evento c/ Certificado',
   'evento-sem-certificado': 'Evento s/ Certificado',
   venda: 'Venda',
   arrecadacao: 'Arrecadação',
 }
 
-const COMP_LABEL = {
+const COMP_LABEL: Record<StatusComprovante, string> = {
   pendente:  'Pendente',
   validado:  'Validado',
   arquivado: 'Arquivado',
 }
 
-function formatValor(valor) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
+function formatValor(valor: number | null | undefined) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor ?? 0)
 }
 
-function formatValorCompacto(valor) {
+function formatValorCompacto(valor: number) {
   if (valor >= 1_000_000) return `R$ ${(valor / 1_000_000).toFixed(1).replace('.', ',')}M`
   if (valor >= 10_000)    return `R$ ${(valor / 1_000).toFixed(1).replace('.', ',')}k`
   return formatValor(valor)
 }
 
-function formatData(data) {
+function formatData(data: string | null | undefined) {
   if (!data) return ''
   const [ano, mes, dia] = data.split('-')
   return `${dia}/${mes}/${ano}`
 }
 
-function labelAvancar(status) {
+function labelAvancar(status: StatusComprovante) {
   if (status === 'pendente')  return 'Validar'
   if (status === 'validado')  return 'Arquivar'
   return null
 }
 
 function exportarCSV() {
-  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const form = formulario.value
+  if (!form) return
+  const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
 
   const colsFixas   = ['E-mail', 'Inscrito em']
-  const colsCampos  = formulario.value.campos.map(c => c.label)
+  const colsCampos  = form.campos.map(c => c.label)
   const colsExtras  = []
-  if (formulario.value.tipo === 'venda') colsExtras.push('Quantidade')
-  if (formulario.value.pago)             colsExtras.push('Status do comprovante')
+  if (form.tipo === 'venda') colsExtras.push('Quantidade')
+  if (form.pago)             colsExtras.push('Status do comprovante')
 
   const cols = [...colsFixas, ...colsCampos, ...colsExtras]
 
   const linhas = inscricoesDaForm.value.map(i => {
-    const row = [
+    const row: unknown[] = [
       i.userEmail,
       formatData(i.criadoEm),
-      ...formulario.value.campos.map(c => i.respostas?.[c.id] ?? ''),
+      ...form.campos.map(c => i.respostas?.[c.id] ?? ''),
     ]
-    if (formulario.value.tipo === 'venda') row.push(i.respostas?.__quantidade ?? '')
-    if (formulario.value.pago)             row.push(i.comprovante?.status ?? 'sem comprovante')
+    if (form.tipo === 'venda') row.push(i.respostas?.__quantidade ?? '')
+    if (form.pago)             row.push(i.comprovante?.status ?? 'sem comprovante')
     return row.map(esc).join(',')
   })
 
@@ -137,12 +141,12 @@ function exportarCSV() {
   const url  = URL.createObjectURL(blob)
   const a    = document.createElement('a')
   a.href     = url
-  a.download = `inscricoes-${formulario.value.titulo.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `inscricoes-${form.titulo.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }
 
-function dadosInscrito(inscricao) {
+function dadosInscrito(inscricao: Inscricao) {
   return {
     nome:      inscricao.respostas?._nome      ?? inscricao.userEmail ?? '—',
     email:     inscricao.respostas?._email     ?? inscricao.userEmail ?? '—',
@@ -150,7 +154,7 @@ function dadosInscrito(inscricao) {
   }
 }
 
-function avancarStatus(inscricaoId, statusAtual) {
+function avancarStatus(inscricaoId: number, statusAtual: StatusComprovante) {
   const proximo = statusAtual === 'pendente' ? 'validado' : 'arquivado'
   updateStatusComprovante(inscricaoId, proximo)
   showToast(proximo === 'validado' ? 'Comprovante validado.' : 'Comprovante arquivado.', proximo === 'validado' ? 'success' : 'info')
@@ -159,17 +163,19 @@ function avancarStatus(inscricaoId, statusAtual) {
 // ── Editar ───────────────────────────────────────────────
 const editando    = ref(false)
 const editSalvo   = ref(false)
-const editErrors  = ref({})
-const editForm    = ref({ titulo: '', descricao: '', prazoInscricao: '', dataEvento: '', valor: '', limiteVagas: '' })
+const editErrors  = ref<Record<string, boolean>>({})
+const editForm    = ref({ titulo: '', descricao: '', prazoInscricao: '', dataEvento: '', valor: '' as string | number, limiteVagas: '' as string | number })
 
 function abrirEdicao() {
+  const form = formulario.value
+  if (!form) return
   editForm.value = {
-    titulo:          formulario.value.titulo,
-    descricao:       formulario.value.descricao ?? '',
-    prazoInscricao:  formulario.value.prazoInscricao ?? '',
-    dataEvento:      formulario.value.dataEvento ?? '',
-    valor:           formulario.value.valor ?? '',
-    limiteVagas:     formulario.value.limiteVagas ?? '',
+    titulo:          form.titulo,
+    descricao:       form.descricao ?? '',
+    prazoInscricao:  form.prazoInscricao ?? '',
+    dataEvento:      form.dataEvento ?? '',
+    valor:           form.valor ?? '',
+    limiteVagas:     form.limiteVagas ?? '',
   }
   editErrors.value = {}
   editando.value = true
@@ -181,9 +187,11 @@ function cancelarEdicao() {
 }
 
 function salvarEdicao() {
-  const e = {}
+  const form = formulario.value
+  if (!form) return
+  const e: Record<string, boolean> = {}
   if (!editForm.value.titulo.trim()) e.titulo = true
-  if (formulario.value.pago && (!editForm.value.valor || Number(editForm.value.valor) <= 0)) e.valor = true
+  if (form.pago && (!editForm.value.valor || Number(editForm.value.valor) <= 0)) e.valor = true
   if (editForm.value.limiteVagas !== '' && Number(editForm.value.limiteVagas) < 1) e.limiteVagas = true
   editErrors.value = e
   if (Object.keys(e).length > 0) return
@@ -193,7 +201,7 @@ function salvarEdicao() {
     descricao:      editForm.value.descricao.trim(),
     prazoInscricao: editForm.value.prazoInscricao || null,
     dataEvento:     editForm.value.dataEvento || null,
-    ...(formulario.value.pago ? { valor: Number(editForm.value.valor) } : {}),
+    ...(form.pago ? { valor: Number(editForm.value.valor) } : {}),
     limiteVagas: editForm.value.limiteVagas ? Number(editForm.value.limiteVagas) : null,
   })
   editando.value = false
@@ -202,12 +210,17 @@ function salvarEdicao() {
 }
 
 // ── Cancelamento de inscrição (admin) ────────────────────
-const modalCancelamento = ref(null) // { inscricao, acao: 'aprovar'|'recusar' }
+interface ModalCancelamento {
+  inscricao: Inscricao
+  acao: 'aprovar' | 'recusar'
+}
+
+const modalCancelamento = ref<ModalCancelamento | null>(null)
 const msgCancelamento = ref('')
 
 useEscapeKey(() => { if (modalCancelamento.value) modalCancelamento.value = null })
 
-function abrirModalCancelamento(inscricao, acao) {
+function abrirModalCancelamento(inscricao: Inscricao, acao: 'aprovar' | 'recusar') {
   msgCancelamento.value = ''
   modalCancelamento.value = { inscricao, acao }
 }
@@ -216,10 +229,10 @@ function confirmarModalCancelamento() {
   if (!modalCancelamento.value) return
   const { inscricao, acao } = modalCancelamento.value
   if (acao === 'aprovar') {
-    aprovarCancelamento(inscricao.id, msgCancelamento.value)
+    aprovarCancelamento(inscricao.id)
     showToast('Cancelamento aprovado. Aluno notificado.')
   } else {
-    recusarCancelamento(inscricao.id, msgCancelamento.value)
+    recusarCancelamento(inscricao.id)
     showToast('Solicitação recusada. Aluno notificado.', 'info')
   }
   modalCancelamento.value = null
@@ -307,10 +320,10 @@ function excluirFormulario() {
           <div class="stat-label">Receita confirmada</div>
           <template v-if="receitaEsperada !== null">
             <div style="margin-top:6px;font-size:0.74rem;color:var(--cinza);line-height:1.4;">
-              <span v-if="receitaPendente > 0" style="color:var(--roxo);font-weight:600;">
-                {{ formatValorCompacto(receitaPendente) }} pendente
+              <span v-if="(receitaPendente ?? 0) > 0" style="color:var(--roxo);font-weight:600;">
+                {{ formatValorCompacto(receitaPendente ?? 0) }} pendente
               </span>
-              <span v-if="receitaPendente > 0"> · </span>
+              <span v-if="(receitaPendente ?? 0) > 0"> · </span>
               <span>{{ formatValorCompacto(receitaEsperada) }} total</span>
             </div>
           </template>
