@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
-import { formularios, inscricoes } from '../stores/formularios.js'
+import { formularios, inscricoes } from '../stores/formularios.ts'
 import { usePersistedFilter } from '../composables/usePersistedFilter.js'
 
 const filtro = usePersistedFilter('caesi-forms-filtro', 'todos')

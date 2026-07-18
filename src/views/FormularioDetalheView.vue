@@ -4,7 +4,7 @@ import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
-import { formularios, inscricoes, addInscricao } from '../stores/formularios.js'
+import { formularios, inscricoes, addInscricao } from '../stores/formularios.ts'
 import { showToast } from '../stores/toast.ts'
 import { isEmail, isValidImageFile } from '../utils/validation.js'
 
