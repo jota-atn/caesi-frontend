@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
-import { addMensagem, mensagens, addComplemento } from '../stores/mensagens.ts'
+import { addMensagem, mensagens, addComplemento, type Mensagem, type StatusMensagem } from '../stores/mensagens.ts'
 import { isAdmin } from '../stores/auth.ts'
 import { isEmail } from '../utils/validation.ts'
 
@@ -12,18 +12,18 @@ const route = useRoute()
 
 // ── Envio de ticket ──────────────────────────────────────────
 const form = ref({ tipo: '', periodo: '', mensagem: '', nome: '', email: '' })
-const errors = ref({})
+const errors = ref<Record<string, boolean>>({})
 const charCount = ref(0)
 const enviado = ref(false)
 const protocolo = ref('')
 const emailEnviado = ref(false)
 
-function onInput(e) {
-  charCount.value = e.target.value.length
+function onInput(e: Event) {
+  charCount.value = (e.target as HTMLTextAreaElement).value.length
 }
 
 function submit() {
-  const e = {}
+  const e: Record<string, boolean> = {}
   if (!form.value.tipo)                       e.tipo = true
   if (!form.value.periodo.trim())             e.periodo = true
   if (form.value.mensagem.trim().length < 20) e.mensagem = true
@@ -52,13 +52,13 @@ function resetForm() {
 
 // ── Consultar protocolo (busca simples, embutida na página) ──
 const protocoloBusca = ref('')
-const resultado = ref(null)
+const resultado = ref<Mensagem | null>(null)
 const naoEncontrado = ref(false)
 const campoVazio = ref(false)
 const complementoTexto = ref('')
 const complementoEnviado = ref(false)
 
-const tipoLabel = {
+const tipoLabel: Record<string, string> = {
   disciplina:     'Disciplina',
   professores:    'Professores',
   colegas:        'Colegas de curso',
@@ -68,15 +68,13 @@ const tipoLabel = {
   outros:         'Outros',
 }
 
-const statusLabel = {
+const statusLabel: Record<StatusMensagem, string> = {
   pendente:      'Pendente',
-  em_andamento:  'Em andamento',
   atendida:      'Atendida',
 }
 
-const statusClass = {
+const statusClass: Record<StatusMensagem, string> = {
   pendente:     'badge badge-pendente',
-  em_andamento: 'badge badge-info',
   atendida:     'badge badge-atendida',
 }
 
@@ -102,13 +100,13 @@ function enviarComplemento() {
   const texto = complementoTexto.value.trim()
   if (!texto || !resultado.value) return
   addComplemento(resultado.value.id, texto)
-  resultado.value = mensagens.value.find(m => m.id === resultado.value.id)
+  resultado.value = mensagens.value.find(m => m.id === resultado.value!.id) ?? null
   complementoTexto.value = ''
   complementoEnviado.value = true
   setTimeout(() => { complementoEnviado.value = false }, 2500)
 }
 
-function consultarStatusDoTicket(p) {
+function consultarStatusDoTicket(p: string) {
   protocoloBusca.value = p
   consultar()
   document.getElementById('ouvidoria-topo')?.scrollIntoView({ behavior: 'smooth' })
@@ -116,7 +114,7 @@ function consultarStatusDoTicket(p) {
 
 onMounted(() => {
   if (route.query.protocolo) {
-    protocoloBusca.value = route.query.protocolo
+    protocoloBusca.value = String(route.query.protocolo)
     consultar()
   }
 })
