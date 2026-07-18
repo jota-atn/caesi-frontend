@@ -35,3 +35,15 @@ export function isTodayOrFuture(dateStr: string | null | undefined): boolean {
   hoje.setHours(0, 0, 0, 0)
   return data >= hoje
 }
+
+export function validarNome(nome: string, min = 2): string {
+  return nome.trim().length < min ? `Nome obrigatório (mínimo ${min} caracteres).` : ''
+}
+
+export function validarEmailOpcional(email: string): string {
+  return email.trim() && !isEmail(email) ? 'Informe um e-mail válido.' : ''
+}
+
+export function validarUrlOpcional(url: string): string {
+  return url.trim() && !isUrl(url) ? 'Informe um link válido.' : ''
+}

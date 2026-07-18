@@ -11,29 +11,9 @@ import { estruturas, CENTRO_PADRAO, addEstrutura, updateEstrutura, removeEstrutu
 import { useEscapeKey } from '../composables/useEscapeKey.ts'
 import { showToast } from '../stores/toast.ts'
 import { isValidImageFile } from '../utils/validation.ts'
+import { comprimirImagem } from '../utils/imagem.ts'
 import crosshairIcon from '../assets/icons/crosshair.svg?raw'
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
-
-function comprimirImagem(file: File): Promise<string> {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.onload = ev => {
-      const img = new Image()
-      img.onload = () => {
-        const MAX = 900
-        let w = img.width, h = img.height
-        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX }
-        else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
-        const canvas = document.createElement('canvas')
-        canvas.width = w; canvas.height = h
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', 0.82))
-      }
-      img.src = ev.target!.result as string
-    }
-    reader.readAsDataURL(file)
-  })
-}
 
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })

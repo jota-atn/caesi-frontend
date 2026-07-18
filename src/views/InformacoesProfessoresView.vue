@@ -9,7 +9,8 @@ import { professores, addProfessor, updateProfessor, deleteProfessor, type Profe
 import { estruturas } from '../stores/mapa.ts'
 import { isAdmin } from '../stores/auth.ts'
 import { showToast } from '../stores/toast.ts'
-import { isEmail, isUrl, isValidImageFile } from '../utils/validation.ts'
+import { isValidImageFile, validarNome, validarEmailOpcional, validarUrlOpcional } from '../utils/validation.ts'
+import { comprimirImagem } from '../utils/imagem.ts'
 
 const route = useRoute()
 const busca = ref(String(route.query.busca ?? ''))
@@ -20,31 +21,6 @@ const lista = computed(() => {
   if (!t) return base
   return base.filter(p => p.nome.toLowerCase().includes(t))
 })
-
-function comprimirImagem(file: File): Promise<string> {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.onload = ev => {
-      const img = new Image()
-      img.onload = () => {
-        const MAX = 900
-        let w = img.width, h = img.height
-        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX }
-        else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
-        const canvas = document.createElement('canvas')
-        canvas.width = w; canvas.height = h
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', 0.82))
-      }
-      img.src = ev.target!.result as string
-    }
-    reader.readAsDataURL(file)
-  })
-}
-
-function validarNome(nome: string) { return nome.trim().length < 2 ? 'Nome obrigatório (mínimo 2 caracteres).' : '' }
-function validarEmailOpcional(email: string) { return email.trim() && !isEmail(email) ? 'Informe um e-mail válido.' : '' }
-function validarUrlOpcional(url: string)     { return url.trim() && !isUrl(url) ? 'Informe um link válido.' : '' }
 
 interface ProfessorFormRascunho {
   nome: string

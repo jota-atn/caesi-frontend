@@ -23,7 +23,8 @@ import { CENTRO_PADRAO } from '../stores/mapa.ts'
 import { markdownParaHtmlSeguro } from '../utils/markdown.ts'
 import { isAdmin } from '../stores/auth.ts'
 import { showToast } from '../stores/toast.ts'
-import { isEmail, isUrl, isValidImageFile } from '../utils/validation.ts'
+import { isEmail, isValidImageFile, validarUrlOpcional } from '../utils/validation.ts'
+import { comprimirImagem } from '../utils/imagem.ts'
 import pencilIcon from '../assets/icons/pencil.svg?raw'
 import xIcon from '../assets/icons/x.svg?raw'
 
@@ -64,7 +65,7 @@ async function onFotoMissao(e: Event) {
   const file = target.files?.[0]
   if (!file) return
   if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); target.value = ''; return }
-  missaoImagemEdit.value = await comprimirImagem(file)
+  missaoImagemEdit.value = await comprimirImagemPerfil(file)
   target.value = ''
 }
 function removerFotoMissao() { missaoImagemEdit.value = '' }
@@ -126,30 +127,9 @@ function salvarInfo() {
   showToast('Informações salvas.', 'success')
 }
 
-// --- Utilitário compartilhado ---
-function comprimirImagem(file: File): Promise<string> {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.onload = ev => {
-      const img = new Image()
-      img.onload = () => {
-        const MAX = 400
-        let w = img.width, h = img.height
-        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX }
-        else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
-        const canvas = document.createElement('canvas')
-        canvas.width = w; canvas.height = h
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', 0.75))
-      }
-      img.src = ev.target!.result as string
-    }
-    reader.readAsDataURL(file)
-  })
-}
-
-function validarUrlOpcional(url: string) {
-  return !!(url.trim() && !isUrl(url))
+// Fotos de perfil/histórico usam um teto menor que o padrão (galerias de laboratório etc.)
+function comprimirImagemPerfil(file: File): Promise<string> {
+  return comprimirImagem(file, 400, 0.75)
 }
 
 // --- Editar membro existente ---
@@ -181,7 +161,7 @@ async function onFotoEdit(e: Event) {
   const file = target.files?.[0]
   if (!file || !editForm.value) return
   if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); target.value = ''; return }
-  editForm.value.foto = await comprimirImagem(file)
+  editForm.value.foto = await comprimirImagemPerfil(file)
   target.value = ''
 }
 
@@ -279,7 +259,7 @@ async function onFotoAdd(e: Event) {
   const file = target.files?.[0]
   if (!file) return
   if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); target.value = ''; return }
-  formAdd.value.foto = await comprimirImagem(file)
+  formAdd.value.foto = await comprimirImagemPerfil(file)
   target.value = ''
 }
 
@@ -316,7 +296,7 @@ async function onFotoMembroManual(e: Event, i: number) {
   const file = target.files?.[0]
   if (!file) return
   if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); target.value = ''; return }
-  membrosManual.value[i].foto = await comprimirImagem(file)
+  membrosManual.value[i].foto = await comprimirImagemPerfil(file)
   target.value = ''
 }
 
@@ -364,7 +344,7 @@ async function onFotoSecaoAdd(e: Event) {
   const file = target.files?.[0]
   if (!file) return
   if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); target.value = ''; return }
-  formSecao.value.imagem = await comprimirImagem(file)
+  formSecao.value.imagem = await comprimirImagemPerfil(file)
   target.value = ''
 }
 function removerFotoSecaoAdd() { formSecao.value.imagem = '' }
@@ -403,7 +383,7 @@ async function onFotoSecaoEdit(e: Event) {
   const file = target.files?.[0]
   if (!file || !editFormSecao.value) return
   if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); target.value = ''; return }
-  editFormSecao.value.imagem = await comprimirImagem(file)
+  editFormSecao.value.imagem = await comprimirImagemPerfil(file)
   target.value = ''
 }
 function removerFotoSecaoEdit() { if (editFormSecao.value) editFormSecao.value.imagem = '' }

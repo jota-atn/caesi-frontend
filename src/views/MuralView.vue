@@ -12,27 +12,7 @@ import { publicacoes, addPublicacao, updatePublicacao, deletePublicacao, type Pu
 import { isAdmin } from '../stores/auth.ts'
 import { showToast } from '../stores/toast.ts'
 import { isValidImageFile } from '../utils/validation.ts'
-
-function comprimirImagem(file: File): Promise<string> {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.onload = ev => {
-      const img = new Image()
-      img.onload = () => {
-        const MAX = 900
-        let w = img.width, h = img.height
-        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX }
-        else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
-        const canvas = document.createElement('canvas')
-        canvas.width = w; canvas.height = h
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', 0.82))
-      }
-      img.src = ev.target!.result as string
-    }
-    reader.readAsDataURL(file)
-  })
-}
+import { comprimirImagem } from '../utils/imagem.ts'
 
 function validarTitulo(titulo: string)     { return titulo.trim().length < 3     ? 'Título obrigatório (mín. 3 caracteres).'     : '' }
 function validarMensagem(mensagem: string) { return mensagem.trim().length < 10 ? 'Mensagem obrigatória (mín. 10 caracteres).' : '' }
