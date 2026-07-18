@@ -49,10 +49,6 @@ type EstadoJogo = 'aguardando' | 'jogando' | 'pausado' | 'fim' | 'vencido' | 'tr
 
 const router = useRouter()
 
-// DEBUG temporário: começa direto na luta do chefe e pula pro próximo assim que derrota, sem esperar pontuação.
-// Lembrar de voltar pra false antes de mesclar/lançar.
-const DEBUG_COMECAR_NO_CHEFE = false
-
 const mqDesktop = window.matchMedia('(any-pointer: fine)')
 const ehDesktop = ref(mqDesktop.matches)
 function atualizarEhDesktop(e: MediaQueryListEvent) { ehDesktop.value = e.matches }
@@ -572,9 +568,6 @@ function iniciar() {
   gerarInimigo(true, true)
   gerarInimigo(true, true)
   reposicionarComida()
-
-  // DEBUG temporário: começa direto na luta do chefe pra testar. Tirar depois.
-  if (DEBUG_COMECAR_NO_CHEFE) iniciarBatalhaChefe()
 }
 
 function comecarJogo() {
@@ -670,8 +663,6 @@ function tick() {
         // volta só até a metade do tamanho de antes da luta, não o tamanho cheio — mantém algum risco depois do chefe
         const alvoRegrow = Math.max(TAMANHO_COBRA_CHEFE, Math.ceil(tamanhoAntesDoChefe / 2))
         crescimentoPendente += Math.max(0, alvoRegrow - cobra.value.length)
-        // DEBUG temporário: pula direto pro próximo chefe, sem esperar pontuação. Tirar depois.
-        if (DEBUG_COMECAR_NO_CHEFE) iniciarTransicaoChefe()
       } else {
         empurrarChefe(chefe)
         chefe.atordoado = 10
