@@ -1,18 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
 import mapPinIcon from '../assets/icons/map-pin.svg?raw'
-import { professores, addProfessor, updateProfessor, deleteProfessor } from '../stores/informacoes.ts'
+import { professores, addProfessor, updateProfessor, deleteProfessor, type Professor } from '../stores/informacoes.ts'
 import { estruturas } from '../stores/mapa.ts'
 import { isAdmin } from '../stores/auth.ts'
 import { showToast } from '../stores/toast.ts'
 import { isEmail, isUrl, isValidImageFile } from '../utils/validation.ts'
 
 const route = useRoute()
-const busca = ref(route.query.busca ?? '')
+const busca = ref(String(route.query.busca ?? ''))
 
 const lista = computed(() => {
   const t = busca.value.toLowerCase().trim()
@@ -21,7 +21,7 @@ const lista = computed(() => {
   return base.filter(p => p.nome.toLowerCase().includes(t))
 })
 
-function comprimirImagem(file) {
+function comprimirImagem(file: File): Promise<string> {
   return new Promise(resolve => {
     const reader = new FileReader()
     reader.onload = ev => {
@@ -33,31 +33,47 @@ function comprimirImagem(file) {
         else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
         const canvas = document.createElement('canvas')
         canvas.width = w; canvas.height = h
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
         resolve(canvas.toDataURL('image/jpeg', 0.82))
       }
-      img.src = ev.target.result
+      img.src = ev.target!.result as string
     }
     reader.readAsDataURL(file)
   })
 }
 
-function validarNome(nome) { return nome.trim().length < 2 ? 'Nome obrigatório (mínimo 2 caracteres).' : '' }
-function validarEmailOpcional(email) { return email.trim() && !isEmail(email) ? 'Informe um e-mail válido.' : '' }
-function validarUrlOpcional(url)     { return url.trim() && !isUrl(url) ? 'Informe um link válido.' : '' }
+function validarNome(nome: string) { return nome.trim().length < 2 ? 'Nome obrigatório (mínimo 2 caracteres).' : '' }
+function validarEmailOpcional(email: string) { return email.trim() && !isEmail(email) ? 'Informe um e-mail válido.' : '' }
+function validarUrlOpcional(url: string)     { return url.trim() && !isUrl(url) ? 'Informe um link válido.' : '' }
+
+interface ProfessorFormRascunho {
+  nome: string
+  sala: string
+  estruturaId: number | string
+  descricao: string
+  foto: string
+  email: string
+  lattes: string
+  googleAcademico: string
+  linkedin: string
+}
+
+function formVazio(): ProfessorFormRascunho {
+  return { nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' }
+}
 
 // ── Admin: novo professor ─────────────────────────────────
 const mostrarForm = ref(false)
-const fileAddRef  = ref(null)
-const formAdd = reactive({ nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
+const fileAddRef  = ref<HTMLInputElement | null>(null)
+const formAdd = reactive<ProfessorFormRascunho>(formVazio())
 const erros   = reactive({ nome: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
 
-async function onFotoAdd(e) {
-  const file = e.target.files?.[0]
+async function onFotoAdd(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
-  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); (e.target as HTMLInputElement).value = ''; return }
   formAdd.foto = await comprimirImagem(file)
-  e.target.value = ''
+  ;(e.target as HTMLInputElement).value = ''
 }
 function removerFotoAdd() { formAdd.foto = '' }
 
@@ -79,29 +95,28 @@ function publicar() {
     googleAcademico: formAdd.googleAcademico.trim(),
     linkedin: formAdd.linkedin.trim(),
   })
-  Object.assign(formAdd, { nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
+  Object.assign(formAdd, formVazio())
   mostrarForm.value = false
   showToast('Professor cadastrado.', 'success')
 }
 
 function cancelarAdd() {
-  Object.assign(formAdd, { nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
+  Object.assign(formAdd, formVazio())
   Object.assign(erros, { nome: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
   mostrarForm.value = false
 }
 
 // ── Admin: editar/excluir professor ───────────────────────
-const editandoId  = ref(null)
-const fileEditRef = ref(null)
-const formEdit  = reactive({ nome: '', sala: '', estruturaId: '', descricao: '', foto: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
+const editandoId  = ref<number | null>(null)
+const fileEditRef = ref<HTMLInputElement | null>(null)
+const formEdit  = reactive<ProfessorFormRascunho>(formVazio())
 const errosEdit = reactive({ nome: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
 
 function triggerFileEdit() {
-  const el = Array.isArray(fileEditRef.value) ? fileEditRef.value[0] : fileEditRef.value
-  el?.click()
+  fileEditRef.value?.click()
 }
 
-function abrirEdit(p) {
+function abrirEdit(p: Professor) {
   editandoId.value = p.id
   Object.assign(errosEdit, { nome: '', email: '', lattes: '', googleAcademico: '', linkedin: '' })
   Object.assign(formEdit, {
@@ -117,16 +132,16 @@ function abrirEdit(p) {
   })
 }
 
-async function onFotoEdit(e) {
-  const file = e.target.files?.[0]
+async function onFotoEdit(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
-  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); e.target.value = ''; return }
+  if (!isValidImageFile(file)) { showToast('Selecione uma imagem de até 8MB.', 'error'); (e.target as HTMLInputElement).value = ''; return }
   formEdit.foto = await comprimirImagem(file)
-  e.target.value = ''
+  ;(e.target as HTMLInputElement).value = ''
 }
 function removerFotoEdit() { formEdit.foto = '' }
 
-function salvarEdit(id) {
+function salvarEdit(id: number) {
   errosEdit.nome            = validarNome(formEdit.nome)
   errosEdit.email           = validarEmailOpcional(formEdit.email)
   errosEdit.lattes          = validarUrlOpcional(formEdit.lattes)
@@ -149,7 +164,7 @@ function salvarEdit(id) {
 }
 function cancelarEdit() { editandoId.value = null }
 
-function excluir(p) {
+function excluir(p: Professor) {
   if (!confirm(`Remover "${p.nome}" dos professores?`)) return
   deleteProfessor(p.id)
   showToast('Professor removido.', 'info')
@@ -189,7 +204,7 @@ function excluir(p) {
               <button type="button" class="img-thumb-remove" @click="removerFotoAdd">×</button>
             </div>
           </div>
-          <button type="button" class="btn-foto" @click="fileAddRef.click()" style="margin-top:8px;">
+          <button type="button" class="btn-foto" @click="fileAddRef?.click()" style="margin-top:8px;">
             {{ formAdd.foto ? 'Trocar foto' : '+ Adicionar foto' }}
           </button>
           <input ref="fileAddRef" type="file" accept="image/*" style="display:none" @change="onFotoAdd">
