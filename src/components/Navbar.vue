@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAdmin, logout } from '../stores/auth.js'
-import { cobrinhaZerada } from '../stores/conquistas.js'
+import { cobrinhaZerada } from '../stores/conquistas.ts'
 import awardIcon from '../assets/icons/award.svg?raw'
 
 const menuOpen = ref(false)

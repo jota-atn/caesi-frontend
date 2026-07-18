@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import BackLink from '../components/BackLink.vue'
 import { showToast } from '../stores/toast.ts'
 import { useEscapeKey } from '../composables/useEscapeKey.js'
-import { marcarCobrinhaZerada } from '../stores/conquistas.js'
+import { marcarCobrinhaZerada } from '../stores/conquistas.ts'
 import capeloIcon from '../assets/icons/graduation-cap.svg?raw'
 
 const router = useRouter()
