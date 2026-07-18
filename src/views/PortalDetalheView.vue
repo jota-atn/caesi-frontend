@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
 import paperclipIcon from '../assets/icons/paperclip.svg?raw'
-import { artefatos } from '../stores/portal.js'
+import { artefatos } from '../stores/portal.ts'
 
 const route  = useRoute()
 

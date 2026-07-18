@@ -6,7 +6,7 @@ import BackLink from '../components/BackLink.vue'
 import Pagination from '../components/Pagination.vue'
 import { usePagination } from '../composables/usePagination.js'
 import { usePersistedFilter } from '../composables/usePersistedFilter.js'
-import { artefatos } from '../stores/portal.js'
+import { artefatos } from '../stores/portal.ts'
 
 const busca  = usePersistedFilter('portal-busca', '')
 const filtro = usePersistedFilter('portal-filtro', 'todos')

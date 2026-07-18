@@ -10,7 +10,7 @@ import flaskIcon     from '../assets/icons/flask.svg?raw'
 import bookOpenIcon  from '../assets/icons/book-open.svg?raw'
 import archiveIcon   from '../assets/icons/archive.svg?raw'
 import { editais, professores, laboratorios } from '../stores/informacoes.js'
-import { artefatos } from '../stores/portal.js'
+import { artefatos } from '../stores/portal.ts'
 
 function plural(n, singular, pluralForm) { return `${n} ${n === 1 ? singular : pluralForm}` }
 
