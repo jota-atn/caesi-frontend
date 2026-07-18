@@ -8,7 +8,7 @@ import paperclipIcon  from '../assets/icons/paperclip.svg?raw'
 import Navbar from '../components/Navbar.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import BackLink from '../components/BackLink.vue'
-import { publicacoes } from '../stores/mural.js'
+import { publicacoes } from '../stores/mural.ts'
 
 marked.use({ breaks: true, gfm: true })
 

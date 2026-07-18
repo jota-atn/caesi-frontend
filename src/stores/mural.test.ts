@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import type { Publicacao } from './mural.ts'
 
 // As stores usam Date.now() como id. Em testes, chamadas seguidas e síncronas
 // podem cair no mesmo milissegundo e gerar ids colididos (dois itens
@@ -17,7 +18,7 @@ afterEach(() => { vi.useRealTimers() })
 async function storeLimpa() {
   localStorage.clear()
   vi.resetModules()
-  return import('./mural.js')
+  return import('./mural.ts')
 }
 
 describe('stores/mural', () => {
@@ -55,7 +56,7 @@ describe('stores/mural', () => {
     vi.advanceTimersByTime(1)
     const segunda  = addPublicacao({ titulo: 'Segunda', tipo: '', mensagem: 'Msg 2' })
 
-    expect(publicacoes.value.map(p => p.id)).toEqual([segunda.id, primeira.id])
+    expect(publicacoes.value.map((p: Publicacao) => p.id)).toEqual([segunda.id, primeira.id])
   })
 
   it('persiste no localStorage — uma nova instância da store lê o mesmo dado', async () => {
@@ -64,7 +65,7 @@ describe('stores/mural', () => {
 
     // Reabre a store (sem limpar o localStorage) simulando o usuário recarregando a página.
     vi.resetModules()
-    const { publicacoes } = await import('./mural.js')
+    const { publicacoes } = await import('./mural.ts')
 
     expect(publicacoes.value).toHaveLength(1)
     expect(publicacoes.value[0].titulo).toBe('Persistida')
@@ -76,7 +77,7 @@ describe('stores/mural', () => {
 
     updatePublicacao(original.id, { titulo: 'Editado' })
 
-    const atualizada = publicacoes.value.find(p => p.id === original.id)
+    const atualizada = publicacoes.value.find((p: Publicacao) => p.id === original.id)!
     expect(atualizada.titulo).toBe('Editado')
     expect(atualizada.editadoEm).toBeTypeOf('string')
   })
@@ -89,8 +90,8 @@ describe('stores/mural', () => {
 
     updatePublicacao(a.id, { titulo: 'A editado' })
 
-    expect(publicacoes.value.find(p => p.id === b.id).titulo).toBe('B')
-    expect(publicacoes.value.find(p => p.id === b.id).editadoEm).toBeNull()
+    expect(publicacoes.value.find((p: Publicacao) => p.id === b.id)!.titulo).toBe('B')
+    expect(publicacoes.value.find((p: Publicacao) => p.id === b.id)!.editadoEm).toBeNull()
   })
 
   it('deletePublicacao remove só a publicação indicada', async () => {

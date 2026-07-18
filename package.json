@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "chart.js": "^4.5.1",
@@ -25,7 +26,9 @@
     "@vue/test-utils": "^2.4.11",
     "jsdom": "^29.1.1",
     "playwright": "^1.60.0",
+    "typescript": "^5.9.3",
     "vite": "^6.3.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "vue-tsc": "^3.3.7"
   }
 }
