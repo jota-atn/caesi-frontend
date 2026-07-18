@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
@@ -31,18 +31,18 @@ const tituloPartes = computed(() => {
 })
 
 // Lightbox
-const lightboxImgs = ref(null)
+const lightboxImgs = ref<string[] | null>(null)
 const lightboxIdx  = ref(0)
 
-function abrirLightbox(imgs, i) {
+function abrirLightbox(imgs: string[], i: number) {
   lightboxImgs.value = imgs
   lightboxIdx.value  = i
 }
 function fecharLightbox() { lightboxImgs.value = null }
-function prevImg() { lightboxIdx.value = (lightboxIdx.value - 1 + lightboxImgs.value.length) % lightboxImgs.value.length }
-function nextImg() { lightboxIdx.value = (lightboxIdx.value + 1) % lightboxImgs.value.length }
+function prevImg() { lightboxIdx.value = (lightboxIdx.value - 1 + lightboxImgs.value!.length) % lightboxImgs.value!.length }
+function nextImg() { lightboxIdx.value = (lightboxIdx.value + 1) % lightboxImgs.value!.length }
 
-function onKey(e) {
+function onKey(e: KeyboardEvent) {
   if (!lightboxImgs.value) return
   if (e.key === 'Escape')     fecharLightbox()
   if (e.key === 'ArrowLeft')  prevImg()
